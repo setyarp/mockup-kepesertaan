@@ -1414,12 +1414,97 @@
         <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Pengelolaan Surat Pernyataan Tanda Bukti Diri (SPTB)</b></div>
         <div class="page-head">
           <div>
-            <h1 class="page-title">Pengelolaan Surat Pernyataan Tanda Bukti Diri (SPTB)</h1>
-            <div class="page-sub">Pengelolaan SPTB peserta.</div>
+            <h1 class="page-title">Monitoring SPTB</h1>
+            <div class="page-sub">Pemantauan status Surat Pernyataan Tanda Bukti Diri (SPTB) peserta pensiun.</div>
           </div>
         </div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <div class="grid3" style="grid-template-columns:repeat(4,1fr)">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Status Range</label>
+              <select class="inp" id="sptb-f-status">
+                <option value="">Semua Status</option>
+                <option>Sudah SPTB</option>
+                <option>Belum SPTB</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Jenis Pensiun</label>
+              <select class="inp" id="sptb-f-jenis">
+                <option value="">Semua Jenis</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Mitra Bayar</label>
+              <select class="inp" id="sptb-f-mitra">
+                <option value="">Semua Mitra</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Cabang (KC)</label>
+              <select class="inp" id="sptb-f-cabang">
+                <option value="">Semua Cabang</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid3" style="grid-template-columns:repeat(4,1fr);margin-top:14px">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Nomor Pensiun (NOPENS)</label>
+              <input class="inp" id="sptb-f-nopens" placeholder="Masukkan Nomor Pensiun">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Rentang Umur</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input class="inp" type="number" id="sptb-f-umur-min" placeholder="Min">
+                <span style="color:var(--muted)">–</span>
+                <input class="inp" type="number" id="sptb-f-umur-max" placeholder="Max">
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Tgl SPTB Terakhir</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input class="inp" type="date" id="sptb-f-sptb-dari">
+                <span style="color:var(--muted)">–</span>
+                <input class="inp" type="date" id="sptb-f-sptb-sampai">
+              </div>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Tgl PAY Terakhir</label>
+              <div style="display:flex;align-items:center;gap:8px">
+                <input class="inp" type="date" id="sptb-f-pay-dari">
+                <span style="color:var(--muted)">–</span>
+                <input class="inp" type="date" id="sptb-f-pay-sampai">
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:10px">
+            <div style="position:relative">
+              <button class="btn btn-ghost" id="sptb-export">⬇ Export Data ▾</button>
+              <div id="sptb-export-menu" style="display:none;position:absolute;top:calc(100% + 6px);left:0;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 20px rgba(16,32,55,.12);min-width:170px;z-index:10;overflow:hidden">
+                <button class="nav-item" style="width:100%;text-align:left;border-radius:0" data-sptb-export="excel">▤ Export ke Excel</button>
+                <button class="nav-item" style="width:100%;text-align:left;border-radius:0" data-sptb-export="pdf">📄 Export ke PDF</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px">
+              <button class="btn btn-ghost" id="sptb-reset">Reset</button>
+              <button class="btn btn-primary" id="sptb-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>No</th><th>Cabang</th><th>Nopens</th><th>NRP/NIP</th><th>Nama</th>
+                <th>Tgl Lahir</th><th>Mitra</th><th>Jenis Pensiun</th><th>Unor</th>
+                <th>SPTB Terakhir</th><th>PAY Terakhir</th><th>Status</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="sptb-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="sptb-count"></div>
         </div>
       </section>
 

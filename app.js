@@ -4306,6 +4306,101 @@ document.addEventListener("click", e => {
   renderEdosirTable();
 });
 
+/* ====================================================================== SPTB */
+function isiPilihanSptb() {
+  $("#sptb-f-jenis").innerHTML  += SPTB_JENIS_PENSIUN.map(j => `<option>${esc(j)}</option>`).join("");
+  $("#sptb-f-mitra").innerHTML  += SPTB_MITRA.map(m => `<option>${esc(m)}</option>`).join("");
+  $("#sptb-f-cabang").innerHTML += SPTB_CABANG.map(c => `<option>${esc(c)}</option>`).join("");
+}
+
+function fmtTglShortId(iso) {
+  if (!iso) return "—";
+  const [y, m, d] = iso.split("-");
+  return `${+d} ${EDOSIR_BULAN_LABEL[+m - 1]} ${y}`;
+}
+
+function sptbHitungUmur(tglLahir) {
+  const lahir = new Date(tglLahir), now = new Date();
+  let umur = now.getFullYear() - lahir.getFullYear();
+  if (now.getMonth() < lahir.getMonth() || (now.getMonth() === lahir.getMonth() && now.getDate() < lahir.getDate())) umur--;
+  return umur;
+}
+
+function renderSptb() {
+  const fStatus  = $("#sptb-f-status").value;
+  const fJenis   = $("#sptb-f-jenis").value;
+  const fMitra   = $("#sptb-f-mitra").value;
+  const fCabang  = $("#sptb-f-cabang").value;
+  const fNopens  = $("#sptb-f-nopens").value.trim();
+  const umurMin  = $("#sptb-f-umur-min").value ? +$("#sptb-f-umur-min").value : null;
+  const umurMax  = $("#sptb-f-umur-max").value ? +$("#sptb-f-umur-max").value : null;
+  const sptbDari = $("#sptb-f-sptb-dari").value, sptbSampai = $("#sptb-f-sptb-sampai").value;
+  const payDari  = $("#sptb-f-pay-dari").value,  paySampai  = $("#sptb-f-pay-sampai").value;
+
+  const rows = DATA_SPTB.filter(r => {
+    if (fStatus && r.status !== fStatus) return false;
+    if (fJenis  && r.jenisPensiun !== fJenis) return false;
+    if (fMitra  && r.mitra !== fMitra) return false;
+    if (fCabang && r.cabang !== fCabang) return false;
+    if (fNopens && !r.nopens.includes(fNopens)) return false;
+    const umur = sptbHitungUmur(r.tglLahir);
+    if (umurMin !== null && umur < umurMin) return false;
+    if (umurMax !== null && umur > umurMax) return false;
+    if (sptbDari || sptbSampai) {
+      if (!r.sptbTerakhir) return false;
+      if (sptbDari   && r.sptbTerakhir < sptbDari) return false;
+      if (sptbSampai && r.sptbTerakhir > sptbSampai) return false;
+    }
+    if (payDari   && r.payTerakhir < payDari) return false;
+    if (paySampai && r.payTerakhir > paySampai) return false;
+    return true;
+  });
+
+  $("#sptb-body").innerHTML = rows.length ? rows.map(r => `
+    <tr>
+      <td>${DATA_SPTB.indexOf(r) + 1}</td>
+      <td class="t-strong">${esc(r.cabang)}</td>
+      <td style="color:var(--navy);font-weight:600">${esc(r.nopens)}</td>
+      <td>${esc(r.nrpNip)}</td>
+      <td class="t-strong">${esc(r.nama)}</td>
+      <td>${fmtTglShortId(r.tglLahir)}</td>
+      <td>${esc(r.mitra)}</td>
+      <td>${esc(r.jenisPensiun)}</td>
+      <td class="t-strong">${esc(r.unor)}</td>
+      <td>${r.sptbTerakhir ? fmtTglShortId(r.sptbTerakhir) : "—"}</td>
+      <td>${fmtTglShortId(r.payTerakhir)}</td>
+      <td><span class="pill ${r.status === "Sudah SPTB" ? "pill-ok" : "pill-bad"}">${esc(r.status)}</span></td>
+      <td><button class="btn btn-ghost btn-sm" data-sptb-cetak="${DATA_SPTB.indexOf(r)}">🖶 Cetak Kartu Peserta</button></td>
+    </tr>`).join("") : `<tr><td colspan="13"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter pencarian.</p></div></td></tr>`;
+
+  $("#sptb-count").textContent = `menampilkan ${rows.length} dari ${DATA_SPTB.length} peserta`;
+}
+
+$("#sptb-cari").onclick  = renderSptb;
+$("#sptb-reset").onclick = () => {
+  ["sptb-f-status", "sptb-f-jenis", "sptb-f-mitra", "sptb-f-cabang",
+   "sptb-f-nopens", "sptb-f-umur-min", "sptb-f-umur-max",
+   "sptb-f-sptb-dari", "sptb-f-sptb-sampai", "sptb-f-pay-dari", "sptb-f-pay-sampai"]
+    .forEach(id => $(`#${id}`).value = "");
+  renderSptb();
+};
+$("#sptb-export").onclick = e => {
+  e.stopPropagation();
+  $("#sptb-export-menu").style.display = $("#sptb-export-menu").style.display === "none" ? "" : "none";
+};
+document.addEventListener("click", e => {
+  if (!e.target.closest("#sptb-export") && !e.target.closest("#sptb-export-menu")) $("#sptb-export-menu").style.display = "none";
+
+  const bExport = e.target.closest("[data-sptb-export]");
+  if (bExport) {
+    $("#sptb-export-menu").style.display = "none";
+    toast(`Data SPTB diekspor ke ${bExport.dataset.sptbExport === "excel" ? "Excel" : "PDF"}.`, "ok");
+    return;
+  }
+  const bCetak = e.target.closest("[data-sptb-cetak]");
+  if (bCetak) toast(`Kartu Peserta ${DATA_SPTB[+bCetak.dataset.sptbCetak].nama} berhasil dicetak.`, "ok");
+});
+
 /* ==================================================================== HOME */
 const HOME_SEVERITY_PILL = { "Kritis":"pill-bad", "High":"pill-warn", "Sedang":"pill-info" };
 const HOME_TAG_STYLE = {
@@ -4367,5 +4462,7 @@ renderPeroranganRiwayat();
 renderNominatif();
 renderPremiList();
 renderEdosir();
+isiPilihanSptb();
+renderSptb();
 renderHome();
 go("home");
