@@ -27,8 +27,8 @@
     </button>
     <div class="nav-children" id="nav-pendaftaran-children">
       <button class="nav-item nav-child" data-go="pendaftaran-perorangan">Perorangan</button>
-      <button class="nav-item nav-child" data-go="pendaftaran-kolektif">Upload</button>
-      <button class="nav-item nav-child" data-go="pendaftaran-verifikasi">Verifikasi Upload</button>
+      <button class="nav-item nav-child" data-go="pendaftaran-kolektif">Kolektif</button>
+      <button class="nav-item nav-child" data-go="pendaftaran-verifikasi">Verifikasi Kolektif</button>
       <button class="nav-item nav-child" data-go="pendaftaran-approval">Approval Pendaftaran Peserta Baru</button>
       <button class="nav-item nav-child" data-go="pendaftaran-nominatif">Buku Daftar Nominatif</button>
     </div>
@@ -193,7 +193,7 @@
         <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Perorangan</b></div>
         <div class="page-head" id="pp-page-head">
           <div>
-            <h1 class="page-title">Pendaftaran Peserta Baru — Perorangan dan Kolektif</h1>
+            <h1 class="page-title">Pendaftaran Peserta Baru — Perorangan</h1>
             <div class="page-sub">Pengajuan registrasi kepesertaan untuk satu peserta melalui input form.</div>
           </div>
         </div>
@@ -273,18 +273,14 @@
             </div>
           </div>
 
-          <div class="form-2col">
-            <div class="review-card">
-              <div class="review-card-head">Data Pengajuan</div>
-              <div class="review-card-body" id="pp-riwayat-detail-pengajuan"></div>
-            </div>
-            <div class="review-card">
-              <div class="review-card-head" id="pp-riwayat-detail-peserta-head">Data Peserta</div>
-              <div class="review-card-body" id="pp-riwayat-detail-peserta"></div>
-            </div>
+          <div class="card" id="pp-riwayat-detail-progress"></div>
+
+          <div class="review-card">
+            <div class="review-card-head">Data Pengajuan</div>
+            <div class="review-card-body" id="pp-riwayat-detail-pengajuan"></div>
           </div>
 
-          <div id="pp-riwayat-detail-peserta-extra"></div>
+          <div id="pp-riwayat-detail-peserta-wrap"></div>
 
           <div class="review-card" style="margin-top:16px">
             <div class="review-card-head">Berkas Persyaratan</div>
@@ -298,21 +294,12 @@
           <button class="step active" data-pp-step="1">1. Data Pengajuan</button>
           <button class="step" data-pp-step="2" disabled>2. Data Peserta</button>
           <button class="step" data-pp-step="3" disabled>3. Berkas Persyaratan</button>
-          <button class="step" data-pp-step="4" disabled>4. Review &amp; Simpan</button>
+          <button class="step" data-pp-step="4" disabled>4. Pratinjau dan Simpan</button>
         </div>
 
         <!-- ===== step 1: Data Pengajuan ===== -->
         <div id="pp-step-1">
           <div class="card">
-            <div class="field" style="max-width:360px;margin-bottom:20px">
-              <label class="fl caps">Jenis Pendaftaran Baru <span class="req">*</span></label>
-              <select class="inp" id="pp-jenis">
-                <option value="">Pilih jenis pendaftaran</option>
-                <option value="perorangan" selected>Perorangan</option>
-                <option value="kolektif">Kolektif</option>
-              </select>
-            </div>
-
             <div class="grid2">
               <div class="field">
                 <label class="fl caps">Nomor Agenda</label>
@@ -342,7 +329,7 @@
         <!-- ===== step 2: Data Peserta ===== -->
         <div id="pp-step-2" style="display:none">
           <div class="card pp-scope" id="pp2-single">
-            <div class="t-strong" id="pp2-single-title" style="display:none;font-size:12px;color:var(--body);margin-bottom:12px">Data Peserta #1</div>
+            <div class="t-strong" id="pp2-single-title" style="font-size:12px;color:var(--body);margin-bottom:12px">Data Peserta #1</div>
             <div class="form-2col">
               <!-- ===== kolom kiri ===== -->
               <div>
@@ -485,12 +472,12 @@
             </div>
           </div>
 
-          <!-- ===== Data Peserta (Kolektif) — dinamis, muncul jika Jenis Pendaftaran Baru = Kolektif ===== -->
-          <div class="card" id="pp2-kolektif" style="display:none">
+          <!-- ===== Data Peserta Baru — tambahan peserta lain di luar peserta #1 ===== -->
+          <div class="card" id="pp2-kolektif">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
               <div>
-                <h2 class="card-title" style="margin-bottom:4px">Data Peserta Tambahan (Kolektif)</h2>
-                <div class="hint" style="margin:0">Tambahkan data peserta lainnya yang didaftarkan secara kolektif bersama peserta #1 di atas.</div>
+                <h2 class="card-title" style="margin-bottom:4px">Data Peserta Baru</h2>
+                <div class="hint" style="margin:0">Tambahkan data peserta lain di luar peserta #1 di atas jika pendaftaran ini untuk lebih dari satu peserta.</div>
               </div>
               <button class="btn btn-ghost btn-sm" id="pp2k-tambah">+ Tambah Data Peserta Baru</button>
             </div>
@@ -528,18 +515,14 @@
           </div>
         </div>
 
-        <!-- ===== step 4: Review & Simpan ===== -->
+        <!-- ===== step 4: Pratinjau dan Simpan ===== -->
         <div id="pp-step-4" style="display:none">
-          <div class="form-2col">
-            <div class="review-card">
-              <div class="review-card-head">Data Pengajuan</div>
-              <div class="review-card-body" id="pp4-review-pengajuan"></div>
-            </div>
-            <div class="review-card">
-              <div class="review-card-head">Data Peserta</div>
-              <div class="review-card-body" id="pp4-review-peserta"></div>
-            </div>
+          <div class="review-card">
+            <div class="review-card-head">Data Pengajuan</div>
+            <div class="review-card-body" id="pp4-review-pengajuan"></div>
           </div>
+
+          <div id="pp4-review-peserta"></div>
 
           <div class="review-card" style="margin-top:16px">
             <div class="review-card-head">Berkas Persyaratan</div>
@@ -556,10 +539,10 @@
 
       <!-- ---------- PENDAFTARAN PESERTA BARU » KOLEKTIF ---------- -->
       <section class="screen" id="s-pendaftaran-kolektif">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Upload</b></div>
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Kolektif</b></div>
         <div class="page-head">
           <div>
-            <h1 class="page-title">Pendaftaran Peserta Baru - Upload</h1>
+            <h1 class="page-title">Pendaftaran Peserta Baru — Kolektif</h1>
             <div class="page-sub">Pendaftaran peserta baru secara batch/kolektif melalui unggah template Excel.</div>
           </div>
         </div>
@@ -585,6 +568,7 @@
                 <select class="inp" id="upload-riwayat-f-status">
                   <option value="all">Semua Status</option>
                   <option>Belum Terverifikasi</option>
+                  <option>Ditolak Verifikasi</option>
                   <option>Tertunda</option>
                   <option>Diterima</option>
                   <option>Ditolak</option>
@@ -603,13 +587,13 @@
           <div class="card">
             <div class="toolbar" style="justify-content:flex-end">
               <button class="btn btn-ghost btn-sm" id="btn-export-upload-riwayat">▤ Export Excel</button>
-              <button class="btn btn-primary" id="btn-upload-baru">+ Unggah File Excel</button>
+              <button class="btn btn-primary" id="btn-upload-baru">+ Upload Pendaftaran Peserta Baru</button>
             </div>
             <div class="tbl-wrap">
               <table>
                 <thead><tr>
-                  <th>No</th><th>Tanggal Pengajuan</th><th>Kesatuan Pengaju</th><th>Nomor Batch</th>
-                  <th>Nomor Agenda</th><th>Jumlah Berkas</th><th>Status Pengajuan</th><th>Aksi</th>
+                  <th>No</th><th>Tanggal Pengajuan</th><th>Nomor Batch</th><th>Nomor Agenda</th>
+                  <th>Kesatuan Pengaju</th><th>Jumlah Berkas</th><th>Status Pengajuan</th><th>Aksi</th>
                 </tr></thead>
                 <tbody id="upload-riwayat-body"></tbody>
               </table>
@@ -639,6 +623,7 @@
               <div class="hint" id="upload-riwayat-detail-sub" style="margin:2px 0 0"></div>
             </div>
           </div>
+          <div class="card" id="upload-riwayat-detail-progress"></div>
           <div class="card">
             <div class="tbl-wrap">
               <table class="wide-table" id="tbl-upload-riwayat-detail">
@@ -789,11 +774,11 @@
 
       <!-- ---------- PENDAFTARAN PESERTA BARU » VERIFIKASI UPLOAD ---------- -->
       <section class="screen" id="s-pendaftaran-verifikasi">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Verifikasi Upload</b></div>
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Verifikasi Kolektif</b></div>
         <div class="page-head">
           <div>
-            <h1 class="page-title">Verifikasi Upload</h1>
-            <div class="page-sub">Verifikasi batch peserta yang diunggah lewat sub modul Upload sebelum masuk antrean Approval.</div>
+            <h1 class="page-title">Verifikasi Kolektif</h1>
+            <div class="page-sub">Verifikasi batch peserta yang diunggah lewat sub modul Kolektif sebelum masuk antrean Approval.</div>
           </div>
         </div>
 
@@ -819,6 +804,7 @@
                   <option value="all">Semua Status</option>
                   <option>Belum Terverifikasi</option>
                   <option>Lolos Verifikasi</option>
+                  <option>Ditolak Verifikasi</option>
                 </select>
               </div>
               <div class="field" style="margin-bottom:0">
@@ -865,7 +851,7 @@
             <button class="link-back" id="verif-detail-kembali">← Kembali</button>
             <div class="head-divider"></div>
             <div>
-              <h1 class="page-title" style="font-size:18px;margin:0">Detail Berkas Upload</h1>
+              <h1 class="page-title" style="font-size:18px;margin:0">Detail Berkas Kolektif</h1>
               <div class="hint" id="verif-detail-sub" style="margin:2px 0 0"></div>
             </div>
           </div>
@@ -876,6 +862,11 @@
                 <tbody id="verif-detail-body"></tbody>
               </table>
             </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="verif-detail-count" style="margin:0"></div>
+              <div id="verif-detail-pagination" style="display:flex;gap:4px"></div>
+            </div>
+            <div class="form-actions" style="justify-content:flex-end" id="verif-detail-actions"></div>
           </div>
         </div>
 
@@ -898,7 +889,7 @@
               </table>
             </div>
             <div class="form-actions" style="justify-content:flex-end">
-              <button class="btn btn-success" id="verif-setujui">✓ Setujui Verifikasi</button>
+              <button class="btn btn-primary" id="verif-simpan-revisi">💾 Simpan Revisi</button>
             </div>
           </div>
         </div>
@@ -1618,11 +1609,61 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Pengelolaan Request Umum</h1>
-            <div class="page-sub">Pengelolaan permintaan umum peserta.</div>
+            <div class="page-sub">Informasi pemutakhiran data peserta dari Kantor Cabang kepada Divisi Kepesertaan dan Pengembangan Manfaat.</div>
           </div>
         </div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <div class="grid4">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Peserta</label>
+              <input class="inp" id="ru-f-peserta" placeholder="Cari nama / NRP peserta...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Cabang</label>
+              <input class="inp" id="ru-f-cabang" placeholder="Cari kantor cabang...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Status</label>
+              <select class="inp" id="ru-f-status">
+                <option value="all">Semua</option>
+                <option>Belum Selesai</option>
+                <option>Selesai</option>
+                <option>SLA Lewat</option>
+              </select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Tujuan</label>
+              <select class="inp" id="ru-f-tujuan">
+                <option value="all">Semua</option>
+                <option>Kepesertaan</option>
+                <option>Pelayanan</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-actions" style="border-top:0;padding-top:0">
+            <button class="btn btn-primary" id="ru-cari">⌕ Cari</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:flex-end">
+            <button class="btn btn-success" id="ru-export">⭳ Download Daftar</button>
+            <button class="btn btn-gold" id="ru-tambah-btn">+ Request Umum Baru</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>Tgl. Request</th><th>Peserta</th><th>Cabang</th><th>Tujuan</th><th>Subjek</th>
+                <th>Isi</th><th>User Request</th><th>User Terakhir Reply</th><th>Diperbarui</th><th>Status</th><th>Aksi</th>
+              </tr></thead>
+              <tbody id="ru-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="ru-count" style="margin:0"></div>
+            <div id="ru-pagination" style="display:flex;gap:4px"></div>
+          </div>
         </div>
       </section>
 
@@ -2845,45 +2886,174 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Klaim KPR (BUM)</h1>
-            <div class="page-sub">Rekonsiliasi piutang dipisah per jenis program dan UNOR — data penyaluran dari YPPSDP Kemhan</div>
+            <div class="page-sub">Daftar klaim KPR Bantuan Uang Muka (BUM) peserta ASABRI.</div>
           </div>
         </div>
 
-        <div class="metrics m3" id="bum-metrics"></div>
-
         <div class="card">
-          <div class="toolbar">
-            <div class="filter-box">▽
-              <select id="bum-filter">
-                <option value="all">Program: Semua</option>
-                <option value="Reguler">Program: Reguler</option>
-                <option value="Khusus">Program: Khusus</option>
+          <div class="grid4">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Dari Tanggal</label>
+              <input class="inp" type="date" id="bum-f-dari">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Sampai Tanggal</label>
+              <input class="inp" type="date" id="bum-f-sampai">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Kantor Cabang Asabri</label>
+              <input class="inp" id="bum-f-cabang" placeholder="Cari kantor cabang...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">NRP/NIP</label>
+              <input class="inp" id="bum-f-nrp" placeholder="Cari NRP/NIP...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Nama</label>
+              <input class="inp" id="bum-f-nama" placeholder="Cari nama peserta...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Nomor Pinjaman</label>
+              <input class="inp" id="bum-f-pinjaman" placeholder="Cari nomor pinjaman...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl caps">Jenis Pinjaman</label>
+              <select class="inp" id="bum-f-jenis">
+                <option value="all">Semua</option>
+                <option value="Program Reguler">Program Reguler</option>
+                <option value="Program Khusus">Program Khusus</option>
               </select>
             </div>
           </div>
+          <div class="form-actions" style="border-top:0;padding-top:0">
+            <button class="btn btn-primary" id="bum-cari">⌕ Cari</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:flex-end">
+            <button class="btn btn-ghost btn-sm" id="bum-export-excel">▤ Export Excel</button>
+            <button class="btn btn-primary" id="bum-pemotongan-btn">+ Pemotongan Manfaat Klaim</button>
+          </div>
           <div class="tbl-wrap">
             <table>
-              <thead><tr><th>No. KTPA</th><th>Nama peserta</th><th>UNOR</th><th>Program</th><th>Outstanding</th><th>Status rekonsiliasi</th></tr></thead>
+              <thead><tr>
+                <th>KPA</th><th>NRP/NIP</th><th>Nama</th><th>TMT</th><th>Kantor Cabang</th>
+                <th>Nomor Pinjaman</th><th>Jenis Pinjaman</th><th>Jumlah</th><th>Sisa Hutang</th><th>Outstanding</th><th>Aksi</th>
+              </tr></thead>
               <tbody id="bum-body"></tbody>
             </table>
           </div>
-          <div class="tbl-note" id="bum-count"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="bum-count" style="margin:0"></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                Baris
+                <select class="inp" id="bum-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                  <option>10</option><option selected>20</option><option>50</option>
+                </select>
+              </div>
+              <div id="bum-pagination" style="display:flex;gap:4px"></div>
+            </div>
+          </div>
         </div>
       </section>
 
       <!-- ---------- PEREMAJAAN DATA » PEMUTAKHIRAN DATA ---------- -->
       <section class="screen" id="s-peremajaan-pemutakhiran">
         <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Peremajaan Data Peserta</span><span>›</span><b>Pemutakhiran Data</b></div>
-        <div class="page-head">
+        <div class="page-head" id="pmd-page-head">
           <div>
             <h1 class="page-title">Pemutakhiran Data</h1>
             <div class="page-sub">Peremajaan data peserta secara batch melalui unggah template Excel. Sistem memvalidasi tiap baris, lalu submit untuk diteruskan ke persetujuan.</div>
           </div>
         </div>
 
+        <!-- ===== Riwayat Pemutakhiran Data (tampilan awal) ===== -->
+        <div id="pmd-riwayat-view">
+          <div class="card">
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Nomor Batch</label>
+                <input class="inp" id="pmd-riwayat-f-batch" placeholder="PMK-...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Jenis Pemutakhiran Data</label>
+                <select class="inp" id="pmd-riwayat-f-jenis">
+                  <option value="all">Semua Jenis</option>
+                  <option value="pokok">Data Pokok Peserta</option>
+                  <option value="pangkat">Data Riwayat Pangkat</option>
+                  <option value="keluarga">Data Keluarga Peserta</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl caps">Status</label>
+                <select class="inp" id="pmd-riwayat-f-status">
+                  <option value="all">Semua Status</option>
+                  <option>Pending</option>
+                  <option>Disetujui</option>
+                  <option>Ditolak</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-actions" style="border-top:0;padding-top:0">
+              <button class="btn btn-primary" id="pmd-riwayat-cari">⌕ Cari</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="toolbar" style="justify-content:flex-end">
+              <button class="btn btn-ghost btn-sm" id="btn-export-pmd-riwayat">▤ Export Excel</button>
+              <button class="btn btn-primary" id="btn-pmd-baru">+ Upload Pemutakhiran Data</button>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>No</th><th>Nomor Batch</th><th>Jenis Pemutakhiran Data</th><th>Status</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="pmd-riwayat-body"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="pmd-riwayat-count" style="margin:0"></div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                  Baris
+                  <select class="inp" id="pmd-riwayat-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                    <option>10</option><option selected>20</option><option>50</option>
+                  </select>
+                </div>
+                <div id="pmd-riwayat-pagination" style="display:flex;gap:4px"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Detail Riwayat Pemutakhiran Data (baca saja) ===== -->
+        <div id="pmd-riwayat-detail-view" style="display:none">
+          <div class="head-row">
+            <button class="link-back" id="pmd-riwayat-detail-kembali">← Kembali</button>
+            <div class="head-divider"></div>
+            <div>
+              <div class="t-strong" style="font-size:15px">Detail Pemutakhiran Data</div>
+              <div class="hint" id="pmd-riwayat-detail-sub" style="margin:2px 0 0"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr id="pmd-riwayat-detail-head"></tr></thead>
+                <tbody id="pmd-riwayat-detail-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== Wizard Upload Pemutakhiran Data ===== -->
+        <div id="pmd-wizard-view" style="display:none">
         <div class="stepper stepper-pill">
           <button class="step active" data-pmd-step="1">1. Unggah Berkas</button>
-          <button class="step" data-pmd-step="2" disabled>2. Validasi &amp; Submit</button>
+          <button class="step" data-pmd-step="2" disabled>2. Validasi dan Submit</button>
         </div>
 
         <!-- ===== step 1: Unggah Berkas ===== -->
@@ -2916,7 +3086,10 @@
                 <div style="font-weight:600;margin-bottom:4px" id="pmd-file-title">Tarik file ke sini atau klik untuk memilih</div>
                 <div class="hint" style="margin:0" id="pmd-file-sub">Format .xlsx, maksimal 5 MB</div>
               </div>
-              <button class="btn btn-primary" id="pmd-btn-validasi" style="margin-top:16px;align-self:flex-start" disabled>✓ Validasi Berkas</button>
+              <div style="margin-top:16px;display:flex;gap:10px">
+                <button class="btn btn-ghost" id="pmd-batal">← Kembali</button>
+                <button class="btn btn-primary" id="pmd-btn-validasi" disabled>✓ Validasi Berkas</button>
+              </div>
             </div>
 
             <div class="card" style="background:var(--blue-soft);border:1px solid #D7E6F5;margin-top:0">
@@ -2931,7 +3104,6 @@
           <div class="card">
             <div class="toolbar" style="justify-content:space-between;margin-bottom:16px">
               <h2 class="card-title" style="margin:0">Hasil Validasi Berkas</h2>
-              <button class="btn btn-ghost btn-sm" id="pmd-kembali">Upload Ulang</button>
             </div>
 
             <div class="metrics m4" id="pmd-metrics"></div>
@@ -2952,66 +3124,99 @@
             </div>
             <div class="tbl-note" id="pmd-error-empty" style="display:none">Tidak ada baris yang ditolak — seluruh baris lolos validasi atau tanpa perubahan.</div>
 
-            <div class="form-actions" style="justify-content:flex-end">
+            <div class="form-actions" style="justify-content:space-between">
+              <button class="btn btn-ghost" id="pmd-kembali">← Kembali</button>
               <button class="btn btn-primary" id="pmd-submit">➤ Submit Data Batch</button>
             </div>
           </div>
+        </div>
         </div>
       </section>
 
       <!-- ---------- PEREMAJAAN DATA » APPROVAL PEMUTAKHIRAN DATA ---------- -->
       <section class="screen" id="s-peremajaan-approval">
         <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Peremajaan Data Peserta</span><span>›</span><b>Approval Pemutakhiran Data</b></div>
-        <div class="page-head">
+        <div class="page-head" id="pma-page-head">
           <div>
             <h1 class="page-title">Approval Pemutakhiran Data</h1>
             <div class="page-sub">Daftar batch pemutakhiran data peserta yang menunggu maupun sudah diproses persetujuan.</div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="grid3">
-            <div class="field" style="margin-bottom:0">
-              <label class="fl">Nomor Batch</label>
-              <input class="inp" id="pma-f-batch" placeholder="PMK-KLG-...">
+        <div id="pma-list-view">
+          <div class="card">
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl">Nomor Batch</label>
+                <input class="inp" id="pma-f-batch" placeholder="PMK-KLG-...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl">Jenis Pemutakhiran Data</label>
+                <select class="inp" id="pma-f-jenis">
+                  <option value="all">Semua Jenis</option>
+                  <option value="pokok">Data Pokok Peserta</option>
+                  <option value="pangkat">Data Riwayat Pangkat</option>
+                  <option value="keluarga">Data Keluarga Peserta</option>
+                </select>
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl">Status</label>
+                <select class="inp" id="pma-f-status">
+                  <option value="all">Semua Status</option>
+                  <option value="Pending">Pending</option>
+                  <option value="Disetujui">Disetujui</option>
+                  <option value="Ditolak">Ditolak</option>
+                </select>
+              </div>
             </div>
-            <div class="field" style="margin-bottom:0">
-              <label class="fl">Status</label>
-              <select class="inp" id="pma-f-status">
-                <option value="all">Semua Status</option>
-                <option value="Pending">Pending</option>
-                <option value="Disetujui">Disetujui</option>
-                <option value="Ditolak">Ditolak</option>
-              </select>
+            <div class="form-actions" style="border-top:0;padding-top:0">
+              <button class="btn btn-primary" id="pma-cari">⌕ Cari</button>
             </div>
           </div>
-          <div class="form-actions" style="border-top:0;padding-top:0">
-            <button class="btn btn-ghost" id="pma-reset">↺ Reset</button>
-            <button class="btn btn-primary" id="pma-cari">⌕ Cari</button>
+
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th>No</th><th>Nomor Batch</th><th>Jenis Pemutakhiran Data</th><th>Waktu Unggah</th>
+                  <th>Jumlah Baris</th><th>Status</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="pma-body"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="pma-count" style="margin:0"></div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                  Baris
+                  <select class="inp" id="pma-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
+                    <option>10</option><option selected>20</option><option>50</option>
+                  </select>
+                </div>
+                <div id="pma-pagination" style="display:flex;gap:4px"></div>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="card">
-          <div class="tbl-wrap">
-            <table>
-              <thead><tr>
-                <th>No</th><th>Nomor Batch</th><th>Jenis Pemutakhiran Data</th><th>Waktu Unggah</th>
-                <th>Jumlah Baris</th><th>Status</th><th>Aksi</th>
-              </tr></thead>
-              <tbody id="pma-body"></tbody>
-            </table>
-          </div>
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
-            <div class="tbl-note" id="pma-count" style="margin:0"></div>
-            <div style="display:flex;align-items:center;gap:14px">
-              <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
-                Baris
-                <select class="inp" id="pma-page-size" style="width:64px;height:30px;padding:0 6px;font-size:11px">
-                  <option>10</option><option selected>20</option><option>50</option>
-                </select>
-              </div>
-              <div id="pma-pagination" style="display:flex;gap:4px"></div>
+        <!-- ===== Detail Batch Pemutakhiran Data (Approval) ===== -->
+        <div id="pma-detail-view" style="display:none">
+          <div class="head-row">
+            <button class="link-back" id="pma-detail-kembali">← Kembali</button>
+            <div class="head-divider"></div>
+            <div>
+              <div class="t-strong" style="font-size:15px">Detail Batch Pemutakhiran Data</div>
+              <div class="hint" id="pma-detail-sub" style="margin:2px 0 0"></div>
             </div>
+          </div>
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr id="pma-detail-head"></tr></thead>
+                <tbody id="pma-detail-body"></tbody>
+              </table>
+            </div>
+            <div class="form-actions" style="justify-content:flex-end" id="pma-detail-actions"></div>
           </div>
         </div>
       </section>
@@ -3295,6 +3500,62 @@
       <button class="modal-x" id="modal-x" aria-label="Tutup">×</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- ============ DETAIL REQUEST UMUM (overlay khusus) ============ -->
+<div class="ru-overlay" id="ru-detail-overlay">
+  <div class="ru-overlay-card">
+    <div class="ru-overlay-head">
+      <div class="ru-overlay-head-title"><span>💬</span> Detail Request Umum</div>
+      <button class="ru-overlay-x" id="ru-detail-x" aria-label="Tutup">⊗</button>
+    </div>
+    <div class="ru-overlay-body">
+      <div class="card" style="background:var(--field);margin-top:0">
+        <div class="grid3">
+          <div>
+            <div class="fl caps">Status Request</div>
+            <div style="margin-top:5px" id="ru-detail-status"></div>
+          </div>
+          <div>
+            <div class="fl caps">Nama Peserta</div>
+            <div class="t-strong" style="margin-top:5px" id="ru-detail-nama"></div>
+          </div>
+          <div>
+            <div class="fl caps">KTPA</div>
+            <div class="t-strong" style="margin-top:5px;color:var(--blue-ink)" id="ru-detail-kpa"></div>
+          </div>
+        </div>
+      </div>
+
+      <h3 style="font-size:12px;font-weight:700;margin:18px 0 10px;letter-spacing:.3px;text-transform:uppercase;color:var(--body)">Riwayat Pengisian</h3>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Jam Pengisian</th><th>User</th><th>Isi</th><th>Unduh</th></tr></thead>
+          <tbody id="ru-detail-riwayat-body"></tbody>
+        </table>
+      </div>
+
+      <div class="card" style="margin-top:18px;background:var(--field)">
+        <h2 class="card-title" style="font-size:12.5px;margin-bottom:14px">✎ Ubah / Tambah Balasan</h2>
+        <div class="field">
+          <label class="fl">Isi <span class="req">*</span></label>
+          <textarea class="inp" id="ru-balasan-isi" style="height:80px;padding:9px 10px;resize:vertical" placeholder="Tuliskan balasan atau pembaruan informasi..."></textarea>
+        </div>
+        <div class="field" style="margin-bottom:0">
+          <label class="fl">Attachment <span class="req">*</span></label>
+          <input type="file" class="inp" id="ru-balasan-file">
+        </div>
+        <div class="form-actions" style="justify-content:flex-end">
+          <button class="btn btn-ghost" id="ru-balasan-batal">Batal</button>
+          <button class="btn btn-primary" id="ru-balasan-simpan">💾 Simpan</button>
+        </div>
+      </div>
+    </div>
+    <div class="ru-overlay-foot">
+      <div class="hint" style="margin:0;flex:1"><span>ⓘ</span> Perubahan yang disimpan akan otomatis terupdate ke database YANDU dan Kantor Cabang akan mendapat notifikasi.</div>
+      <button class="btn btn-ghost" id="ru-detail-tutup">⊗ Tutup</button>
+    </div>
   </div>
 </div>
 

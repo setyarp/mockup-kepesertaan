@@ -75,7 +75,11 @@ function openModal()  { $("#modal-bg").classList.add("open");    document.body.s
 function closeModal() { $("#modal-bg").classList.remove("open"); document.body.style.overflow = ""; }
 $("#modal-x").onclick = closeModal;
 $("#modal-bg").onclick = e => { if (e.target.id === "modal-bg") closeModal(); };
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+document.addEventListener("keydown", e => {
+  if (e.key !== "Escape") return;
+  closeModal();
+  if ($("#ru-detail-overlay").classList.contains("open")) $("#ru-detail-overlay").classList.remove("open");
+});
 
 /* ================================================================ DASHBOARD */
 function renderDashboard() {
@@ -134,6 +138,79 @@ $("#btn-export-rekap").onclick = () => toast("Rekap List Kotor diekspor ke Excel
 $("#btn-export-clean").onclick = () => toast("Data siap submit diekspor ke Excel.");
 
 /* ============================================= PEREMAJAAN DATA » PEMUTAKHIRAN DATA */
+
+function pmdGotoView(view) {
+  $("#pmd-page-head").style.display           = view === "riwayat-detail" ? "none" : "";
+  $("#pmd-riwayat-view").style.display        = view === "riwayat"        ? "" : "none";
+  $("#pmd-riwayat-detail-view").style.display = view === "riwayat-detail" ? "" : "none";
+  $("#pmd-wizard-view").style.display         = view === "wizard"         ? "" : "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+let pmdRiwayatPage = 1;
+function renderPmdRiwayat() {
+  const fBatch  = ($("#pmd-riwayat-f-batch").value || "").toLowerCase();
+  const fJenis  = $("#pmd-riwayat-f-jenis").value;
+  const fStatus = $("#pmd-riwayat-f-status").value;
+
+  const rows = pmaBatchRows.filter(r =>
+    (fJenis === "all" || r.jenis === fJenis) &&
+    (fStatus === "all" || r.status === fStatus) &&
+    (!fBatch || r.noBatch.toLowerCase().includes(fBatch)));
+
+  const pageSize   = +$("#pmd-riwayat-page-size").value;
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  if (pmdRiwayatPage > totalPages) pmdRiwayatPage = totalPages;
+  const start    = (pmdRiwayatPage - 1) * pageSize;
+  const pageRows = rows.slice(start, start + pageSize);
+
+  $("#pmd-riwayat-body").innerHTML = pageRows.length ? pageRows.map((r, i) => `
+    <tr>
+      <td>${start + i + 1}</td>
+      <td class="t-strong">${esc(r.noBatch)}</td>
+      <td>${esc(pemutakhiranJenisLabel(r.jenis))}</td>
+      <td><span class="pill ${pillPemutakhiran(r.status)}">${esc(r.status.toUpperCase())}</span></td>
+      <td><button class="btn btn-info btn-sm" data-pmd-riwayat-detail="${r._id}">Detail</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="5"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+
+  const shownFrom = rows.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + pageSize, rows.length);
+  $("#pmd-riwayat-count").textContent = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} data`;
+
+  $("#pmd-riwayat-pagination").innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+    <button class="btn ${p === pmdRiwayatPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-pmd-riwayat-page="${p}">${p}</button>
+  `).join("");
+}
+renderPmdRiwayat();
+
+function pmdShowRiwayatDetail(batch) {
+  $("#pmd-riwayat-detail-sub").textContent = `${batch.noBatch} — ${pemutakhiranJenisLabel(batch.jenis)}`;
+  const { head, body } = pemutakhiranRowsTableParts(batch);
+  $("#pmd-riwayat-detail-head").innerHTML = head;
+  $("#pmd-riwayat-detail-body").innerHTML = body;
+  pmdGotoView("riwayat-detail");
+}
+
+$("#pmd-riwayat-cari").onclick = () => { pmdRiwayatPage = 1; renderPmdRiwayat(); };
+$("#pmd-riwayat-page-size").onchange = () => { pmdRiwayatPage = 1; renderPmdRiwayat(); };
+$("#pmd-riwayat-detail-kembali").onclick = () => pmdGotoView("riwayat");
+$("#btn-export-pmd-riwayat").onclick = () => toast("Riwayat pemutakhiran data diekspor ke Excel.");
+$("#btn-pmd-baru").onclick = () => {
+  pmdResetUpload();
+  $(`.step[data-pmd-step="2"]`).disabled = true;
+  pmdGotoStep(1);
+  pmdGotoView("wizard");
+};
+$("#pmd-batal").onclick = () => pmdGotoView("riwayat");
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-pmd-riwayat-detail]");
+  if (bDetail) { pmdShowRiwayatDetail(pmaBatchRows.find(x => x._id === +bDetail.dataset.pmdRiwayatDetail)); return; }
+
+  const bPage = e.target.closest("[data-pmd-riwayat-page]");
+  if (bPage) { pmdRiwayatPage = +bPage.dataset.pmdRiwayatPage; renderPmdRiwayat(); }
+});
 
 function pmdGotoStep(n) {
   [1, 2].forEach(i => {
@@ -222,7 +299,7 @@ $("#pmd-btn-validasi").onclick = () => {
     $("#pmd-error-empty").style.display = "";
   }
 
-  $("#pmd-submit").disabled = valid === 0;
+  $("#pmd-submit").disabled = valid === 0 || ditolak > 0;
 
   $(`.step[data-pmd-step="2"]`).disabled = false;
   pmdGotoStep(2);
@@ -258,14 +335,18 @@ $("#pmd-submit").onclick = () => {
     jenis:       jenisKey,
     waktu:       pmdFmtWaktuBatch(now),
     jumlahBaris: jenis.rows.length,
-    status:      "Pending"
+    status:      "Pending",
+    kolom:       jenis.kolom,
+    rows:        jenis.rows.map(r => ({ ...r }))
   });
   renderPeremajaanApproval();
+  renderPmdRiwayat();
 
   toast(`Pemutakhiran "${jenis.templateNama.replace("Template ", "")}" berhasil disubmit dan diteruskan ke persetujuan.`, "ok");
   pmdResetUpload();
   $(`.step[data-pmd-step="2"]`).disabled = true;
   pmdGotoStep(1);
+  pmdGotoView("riwayat");
 };
 
 /* ==================================================== PEREMAJAAN DATA » APPROVAL PEMUTAKHIRAN DATA */
@@ -276,13 +357,42 @@ function pillPemutakhiran(s) {
 function pemutakhiranJenisLabel(jenisKey) {
   return DATA_PEREMAJAAN[jenisKey] ? DATA_PEREMAJAAN[jenisKey].templateNama.replace("Template ", "") : jenisKey;
 }
+function pemutakhiranStatusPill(s) {
+  return s === "valid" ? "pill-ok" : s === "ditolak" ? "pill-bad" : "pill-warn";
+}
+function pemutakhiranStatusLabel(s) {
+  return s === "valid" ? "Valid" : s === "ditolak" ? "Ditolak" : "Tanpa Perubahan";
+}
+/* Tabel baris data yang diunggah — dipakai bersama di Detail riwayat sub
+   modul Pemutakhiran Data (baca saja) dan Detail Approval Pemutakhiran Data
+   (dilengkapi tombol Setujui/Tolak). */
+function pemutakhiranRowsTableParts(batch) {
+  const head = `<th>Baris</th>` + (batch.kolom || []).map(k => `<th>${esc(k)}</th>`).join("") + `<th>Status</th><th>Keterangan</th>`;
+  const body = (batch.rows || []).map((r, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      ${r.nilai.map(v => `<td>${esc(v)}</td>`).join("")}
+      <td><span class="pill ${pemutakhiranStatusPill(r.status)}">${esc(pemutakhiranStatusLabel(r.status))}</span></td>
+      <td>${r.alasan ? r.alasan.map(a => `• ${esc(a)}`).join("<br>") : "-"}</td>
+    </tr>`).join("");
+  return { head, body };
+}
+
+function pmaGotoView(view) {
+  $("#pma-page-head").style.display   = view === "detail" ? "none" : "";
+  $("#pma-list-view").style.display   = view === "list"   ? "" : "none";
+  $("#pma-detail-view").style.display = view === "detail" ? "" : "none";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
 
 let pmaPage = 1;
 function renderPeremajaanApproval() {
   const fBatch  = ($("#pma-f-batch").value  || "").toLowerCase();
+  const fJenis  = $("#pma-f-jenis").value;
   const fStatus = $("#pma-f-status").value;
 
   const rows = pmaBatchRows.filter(r =>
+    (fJenis === "all" || r.jenis === fJenis) &&
     (fStatus === "all" || r.status === fStatus) &&
     (!fBatch || r.noBatch.toLowerCase().includes(fBatch)));
 
@@ -300,7 +410,7 @@ function renderPeremajaanApproval() {
       <td>${esc(r.waktu)}</td>
       <td>${r.jumlahBaris}</td>
       <td><span class="pill ${pillPemutakhiran(r.status)}">${esc(r.status.toUpperCase())}</span></td>
-      <td><button class="btn btn-info btn-sm" data-pma-lihat="${r._id}">👁 Lihat</button></td>
+      <td><button class="btn btn-info btn-sm" data-pma-detail="${r._id}">Detail</button></td>
     </tr>`).join("")
     : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
 
@@ -315,71 +425,87 @@ function renderPeremajaanApproval() {
 renderPeremajaanApproval();
 
 $("#pma-cari").onclick = () => { pmaPage = 1; renderPeremajaanApproval(); };
-$("#pma-reset").onclick = () => {
-  $("#pma-f-batch").value = "";
-  $("#pma-f-status").value = "all";
-  pmaPage = 1;
-  renderPeremajaanApproval();
-};
 $("#pma-page-size").onchange = () => { pmaPage = 1; renderPeremajaanApproval(); };
+$("#pma-detail-kembali").onclick = () => pmaGotoView("list");
 
 function pmaShowDetail(r) {
-  $("#modal-title").textContent = "Detail Batch Pemutakhiran Data";
-  $("#modal-sub").textContent   = r.noBatch;
-  $("#modal-body").innerHTML = `
-    <div class="grid3" style="margin-bottom:6px">
-      ${reviewField("Nomor Batch", r.noBatch)}
-      ${reviewField("Jenis Pemutakhiran Data", pemutakhiranJenisLabel(r.jenis))}
-      ${reviewField("Waktu Unggah", r.waktu)}
-      ${reviewField("Jumlah Baris", r.jumlahBaris)}
-      <div class="field">
-        <label class="fl">Status</label>
-        <div class="t-strong"><span class="pill ${pillPemutakhiran(r.status)}">${esc(r.status.toUpperCase())}</span></div>
-      </div>
-    </div>
-    ${r.status === "Pending" ? `
-      <div class="form-actions">
-        <button class="btn btn-danger-solid" id="pma-tolak">✕ Tolak</button>
-        <button class="btn btn-success" id="pma-setuju">✓ Setujui</button>
-      </div>` : `
-      <div class="form-actions" style="justify-content:flex-end">
-        <button class="btn btn-ghost" id="pma-tutup">Tutup</button>
-      </div>`}`;
-  openModal();
-
-  $("#pma-tutup") && ($("#pma-tutup").onclick = closeModal);
+  $("#pma-detail-sub").textContent = `${r.noBatch} — ${pemutakhiranJenisLabel(r.jenis)}`;
+  const { head, body } = pemutakhiranRowsTableParts(r);
+  $("#pma-detail-head").innerHTML = head;
+  $("#pma-detail-body").innerHTML = body;
+  $("#pma-detail-actions").innerHTML = r.status === "Pending" ? `
+    <button class="btn btn-danger-solid" id="pma-tolak">✕ Tolak</button>
+    <button class="btn btn-success" id="pma-setuju">✓ Setujui</button>` : "";
+  pmaGotoView("detail");
 
   $("#pma-setuju") && ($("#pma-setuju").onclick = () => {
-    r.status = "Disetujui";
-    renderPeremajaanApproval();
-    closeModal();
-    toast(`Batch ${r.noBatch} disetujui.`, "ok");
+    pmaConfirmSetujui(r, catatan => {
+      r.status = "Disetujui";
+      r.catatanApproval = catatan;
+      renderPeremajaanApproval();
+      renderPmdRiwayat();
+      pmaGotoView("list");
+      toast(`Batch ${r.noBatch} disetujui.`, "ok");
+    });
   });
 
   $("#pma-tolak") && ($("#pma-tolak").onclick = () => {
-    $("#modal-body").innerHTML = `
-      <div class="field">
-        <label class="fl">Alasan Penolakan <span class="req">*</span></label>
-        <textarea class="inp" id="pma-alasan-tolak" rows="3" placeholder="Tuliskan alasan penolakan batch ini..."></textarea>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-ghost" id="pma-tolak-batal">Batal</button>
-        <button class="btn btn-danger-solid" id="pma-tolak-konfirmasi">✕ Tolak Batch</button>
-      </div>`;
-    $("#pma-tolak-batal").onclick = () => pmaShowDetail(r);
-    $("#pma-tolak-konfirmasi").onclick = () => {
-      if (!$("#pma-alasan-tolak").value.trim()) { toast("Alasan penolakan wajib diisi.", "bad"); return; }
+    pmaConfirmTolak(r, alasan => {
       r.status = "Ditolak";
+      r.catatanApproval = alasan;
       renderPeremajaanApproval();
-      closeModal();
+      renderPmdRiwayat();
+      pmaGotoView("list");
       toast(`Batch ${r.noBatch} ditolak.`, "bad");
-    };
+    });
   });
 }
 
+function pmaConfirmSetujui(batch, onConfirm) {
+  $("#modal-title").textContent = "Konfirmasi Persetujuan Batch";
+  $("#modal-sub").textContent   = batch.noBatch;
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">Catatan Persetujuan (Opsional)</label>
+      <textarea class="inp" id="pma-catatan-setuju" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan catatan persetujuan (opsional)"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="pma-setuju-batal">Batal</button>
+      <button class="btn btn-success" id="pma-setuju-konfirmasi">✓ Setujui</button>
+    </div>`;
+  openModal();
+  $("#pma-setuju-batal").onclick = closeModal;
+  $("#pma-setuju-konfirmasi").onclick = () => {
+    const catatan = $("#pma-catatan-setuju").value.trim();
+    closeModal();
+    onConfirm(catatan);
+  };
+}
+function pmaConfirmTolak(batch, onConfirm) {
+  $("#modal-title").textContent = "Konfirmasi Penolakan Batch";
+  $("#modal-sub").textContent   = batch.noBatch;
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">Alasan Penolakan <span class="req">*</span></label>
+      <textarea class="inp" id="pma-alasan-tolak" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan alasan penolakan batch ini..."></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="pma-tolak-batal">Batal</button>
+      <button class="btn btn-danger-solid" id="pma-tolak-konfirmasi">✕ Tolak Batch</button>
+    </div>`;
+  openModal();
+  $("#pma-tolak-batal").onclick = closeModal;
+  $("#pma-tolak-konfirmasi").onclick = () => {
+    const alasan = $("#pma-alasan-tolak").value.trim();
+    if (!alasan) { toast("Alasan penolakan wajib diisi.", "bad"); return; }
+    closeModal();
+    onConfirm(alasan);
+  };
+}
+
 document.addEventListener("click", e => {
-  const bLihat = e.target.closest("[data-pma-lihat]");
-  if (bLihat) { pmaShowDetail(pmaBatchRows.find(x => x._id === +bLihat.dataset.pmaLihat)); return; }
+  const bDetail = e.target.closest("[data-pma-detail]");
+  if (bDetail) { pmaShowDetail(pmaBatchRows.find(x => x._id === +bDetail.dataset.pmaDetail)); return; }
 
   const bPage = e.target.closest("[data-pma-page]");
   if (bPage) { pmaPage = +bPage.dataset.pmaPage; renderPeremajaanApproval(); }
@@ -821,13 +947,6 @@ document.addEventListener("click", e => {
   $("#pp2k-empty").style.display = ppKolektifItems.length ? "none" : "";
 });
 
-/* Ganti tampilan step "Data Peserta" — form tunggal untuk Perorangan,
-   daftar dinamis untuk Kolektif */
-$("#pp-jenis").onchange = () => {
-  const kolektif = $("#pp-jenis").value === "kolektif";
-  $("#pp2-kolektif").style.display    = kolektif ? "" : "none";
-  $("#pp2-single-title").style.display = kolektif ? "" : "none";
-};
 
 function ppGotoStep(n) {
   [1, 2, 3, 4].forEach(i => {
@@ -1074,34 +1193,27 @@ function ppPesertaFieldRows(idOf) {
 }
 
 function renderPp4Review() {
+  const kolektif = ppKolektifItems.length > 0;
   $("#pp4-review-pengajuan").innerHTML = [
-    ppReviewRow("Jenis Pendaftaran Baru", ppSelText("pp-jenis")),
+    ppReviewRow("Jenis Pendaftaran Baru", kolektif ? "Kolektif" : "Perorangan"),
     ppReviewRow("Nomor Agenda", $("#pp-nomor-agenda").value || "Otomatis oleh sistem"),
     ppReviewRow("Nomor Surat Pengantar", ppVal("pp-nomor-surat")),
     ppReviewRow("Kesatuan Pengaju", ppVal("pp-instansi") || ppSelText("pp-instansi")),
     ppReviewRow("Tanggal Surat Pengantar", ppDateID("pp-tgl-surat"))
   ].join("");
 
-  const kolektif = $("#pp-jenis").value === "kolektif";
-  if (!kolektif) {
-    $("#pp4-review-peserta").innerHTML = ppPesertaFieldRows(k => `pp2-${k}`);
-  } else {
-    const first = `
-      <div>
-        <div class="t-strong" style="font-size:12px;color:var(--navy);margin-bottom:2px">Data Peserta #1</div>
-        ${ppPesertaFieldRows(k => `pp2-${k}`)}
-      </div>`;
-    const rest = ppKolektifItems.map((id, idx) => `
-      <div style="margin-top:14px;padding-top:14px;border-top:2px solid var(--line-soft)">
-        <div class="t-strong" style="font-size:12px;color:var(--navy);margin-bottom:2px">Data Peserta #${idx + 2}</div>
-        ${ppPesertaFieldRows(k => `pp2k-${k}-${id}`)}
-      </div>`).join("");
-    $("#pp4-review-peserta").innerHTML = first + rest;
-  }
+  const pesertaCard = (title, fid) => `
+    <div class="review-card" style="margin-top:16px">
+      <div class="review-card-head">${esc(title)}</div>
+      <div class="review-card-body">${ppPesertaFieldRows(fid)}</div>
+    </div>`;
+  $("#pp4-review-peserta").innerHTML =
+    pesertaCard("Data Peserta 1", k => `pp2-${k}`) +
+    ppKolektifItems.map((id, idx) => pesertaCard(`Data Peserta ${idx + 2}`, k => `pp2k-${k}-${id}`)).join("");
 
   const berkasRows = [
     ...PP3_FIXED.map(d => ppReviewRow(d.label, pp3Fixed[d.key] || "Belum diunggah")),
-    ...pp3Dynamic.map(row => ppReviewRow(row.nama || "(dokumen belum dipilih)", row.file || "Belum diunggah"))
+    ...pp3Dynamic.filter(r => r.nama).map(row => ppReviewRow(row.nama || "(dokumen belum dipilih)", row.file || "Belum diunggah"))
   ];
   $("#pp4-review-berkas").innerHTML = berkasRows.join("");
 }
@@ -1157,8 +1269,6 @@ $("#pp-3-reset").onclick = () => {
 };
 
 function ppResetAll() {
-  $("#pp-jenis").value = "perorangan";
-  $("#pp-jenis").dispatchEvent(new Event("change"));
   $("#pp-nomor-surat").value = "";
   $("#pp-tgl-surat").value   = "";
   $("#pp-instansi").value    = DATA_INSTANSI_PENGIRIM[0];
@@ -1176,14 +1286,13 @@ function ppResetAll() {
 }
 
 $("#pp-1-lanjut").onclick = () => {
-  if (!$("#pp-jenis").value)         { toast("Jenis Pendaftaran Baru belum dipilih.", "bad"); return; }
   $(`.step[data-pp-step="2"]`).disabled = false;
   ppGotoStep(2);
 };
 $("#pp-2-kembali").onclick = () => ppGotoStep(1);
 $("#pp-2-lanjut").onclick = () => {
-  const kolektif = $("#pp-jenis").value === "kolektif";
-  const label1 = kolektif ? "Data Peserta #1: " : "";
+  const kolektif = ppKolektifItems.length > 0;
+  const label1 = kolektif ? "Data Peserta 1: " : "";
 
   const kosong = PP2_WAJIB.filter(f => !$(`#${f[0]}`).value.trim());
   if (kosong.length) {
@@ -1226,7 +1335,7 @@ $("#pp-3-lanjut").onclick = () => {
 };
 $("#pp-4-kembali").onclick = () => ppGotoStep(3);
 $("#pp-4-simpan").onclick = () => {
-  const kolektif = $("#pp-jenis").value === "kolektif";
+  const kolektif = ppKolektifItems.length > 0;
   const now  = new Date();
   const pad  = v => String(v).padStart(2, "0");
   const iso  = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`;
@@ -1379,6 +1488,8 @@ function renderPeroranganRiwayatDetail(r) {
     ? `${r.nomorBatch} — ${r.pesertaList.length} peserta`
     : `${r.dataPeserta.nama} — ${r.nomorAgenda}`;
 
+  renderProgressSteps("pp-riwayat-detail-progress", ppProgressSteps(r.approvalStatus));
+
   $("#pp-riwayat-detail-pengajuan").innerHTML = [
     ppReviewRow("Jenis Pendaftaran Baru", r.dataPengajuan.jenis),
     ppReviewRow("Nomor Agenda", r.nomorAgenda),
@@ -1388,19 +1499,14 @@ function renderPeroranganRiwayatDetail(r) {
     ppReviewRow("Tanggal Surat Pengantar", r.dataPengajuan.tglSurat)
   ].join("");
 
-  if (!kolektif) {
-    $("#pp-riwayat-detail-peserta-head").textContent = "Data Peserta";
-    $("#pp-riwayat-detail-peserta").innerHTML = ppPesertaObjRows(r.dataPeserta);
-    $("#pp-riwayat-detail-peserta-extra").innerHTML = "";
-  } else {
-    $("#pp-riwayat-detail-peserta-head").textContent = "Data Peserta #1";
-    $("#pp-riwayat-detail-peserta").innerHTML = ppPesertaObjRows(r.pesertaList[0]);
-    $("#pp-riwayat-detail-peserta-extra").innerHTML = r.pesertaList.slice(1).map((p, idx) => `
-      <div class="review-card" style="margin-top:16px">
-        <div class="review-card-head">Data Peserta #${idx + 2}</div>
-        <div class="review-card-body">${ppPesertaObjRows(p)}</div>
-      </div>`).join("");
-  }
+  const pesertaCard = (title, obj) => `
+    <div class="review-card" style="margin-top:16px">
+      <div class="review-card-head">${esc(title)}</div>
+      <div class="review-card-body">${ppPesertaObjRows(obj)}</div>
+    </div>`;
+  $("#pp-riwayat-detail-peserta-wrap").innerHTML = !kolektif
+    ? pesertaCard("Data Peserta", r.dataPeserta)
+    : r.pesertaList.map((p, idx) => pesertaCard(`Data Peserta ${idx + 1}`, p)).join("");
 
   $("#pp-riwayat-detail-berkas").innerHTML = r.berkas.map(b => ppReviewRowFile(b.label, b.file)).join("");
 }
@@ -3289,29 +3395,215 @@ $("#pel-tolak").onclick = e => putusanPelunasan(e.target.dataset.id, "Ditolak",
 $("#btn-export-pel").onclick = () => toast("Laporan pelunasan periodik diekspor.");
 
 /* ================================================================= BUM KPR */
-function renderBumMetrics() {
-  $("#bum-metrics").innerHTML = DATA_BUM_METRIK.map(m => `
-    <div class="metric">
-      <div class="metric-lbl">${esc(m.label)}</div>
-      <div class="metric-val ${m.warna === "bad" ? "bad" : ""}">${esc(m.nilai)}</div>
-      <div class="metric-sub ${esc(m.warna)}">${esc(m.sub)}</div>
-    </div>`).join("");
-}
+let bumPage = 1;
 function renderBum() {
-  const f = $("#bum-filter").value;
-  const rows = bumRows.filter(r => f === "all" || r.program === f);
-  $("#bum-body").innerHTML = rows.map(r => {
-    const cls = r.status.startsWith("BATAL")    ? "pill-bad"
-              : r.status.startsWith("MENUNGGU") ? "pill-warn" : "pill-ok";
-    return `<tr>
-      <td>${esc(r.ktpa)}</td><td class="t-name">${esc(r.nama)}</td><td>${esc(r.unor)}</td>
-      <td><span class="pill ${r.program === "Khusus" ? "pill-warn" : "pill-ok"}">${esc(r.program)}</span></td>
-      <td>${rp(r.out)}</td><td><span class="pill ${cls}">${esc(r.status)}</span></td>
-    </tr>`;
-  }).join("");
-  $("#bum-count").textContent = `menampilkan ${rows.length} dari ${bumRows.length} peserta dengan kewajiban BUM KPR`;
+  const fDari     = $("#bum-f-dari").value;
+  const fSampai   = $("#bum-f-sampai").value;
+  const fCabang   = ($("#bum-f-cabang").value    || "").toLowerCase();
+  const fNrp      = ($("#bum-f-nrp").value       || "").toLowerCase();
+  const fNama     = ($("#bum-f-nama").value      || "").toLowerCase();
+  const fPinjaman = ($("#bum-f-pinjaman").value  || "").toLowerCase();
+  const fJenis    = $("#bum-f-jenis").value;
+
+  const rows = bumRows.filter(r =>
+    (fJenis === "all" || r.jenisPinjaman === fJenis) &&
+    (!fCabang   || r.cabang.toLowerCase().includes(fCabang)) &&
+    (!fNrp      || r.nrp.includes(fNrp)) &&
+    (!fNama     || r.nama.toLowerCase().includes(fNama)) &&
+    (!fPinjaman || r.nomorPinjaman.toLowerCase().includes(fPinjaman)) &&
+    (!fDari     || r.tmt >= fDari) &&
+    (!fSampai   || r.tmt <= fSampai));
+
+  const pageSize   = +$("#bum-page-size").value;
+  const totalPages = Math.max(1, Math.ceil(rows.length / pageSize));
+  if (bumPage > totalPages) bumPage = totalPages;
+  const start    = (bumPage - 1) * pageSize;
+  const pageRows = rows.slice(start, start + pageSize);
+
+  $("#bum-body").innerHTML = pageRows.length ? pageRows.map(r => `
+    <tr>
+      <td class="t-strong">${esc(r.kpa)}</td>
+      <td>${esc(r.nrp)}</td>
+      <td>${esc(r.nama)}</td>
+      <td>${esc(fmtTgl(r.tmt))}</td>
+      <td>${esc(r.cabang)}</td>
+      <td>${esc(r.nomorPinjaman)}</td>
+      <td><span class="pill ${r.jenisPinjaman === "Program Khusus" ? "pill-warn" : "pill-ok"}">${esc(r.jenisPinjaman)}</span></td>
+      <td>${rp(r.jumlah)}</td>
+      <td>${rp(r.sisaHutang)}</td>
+      <td>${rp(r.outstanding)}</td>
+      <td><button class="btn btn-ghost btn-sm" data-bum-detail="${r.kpa}">👁 Detail</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+
+  const shownFrom = rows.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + pageSize, rows.length);
+  $("#bum-count").textContent = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} klaim`;
+
+  $("#bum-pagination").innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+    <button class="btn ${p === bumPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-bum-page="${p}">${p}</button>
+  `).join("");
 }
-$("#bum-filter").onchange = renderBum;
+$("#bum-cari").onclick         = () => { bumPage = 1; renderBum(); };
+$("#bum-page-size").onchange   = () => { bumPage = 1; renderBum(); };
+$("#bum-export-excel").onclick = () => toast("Daftar klaim KPR (BUM) diekspor ke Excel.");
+
+function bumShowDetail(r) {
+  $("#modal-title").textContent = "Detail Klaim KPR (BUM)";
+  $("#modal-sub").textContent   = r.nomorPinjaman;
+  $("#modal-body").innerHTML = `
+    <div class="grid2">
+      ${reviewField("Nomor Permohonan", r.nomorPermohonan)}
+      ${reviewField("KPA", r.kpa)}
+      ${reviewField("NRP/NIP", r.nrp)}
+      ${reviewField("NIK", r.nik)}
+      ${reviewField("Nama", r.nama)}
+      ${reviewField("Jenis Kelamin", r.jk === "L" ? "Laki-laki" : r.jk === "P" ? "Perempuan" : "-")}
+      ${reviewField("TMT", fmtTgl(r.tmt))}
+      ${reviewField("Kantor Cabang", r.cabang)}
+      ${reviewField("Nomor Pinjaman", r.nomorPinjaman)}
+      ${reviewField("Jenis Pinjaman", r.jenisPinjaman)}
+      ${reviewField("Jumlah", rp(r.jumlah))}
+      ${reviewField("Sisa Hutang", rp(r.sisaHutang))}
+      ${reviewField("Outstanding", rp(r.outstanding))}
+      ${reviewField("Keterangan", r.keterangan, true)}
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="bum-detail-tutup">Tutup</button>
+    </div>`;
+  openModal();
+  $("#bum-detail-tutup").onclick = closeModal;
+}
+
+/* -------------------------------------------------- + Pemotongan Manfaat Klaim
+   KPA wajib diisi terlebih dahulu — NRP, NIK, Nama, Tanggal Lahir, TMT Masuk,
+   dan Jenis Kelamin otomatis terisi (read-only) dari BUM_KPA_LOOKUP begitu
+   KPA valid. Simpan menambahkan baris baru langsung ke tabel Klaim KPR (BUM). */
+function bumClearAutofill() {
+  ["#bpk-nrp", "#bpk-nik", "#bpk-nama", "#bpk-tgl-lahir", "#bpk-tmt-masuk", "#bpk-jk", "#bpk-outstanding"].forEach(sel => $(sel).value = "");
+}
+function bumAutofillFromKpa() {
+  const kpa   = $("#bpk-kpa").value.trim().toUpperCase();
+  const found = BUM_KPA_LOOKUP[kpa];
+  if (!found) { bumClearAutofill(); if (kpa) toast("KPA tidak ditemukan pada data peserta.", "bad"); return; }
+  $("#bpk-nrp").value         = found.nrp;
+  $("#bpk-nik").value         = found.nik;
+  $("#bpk-nama").value        = found.nama;
+  $("#bpk-tgl-lahir").value   = found.tglLahir;
+  $("#bpk-tmt-masuk").value   = found.tmtMasuk;
+  $("#bpk-jk").value          = found.jk === "L" ? "Laki-laki" : "Perempuan";
+  $("#bpk-outstanding").value = rp(found.outstandingHutang);
+}
+
+function bumShowPemotongan() {
+  $("#modal-title").textContent = "Pemotongan Manfaat Klaim";
+  $("#modal-sub").textContent   = "";
+  $("#modal-body").innerHTML = `
+    <div class="grid2">
+      <div class="field">
+        <label class="fl">Nomor Permohonan <span class="req">*</span></label>
+        <input class="inp" id="bpk-nomor-permohonan">
+      </div>
+      <div class="field">
+        <label class="fl">Jenis Pinjaman <span class="req">*</span></label>
+        <select class="inp" id="bpk-jenis-pinjaman">
+          <option value="">-- Pilih Jenis Pinjaman --</option>
+          <option value="Program Reguler">Program Reguler</option>
+          <option value="Program Khusus">Program Khusus</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="fl">KPA <span class="req">*</span></label>
+        <input class="inp" id="bpk-kpa" placeholder="-- Masukkan KPA --">
+      </div>
+      <div class="field">
+        <label class="fl">NRP <span class="req">*</span></label>
+        <input class="inp" id="bpk-nrp" readonly placeholder="Otomatis terisi dari KPA">
+      </div>
+      <div class="field">
+        <label class="fl">NIK <span class="req">*</span></label>
+        <input class="inp" id="bpk-nik" readonly placeholder="Otomatis terisi dari KPA">
+      </div>
+      <div class="field">
+        <label class="fl">Nama <span class="req">*</span></label>
+        <input class="inp" id="bpk-nama" readonly placeholder="Otomatis terisi dari KPA">
+      </div>
+      <div class="field">
+        <label class="fl">Tanggal Lahir <span class="req">*</span></label>
+        <input class="inp" type="date" id="bpk-tgl-lahir" disabled>
+      </div>
+      <div class="field">
+        <label class="fl">TMT Masuk <span class="req">*</span></label>
+        <input class="inp" type="date" id="bpk-tmt-masuk" disabled>
+      </div>
+      <div class="field">
+        <label class="fl">Jenis Kelamin <span class="req">*</span></label>
+        <input class="inp" id="bpk-jk" readonly placeholder="Otomatis terisi dari KPA">
+      </div>
+      <div class="field">
+        <label class="fl">Outstanding Hutang BUM <span class="req">*</span></label>
+        <input class="inp" id="bpk-outstanding" readonly placeholder="Otomatis terisi dari KPA">
+      </div>
+      <div class="field">
+        <label class="fl">Nilai Pemotongan <span class="req">*</span></label>
+        <input class="inp" type="number" min="0" id="bpk-jumlah" placeholder="0">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label class="fl">Keterangan <span class="req">*</span></label>
+      <textarea class="inp" id="bpk-keterangan" style="height:70px;padding:9px 10px;resize:vertical"></textarea>
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="bpk-tutup">Tutup</button>
+      <button class="btn btn-primary" id="bpk-simpan">💾 Simpan</button>
+    </div>`;
+  openModal();
+
+  $("#bpk-tutup").onclick   = closeModal;
+  $("#bpk-kpa").onblur      = bumAutofillFromKpa;
+  $("#bpk-kpa").onchange    = bumAutofillFromKpa;
+
+  $("#bpk-simpan").onclick = () => {
+    const nomorPermohonan = $("#bpk-nomor-permohonan").value.trim();
+    const jenisPinjaman   = $("#bpk-jenis-pinjaman").value;
+    const kpa             = $("#bpk-kpa").value.trim().toUpperCase();
+    const keterangan      = $("#bpk-keterangan").value.trim();
+    const jumlah          = +$("#bpk-jumlah").value;
+    const nrp = $("#bpk-nrp").value, nik = $("#bpk-nik").value, nama = $("#bpk-nama").value,
+          tglLahir = $("#bpk-tgl-lahir").value, tmtMasuk = $("#bpk-tmt-masuk").value, jkText = $("#bpk-jk").value;
+
+    if (!nomorPermohonan || !jenisPinjaman || !kpa || !keterangan || !jumlah) {
+      toast("Seluruh field wajib diisi sebelum menyimpan.", "bad");
+      return;
+    }
+    const found = BUM_KPA_LOOKUP[kpa];
+    if (!found || !nrp || !nik || !nama || !tglLahir || !tmtMasuk) {
+      toast("KPA tidak ditemukan pada data peserta.", "bad");
+      return;
+    }
+
+    bumRows.unshift({
+      kpa, nrp, nik, nama, jk: jkText === "Laki-laki" ? "L" : "P",
+      tmt: tmtMasuk, cabang: found.cabang,
+      nomorPinjaman: nomorPermohonan, nomorPermohonan,
+      jenisPinjaman, jumlah, sisaHutang: jumlah, outstanding: found.outstandingHutang,
+      keterangan
+    });
+    bumPage = 1;
+    renderBum();
+    closeModal();
+    toast(`Pemotongan manfaat klaim untuk ${nama} berhasil disimpan.`, "ok");
+  };
+}
+$("#bum-pemotongan-btn").onclick = bumShowPemotongan;
+
+document.addEventListener("click", e => {
+  const bDetail = e.target.closest("[data-bum-detail]");
+  if (bDetail) { bumShowDetail(bumRows.find(x => x.kpa === bDetail.dataset.bumDetail)); return; }
+
+  const bPage = e.target.closest("[data-bum-page]");
+  if (bPage) { bumPage = +bPage.dataset.bumPage; renderBum(); }
+});
 
 /* ========================================================== DISTRIBUSI BDN */
 function renderDistHead() {
@@ -3390,7 +3682,52 @@ setInterval(() => {
 let uploadRiwayatPage = 1;
 
 function pillPendaftaranStatus(s) {
-  return s === "Diterima" ? "pill-ok" : s === "Ditolak" ? "pill-bad" : "pill-warn";
+  return s === "Diterima" ? "pill-ok" : (s === "Ditolak" || s === "Ditolak Verifikasi") ? "pill-bad" : "pill-warn";
+}
+
+/* Stepper progres "Pengajuan → Verifikasi → Pengajuan Diterima/Ditolak" —
+   dipakai di halaman Detail Pendaftaran Peserta Baru, baik mekanisme
+   Perorangan (tanpa tahap verifikasi terpisah) maupun Kolektif (via Upload,
+   dengan tahap verifikasi sungguhan). */
+function renderProgressSteps(containerId, steps) {
+  const bg = s => s.state === "done" ? "var(--green)" : s.state === "active" ? "var(--navy)" : s.state === "bad" ? "var(--red)" : "var(--line)";
+  const fg = s => s.state === "pending" ? "var(--muted)" : "#fff";
+  const icon = (s, i) => s.state === "done" ? "✓" : s.state === "bad" ? "✕" : i + 1;
+  $(`#${containerId}`).innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(${steps.length},1fr)">
+      ${steps.map((s, i) => `
+        <div style="display:flex;align-items:center">
+          <div style="width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;background:${bg(s)};color:${fg(s)}">${icon(s, i)}</div>
+          ${i < steps.length - 1 ? `<div style="flex:1;height:2px;background:${s.state === "done" ? "var(--green)" : "var(--line)"};margin:0 6px"></div>` : ""}
+        </div>`).join("")}
+      ${steps.map(s => `<div style="font-size:11px;color:var(--body);text-align:center;padding-top:8px;line-height:1.3">${esc(s.label)}</div>`).join("")}
+    </div>`;
+}
+
+/* Mekanisme Perorangan: tidak ada tahap verifikasi terpisah, jadi tahap
+   "Verifikasi" otomatis dianggap lolos begitu pengajuan disimpan. */
+function ppProgressSteps(approvalStatus) {
+  return [
+    { label: "Pengajuan", state: "done" },
+    { label: approvalStatus === "Diterima" ? "Diterima" : approvalStatus === "Ditolak" ? "Ditolak" : "Diterima/Ditolak",
+      state: approvalStatus === "Diterima" ? "done" : approvalStatus === "Ditolak" ? "bad" : "active" }
+  ];
+}
+
+/* Mekanisme Kolektif (via Upload): melalui tahap Verifikasi Kolektif dulu
+   sebelum masuk antrean Approval. */
+function kolektifProgressSteps(status) {
+  const verifState = status === "Belum Terverifikasi" ? "active" : status === "Ditolak Verifikasi" ? "bad" : "done";
+  const verifLabel = status === "Ditolak Verifikasi" ? "Verifikasi Ditolak"
+    : verifState === "done" ? "Verifikasi Diterima" : "Verifikasi Diterima/Ditolak";
+  const approvalReached = status !== "Belum Terverifikasi" && status !== "Ditolak Verifikasi";
+  const approvalState = !approvalReached ? "pending" : status === "Diterima" ? "done" : status === "Ditolak" ? "bad" : "active";
+  const approvalLabel = status === "Diterima" ? "Pengajuan Diterima" : status === "Ditolak" ? "Pengajuan Ditolak" : "Pengajuan Diterima/Ditolak";
+  return [
+    { label: "Pengajuan", state: "done" },
+    { label: verifLabel, state: verifState },
+    { label: approvalLabel, state: approvalState }
+  ];
 }
 
 function uploadGotoView(view) {
@@ -3423,9 +3760,9 @@ function renderUploadRiwayat() {
     <tr>
       <td>${start + i + 1}</td>
       <td>${esc(r.tglPengajuan)}</td>
-      <td>${esc(r.kesatuanPengaju)}</td>
       <td class="t-strong">${esc(r.nomorBatch)}</td>
       <td>${esc(r.nomorAgenda)}</td>
+      <td>${esc(r.kesatuanPengaju)}</td>
       <td>${r.peserta.length}</td>
       <td><span class="pill ${pillPendaftaranStatus(r.status)}">${esc(r.status.toUpperCase())}</span></td>
       <td><button class="btn btn-info btn-sm" data-upload-riwayat-detail="${r._id}">Lihat</button></td>
@@ -3445,6 +3782,7 @@ $("#btn-export-upload-riwayat").onclick = () => toast("Riwayat upload diekspor k
 
 function renderUploadRiwayatDetail(batch) {
   $("#upload-riwayat-detail-sub").textContent = `${batch.nomorBatch} — ${batch.peserta.length} peserta`;
+  renderProgressSteps("upload-riwayat-detail-progress", kolektifProgressSteps(batch.status));
   $("#upload-riwayat-detail-head").innerHTML =
     FIELDS.map((f, i) => `<th class="${i === 0 ? "stick-l" : ""}">${esc(f[1])}</th>`).join("");
   $("#upload-riwayat-detail-body").innerHTML = batch.peserta.length
@@ -3486,7 +3824,9 @@ let verifPage = 1;
 let verifCurrentBatchId = null;
 
 function verifDisplayStatus(r) {
-  return r.status === "Belum Terverifikasi" ? "Belum Terverifikasi" : "Lolos Verifikasi";
+  if (r.status === "Belum Terverifikasi") return "Belum Terverifikasi";
+  if (r.status === "Ditolak Verifikasi")  return "Ditolak Verifikasi";
+  return "Lolos Verifikasi";
 }
 
 function verifGotoView(view) {
@@ -3524,7 +3864,7 @@ function renderVerifikasiList() {
       <td class="t-strong">${esc(r.nomorBatch)}</td>
       <td>${esc(r.nomorAgenda)}</td>
       <td>${r.peserta.length}</td>
-      <td><span class="pill ${verifDisplayStatus(r) === "Lolos Verifikasi" ? "pill-ok" : "pill-warn"}">${esc(verifDisplayStatus(r).toUpperCase())}</span></td>
+      <td><span class="pill ${pillPendaftaranStatus(verifDisplayStatus(r) === "Lolos Verifikasi" ? "Diterima" : verifDisplayStatus(r) === "Ditolak Verifikasi" ? "Ditolak" : "Tertunda")}">${esc(verifDisplayStatus(r).toUpperCase())}</span></td>
       <td><button class="btn btn-info btn-sm" data-verif-detail="${r._id}">Detail</button></td>
     </tr>`).join("")
     : `<tr><td colspan="8"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter pencarian.</p></div></td></tr>`;
@@ -3540,15 +3880,79 @@ $("#verif-cari").onclick = () => { verifPage = 1; renderVerifikasiList(); };
 $("#verif-page-size").onchange = () => { verifPage = 1; renderVerifikasiList(); };
 $("#verif-export").onclick = () => toast("Daftar verifikasi upload diekspor ke Excel.");
 
+let verifDetailPage = 1;
+
 function renderVerifDetail(batch) {
   $("#verif-detail-sub").textContent = `${batch.nomorBatch} — ${batch.peserta.length} peserta`;
+
+  const pageSize   = 10;
+  const totalPages = Math.max(1, Math.ceil(batch.peserta.length / pageSize));
+  if (verifDetailPage > totalPages) verifDetailPage = totalPages;
+  const start    = (verifDetailPage - 1) * pageSize;
+  const pageRows = batch.peserta.slice(start, start + pageSize);
+
   $("#verif-detail-head").innerHTML =
     FIELDS.map((f, i) => `<th class="${i === 0 ? "stick-l" : ""}">${esc(f[1])}</th>`).join("") + `<th class="stick-r">AKSI</th>`;
-  $("#verif-detail-body").innerHTML = batch.peserta.map((p) => `
+  $("#verif-detail-body").innerHTML = pageRows.length ? pageRows.map((p) => `
     <tr>${FIELDS.map((f, i) =>
       `<td class="${i === 0 ? "stick-l " : ""}${i < 2 ? "t-strong" : ""}">${esc(p[f[0]])}</td>`
     ).join("")}<td class="stick-r"><button class="btn btn-primary btn-sm btn-pill" data-verif-revisi="${batch._id}">Revisi</button></td></tr>`
-  ).join("");
+  ).join("") : `<tr><td colspan="${FIELDS.length + 1}"><div class="empty"><h4>Tidak ada berkas</h4></div></td></tr>`;
+
+  const shownFrom = batch.peserta.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + pageSize, batch.peserta.length);
+  $("#verif-detail-count").textContent = `Menampilkan ${shownFrom}-${shownTo} dari ${batch.peserta.length} peserta`;
+  $("#verif-detail-pagination").innerHTML = Array.from({ length: totalPages }, (_, i) => i + 1).map(p => `
+    <button class="btn ${p === verifDetailPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-verif-detail-page="${p}">${p}</button>
+  `).join("");
+
+  const isLastPage    = verifDetailPage === totalPages;
+  const belumDiproses = batch.status === "Belum Terverifikasi";
+  $("#verif-detail-actions").innerHTML = (isLastPage && belumDiproses) ? `
+    <button class="btn btn-danger-solid" id="verif-tolak">✕ Tolak Verifikasi</button>
+    <button class="btn btn-success" id="verif-setujui">✓ Setujui Verifikasi</button>` : "";
+}
+
+function verifConfirmSetujui(batch, onConfirm) {
+  $("#modal-title").textContent = "Konfirmasi Persetujuan Verifikasi";
+  $("#modal-sub").textContent   = batch.nomorBatch;
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">Catatan Persetujuan (Opsional)</label>
+      <textarea class="inp" id="verif-alasan-setuju" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan catatan persetujuan (opsional)"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="verif-setuju-batal">Batal</button>
+      <button class="btn btn-success" id="verif-setuju-konfirmasi">✓ Setujui</button>
+    </div>`;
+  openModal();
+  $("#verif-setuju-batal").onclick = closeModal;
+  $("#verif-setuju-konfirmasi").onclick = () => {
+    const catatan = $("#verif-alasan-setuju").value.trim();
+    closeModal();
+    onConfirm(catatan);
+  };
+}
+function verifConfirmTolak(batch, onConfirm) {
+  $("#modal-title").textContent = "Konfirmasi Penolakan Verifikasi";
+  $("#modal-sub").textContent   = batch.nomorBatch;
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">Alasan Menolak <span class="req">*</span></label>
+      <textarea class="inp" id="verif-alasan-tolak" style="height:90px;padding:9px 10px;resize:vertical" placeholder="Tuliskan alasan penolakan"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="verif-tolak-batal">Batal</button>
+      <button class="btn btn-danger-solid" id="verif-tolak-konfirmasi">✕ Tolak</button>
+    </div>`;
+  openModal();
+  $("#verif-tolak-batal").onclick = closeModal;
+  $("#verif-tolak-konfirmasi").onclick = () => {
+    const alasan = $("#verif-alasan-tolak").value.trim();
+    if (!alasan) { toast("Alasan menolak wajib diisi.", "bad"); return; }
+    closeModal();
+    onConfirm(alasan);
+  };
 }
 
 const VERIF_EDITABLE = [
@@ -3574,6 +3978,7 @@ document.addEventListener("click", e => {
   const bDetail = e.target.closest("[data-verif-detail]");
   if (bDetail) {
     verifCurrentBatchId = +bDetail.dataset.verifDetail;
+    verifDetailPage = 1;
     renderVerifDetail(uploadBatchRows.find(x => x._id === verifCurrentBatchId));
     verifGotoView("detail");
     return;
@@ -3586,24 +3991,53 @@ document.addEventListener("click", e => {
     return;
   }
   const bPage = e.target.closest("[data-verif-page]");
-  if (bPage) { verifPage = +bPage.dataset.verifPage; renderVerifikasiList(); }
+  if (bPage) { verifPage = +bPage.dataset.verifPage; renderVerifikasiList(); return; }
+
+  const bDetailPage = e.target.closest("[data-verif-detail-page]");
+  if (bDetailPage) {
+    verifDetailPage = +bDetailPage.dataset.verifDetailPage;
+    renderVerifDetail(uploadBatchRows.find(x => x._id === verifCurrentBatchId));
+    return;
+  }
+
+  if (e.target.closest("#verif-setujui")) {
+    const batch = uploadBatchRows.find(x => x._id === verifCurrentBatchId);
+    verifConfirmSetujui(batch, () => {
+      batch.status = "Tertunda";
+      renderUploadRiwayat();
+      renderVerifikasiList();
+      renderApprovalList();
+      toast(`Batch ${batch.nomorBatch} lolos verifikasi dan masuk antrean Approval.`, "ok");
+      verifGotoView("list");
+    });
+    return;
+  }
+  if (e.target.closest("#verif-tolak")) {
+    const batch = uploadBatchRows.find(x => x._id === verifCurrentBatchId);
+    verifConfirmTolak(batch, alasan => {
+      batch.status = "Ditolak Verifikasi";
+      batch.catatanVerifikasi = alasan;
+      renderUploadRiwayat();
+      renderVerifikasiList();
+      toast(`Batch ${batch.nomorBatch} ditolak pada tahap verifikasi.`, "bad");
+      verifGotoView("list");
+    });
+    return;
+  }
 });
 $("#verif-detail-kembali").onclick = () => { renderVerifikasiList(); verifGotoView("list"); };
 $("#verif-revisi-kembali").onclick = () => {
   renderVerifDetail(uploadBatchRows.find(x => x._id === verifCurrentBatchId));
   verifGotoView("detail");
 };
-$("#verif-setujui").onclick = () => {
+$("#verif-simpan-revisi").onclick = () => {
   const batch = uploadBatchRows.find(x => x._id === verifCurrentBatchId);
   $$("#verif-revisi-body [data-verif-edit-idx]").forEach(inp => {
     batch.peserta[+inp.dataset.verifEditIdx][inp.dataset.verifEditKey] = inp.value.trim();
   });
-  batch.status = "Tertunda";
-  renderUploadRiwayat();
-  renderVerifikasiList();
-  renderApprovalList();
-  toast(`Batch ${batch.nomorBatch} lolos verifikasi dan masuk antrean Approval.`, "ok");
-  verifGotoView("list");
+  toast(`Perubahan data peserta batch ${batch.nomorBatch} tersimpan.`, "ok");
+  renderVerifDetail(batch);
+  verifGotoView("detail");
 };
 
 /* ============================== PENDAFTARAN PESERTA BARU » APPROVAL */
@@ -3803,7 +4237,7 @@ function apprCombinedRows() {
     kesatuanPengaju: r.kesatuanPengaju, jumlahBerkas: r.berkas.filter(b => b.file).length,
     status: r.approvalStatus
   }));
-  const kol = uploadBatchRows.filter(r => r.status !== "Belum Terverifikasi").map(r => ({
+  const kol = uploadBatchRows.filter(r => r.status !== "Belum Terverifikasi" && r.status !== "Ditolak Verifikasi").map(r => ({
     type: "kolektif", refId: r._id,
     tglPengajuan: r.tglPengajuan, nomorBatch: r.nomorBatch, nomorAgenda: r.nomorAgenda,
     nomorSurat: (r.dataPengajuan || {}).nomorSurat, tglSurat: (r.dataPengajuan || {}).tglSurat,
@@ -4438,6 +4872,188 @@ function renderHome() {
     </div>`).join("");
 }
 
+/* ==================================================== PENGELOLAAN REQUEST UMUM
+   `riwayat` adalah satu-satunya sumber kebenaran per request — "User Request",
+   "User Terakhir Reply", dan "Diperbarui" pada tabel daftar semuanya
+   diturunkan darinya supaya otomatis konsisten begitu ada balasan baru. */
+let ruRows = DATA_REQUEST_UMUM.map((r, i) => ({ ...r, _id: i, riwayat: r.riwayat.map(h => ({ ...h })) }));
+
+function ruUserRequest(r) { return r.riwayat[0].user; }
+function ruUserReply(r)   { return r.riwayat.length > 1 ? r.riwayat[r.riwayat.length - 1].user : "—"; }
+function ruDiperbarui(r)  { return r.riwayat[r.riwayat.length - 1].jam.split(" ").slice(0, 3).join(" "); }
+function ruPillStatus(s)  { return s === "Selesai" ? "pill-ok" : s === "SLA Lewat" ? "pill-bad" : "pill-warn"; }
+function ruFmtJam(d) {
+  const pad = n => String(n).padStart(2, "0");
+  return `${d.getDate()} ${BULAN_ID_SHORT[d.getMonth()]} ${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+function ruFmtTgl(d) { return `${d.getDate()} ${BULAN_ID_SHORT[d.getMonth()]} ${d.getFullYear()}`; }
+
+const RU_PAGE_SIZE = 5;
+let ruPage = 1;
+
+function ruPaginationHtml(totalPages) {
+  const navBtn = (p, label, disabled) => `<button class="btn btn-ghost btn-sm" style="min-width:30px;padding:0" ${disabled ? "disabled" : `data-ru-page="${p}"`}>${label}</button>`;
+  let html = navBtn(ruPage - 1, "‹", ruPage <= 1);
+  for (let p = 1; p <= totalPages; p++) {
+    html += `<button class="btn ${p === ruPage ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0" data-ru-page="${p}">${p}</button>`;
+  }
+  html += navBtn(ruPage + 1, "›", ruPage >= totalPages);
+  return html;
+}
+
+function renderRequestUmum() {
+  const fPeserta = ($("#ru-f-peserta").value || "").toLowerCase();
+  const fCabang  = ($("#ru-f-cabang").value  || "").toLowerCase();
+  const fStatus  = $("#ru-f-status").value;
+  const fTujuan  = $("#ru-f-tujuan").value;
+
+  const rows = ruRows.filter(r =>
+    (fStatus === "all" || r.status === fStatus) &&
+    (fTujuan === "all" || r.tujuan === fTujuan) &&
+    (!fPeserta || r.nama.toLowerCase().includes(fPeserta) || r.nrp.includes(fPeserta)) &&
+    (!fCabang  || r.cabang.toLowerCase().includes(fCabang)));
+
+  const totalPages = Math.max(1, Math.ceil(rows.length / RU_PAGE_SIZE));
+  if (ruPage > totalPages) ruPage = totalPages;
+  const start    = (ruPage - 1) * RU_PAGE_SIZE;
+  const pageRows = rows.slice(start, start + RU_PAGE_SIZE);
+
+  $("#ru-body").innerHTML = pageRows.length ? pageRows.map(r => `
+    <tr>
+      <td>${esc(r.tglRequest)}</td>
+      <td><div class="t-strong">${esc(r.nama)}</div><div class="hint" style="margin:1px 0 0">${esc(r.nrp)}</div></td>
+      <td>${esc(r.cabang)}</td>
+      <td><span class="pill pill-info">${esc(r.tujuan)}</span></td>
+      <td class="t-strong">${esc(r.subjek)}</td>
+      <td class="truncate-cell" title="${esc(r.riwayat[0].isi)}">${esc(r.riwayat[0].isi)}</td>
+      <td>${esc(ruUserRequest(r))}</td>
+      <td>${esc(ruUserReply(r))}</td>
+      <td>${esc(ruDiperbarui(r))}</td>
+      <td><span class="pill ${ruPillStatus(r.status)}">${esc(r.status)}</span></td>
+      <td><button class="btn btn-ghost btn-sm" data-ru-detail="${r._id}">👁 Detail</button></td>
+    </tr>`).join("")
+    : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada data</h4><p>Coba ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+
+  const shownFrom = rows.length ? start + 1 : 0;
+  const shownTo   = Math.min(start + RU_PAGE_SIZE, rows.length);
+  $("#ru-count").textContent = `Menampilkan ${shownFrom}-${shownTo} dari ${rows.length} request`;
+  $("#ru-pagination").innerHTML = ruPaginationHtml(totalPages);
+}
+renderRequestUmum();
+
+$("#ru-cari").onclick  = () => { ruPage = 1; renderRequestUmum(); };
+$("#ru-export").onclick = () => toast("Daftar request umum diekspor ke Excel.");
+
+/* -------------------------------------------------------------- Detail Request Umum */
+let ruDetailCurrentId = null;
+
+function ruOpenDetail()  { $("#ru-detail-overlay").classList.add("open");    document.body.style.overflow = "hidden"; }
+function ruCloseDetail() { $("#ru-detail-overlay").classList.remove("open"); document.body.style.overflow = ""; }
+
+function ruShowDetail(r) {
+  ruDetailCurrentId = r._id;
+  $("#ru-detail-status").innerHTML = `<span class="pill ${ruPillStatus(r.status)}">${esc(r.status)}</span>`;
+  $("#ru-detail-nama").textContent = r.nama;
+  $("#ru-detail-kpa").textContent  = r.kpa;
+
+  $("#ru-detail-riwayat-body").innerHTML = r.riwayat.map(h => `
+    <tr>
+      <td class="t-strong">${esc(h.jam)}</td>
+      <td>${esc(h.user)}</td>
+      <td>${esc(h.isi)}</td>
+      <td>${h.file ? `<button class="btn btn-ghost btn-sm" data-ru-unduh="${esc(h.file)}">⭳ Unduh</button>` : "—"}</td>
+    </tr>`).join("");
+
+  $("#ru-balasan-isi").value  = "";
+  $("#ru-balasan-file").value = "";
+  ruOpenDetail();
+}
+
+$("#ru-detail-x").onclick      = ruCloseDetail;
+$("#ru-detail-tutup").onclick  = ruCloseDetail;
+$("#ru-detail-overlay").onclick = e => { if (e.target.id === "ru-detail-overlay") ruCloseDetail(); };
+$("#ru-balasan-batal").onclick = () => { $("#ru-balasan-isi").value = ""; $("#ru-balasan-file").value = ""; };
+
+$("#ru-balasan-simpan").onclick = () => {
+  const isi  = $("#ru-balasan-isi").value.trim();
+  const file = $("#ru-balasan-file").files[0];
+  if (!isi || !file) { toast("Isi dan Attachment wajib diisi sebelum menyimpan.", "bad"); return; }
+
+  const r = ruRows.find(x => x._id === ruDetailCurrentId);
+  r.riwayat.push({ jam: ruFmtJam(new Date()), user: "Anda / Div. Kepers.", isi, file: file.name });
+  renderRequestUmum();
+  ruShowDetail(r);
+  toast("Balasan berhasil disimpan.", "ok");
+};
+
+/* -------------------------------------------------------------- Tambah Request Umum */
+function ruShowTambah() {
+  $("#modal-title").textContent = "Tambah Request Umum";
+  $("#modal-sub").textContent   = "";
+  $("#modal-body").innerHTML = `
+    <div class="field">
+      <label class="fl">KPA <span class="req">*</span></label>
+      <input class="inp" id="ru-tambah-kpa" placeholder="-- Masukkan KPA --">
+    </div>
+    <div class="field">
+      <label class="fl">Subjek <span class="req">*</span></label>
+      <input class="inp" id="ru-tambah-subjek">
+    </div>
+    <div class="field">
+      <label class="fl">Tujuan <span class="req">*</span></label>
+      <select class="inp" id="ru-tambah-tujuan">
+        <option value="">-- Silahkan Pilih Tujuan --</option>
+        <option value="Kepesertaan">Kepesertaan</option>
+        <option value="Pelayanan">Pelayanan</option>
+      </select>
+    </div>
+    <div class="field">
+      <label class="fl">Isi <span class="req">*</span></label>
+      <textarea class="inp" id="ru-tambah-isi" style="height:80px;padding:9px 10px;resize:vertical"></textarea>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label class="fl">Attachment <span class="req">*</span></label>
+      <input type="file" class="inp" id="ru-tambah-file">
+    </div>
+    <div class="form-actions" style="justify-content:flex-end">
+      <button class="btn btn-ghost" id="ru-tambah-tutup">Tutup</button>
+      <button class="btn btn-primary" id="ru-tambah-simpan">Simpan Request Umum</button>
+    </div>`;
+  openModal();
+  $("#ru-tambah-tutup").onclick = closeModal;
+  $("#ru-tambah-simpan").onclick = () => {
+    const kpa    = $("#ru-tambah-kpa").value.trim();
+    const subjek = $("#ru-tambah-subjek").value.trim();
+    const tujuan = $("#ru-tambah-tujuan").value;
+    const isi    = $("#ru-tambah-isi").value.trim();
+    const file   = $("#ru-tambah-file").files[0];
+    if (!kpa || !subjek || !tujuan || !isi || !file) { toast("Seluruh field wajib diisi sebelum menyimpan.", "bad"); return; }
+
+    const peserta = RU_KPA_LOOKUP[kpa.toUpperCase()];
+    if (!peserta) { toast("KPA tidak ditemukan pada data peserta.", "bad"); return; }
+
+    const now = new Date();
+    ruRows.unshift({
+      _id: ruRows.length ? Math.max(...ruRows.map(x => x._id)) + 1 : 0,
+      kpa: kpa.toUpperCase(), nama: peserta.nama, nrp: peserta.nrp, cabang: peserta.cabang,
+      tujuan, subjek, tglRequest: ruFmtTgl(now), status: "Belum Selesai",
+      riwayat: [ { jam: ruFmtJam(now), user: "Anda", isi, file: file.name } ]
+    });
+    renderRequestUmum();
+    closeModal();
+    toast("Request umum baru berhasil disimpan.", "ok");
+  };
+}
+$("#ru-tambah-btn").onclick = ruShowTambah;
+
+document.addEventListener("click", e => {
+  const bPage = e.target.closest("[data-ru-page]");
+  if (bPage) { ruPage = +bPage.dataset.ruPage; renderRequestUmum(); return; }
+
+  const bDetail = e.target.closest("[data-ru-detail]");
+  if (bDetail) { ruShowDetail(ruRows.find(x => x._id === +bDetail.dataset.ruDetail)); }
+});
+
 /* ====================================================================== INIT */
 $("#top-role").onchange = () => { toast(`Role diubah ke: ${$("#top-role").value}.`); renderHome(); };
 $("#top-avatar").textContent = PENGATURAN.inisialUser;
@@ -4451,7 +5067,6 @@ renderApproval();
 renderWizard();
 renderRiwayat();
 renderPel();
-renderBumMetrics();
 renderBum();
 renderDistHead();
 renderDist();
