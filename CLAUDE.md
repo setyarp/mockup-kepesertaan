@@ -34,6 +34,8 @@ strukturnya. Hampir semua pola sudah pernah dipakai di suatu tempat.
 | `app.js` | Router, render tabel, validasi |
 | `style.css` | Design system. **Semua warna & komponen didefinisikan di sini** |
 | `logo-asabri-white.png` | Logo di navbar |
+| `Template Pendaftaran Peserta Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh template" di Upload Kolektif |
+| `Pemutakhiran Data *.xlsx` (3 berkas) | Template per Jenis Pemutakhiran Data; dirujuk lewat `templateFile` di `DATA_PEREMAJAAN` |
 
 ---
 

@@ -25,7 +25,7 @@
       <button class="nav-item nav-child" data-go="pendaftaran-kolektif">Kolektif</button>
       <button class="nav-item nav-child" data-go="pendaftaran-verifikasi">Verifikasi Kolektif</button>
       <button class="nav-item nav-child" data-go="pendaftaran-approval">Approval Pendaftaran Peserta Baru</button>
-      <button class="nav-item nav-child" data-go="pendaftaran-nominatif">Buku Daftar Nominatif</button>
+      <button class="nav-item nav-child" data-go="pendaftaran-nominatif">Daftar Nominatif</button>
     </div>
 
     <button class="nav-item nav-parent" id="nav-peremajaan-data" aria-expanded="true">
@@ -208,7 +208,7 @@
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Nomor Agenda</label>
-                <input class="inp" id="pp-riwayat-f-agenda" placeholder="AG-...">
+                <input class="inp" id="pp-riwayat-f-agenda" placeholder="Nomor agenda…">
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Kesatuan Pengaju</label>
@@ -304,6 +304,7 @@
               <div class="field">
                 <label class="fl caps">Nomor Agenda</label>
                 <input class="inp" id="pp-nomor-agenda" placeholder="Diterbitkan otomatis oleh sistem" disabled>
+                <div class="hint">Format perorangan: <b>NO&nbsp;URUT/USERNAME</b> — kolektif diawali Nomor Surat Pengantar.</div>
               </div>
               <div class="field">
                 <label class="fl caps">Nomor Surat Pengantar</label>
@@ -557,7 +558,7 @@
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Nomor Agenda</label>
-                <input class="inp" id="upload-riwayat-f-agenda" placeholder="AG-...">
+                <input class="inp" id="upload-riwayat-f-agenda" placeholder="Nomor agenda…">
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Kesatuan Pengaju</label>
@@ -650,6 +651,7 @@
             <div class="field">
               <label class="fl caps">Nomor Agenda</label>
               <input class="inp" id="k-nomor-agenda" placeholder="Diterbitkan otomatis oleh sistem" disabled>
+              <div class="hint">Format: <b>NOMOR&nbsp;SURAT&nbsp;PENGANTAR/NO&nbsp;URUT/USERNAME</b>.</div>
             </div>
             <div class="field">
               <label class="fl caps">Nomor Surat Pengantar</label>
@@ -669,7 +671,10 @@
             <div style="font-size:26px;color:var(--slate);margin-bottom:8px">⬆</div>
             <div style="font-weight:600;margin-bottom:4px" id="up-title">Unggah file batch peserta</div>
             <div class="hint" style="margin:0 0 13px" id="up-sub">Format .xls / .csv sesuai template — maksimal 5.000 baris per batch</div>
-            <button class="btn btn-ghost btn-sm" id="btn-template">⤓ Unduh template</button>
+            <a class="btn btn-ghost btn-sm" id="btn-template"
+               href="Template%20Pendaftaran%20Peserta%20Kolektif.xlsx"
+               download="Template Pendaftaran Peserta Kolektif.xlsx">⤓ Unduh template</a>
+            <input type="file" accept=".xls,.xlsx,.csv" style="display:none" id="k-file-batch">
             <button class="btn btn-primary btn-sm" id="btn-upload">Unggah File</button>
           </div>
 
@@ -792,7 +797,7 @@
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Nomor Agenda</label>
-                <input class="inp" id="verif-f-agenda" placeholder="AG-...">
+                <input class="inp" id="verif-f-agenda" placeholder="Nomor agenda…">
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Kesatuan Pengaju</label>
@@ -855,6 +860,9 @@
               <div class="hint" id="verif-detail-sub" style="margin:2px 0 0"></div>
             </div>
           </div>
+
+          <div class="card" id="verif-detail-progress"></div>
+
           <div class="card">
             <div class="tbl-wrap">
               <table class="wide-table" id="tbl-verif-detail">
@@ -915,7 +923,7 @@
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Nomor Agenda</label>
-                <input class="inp" id="appr-f-agenda" placeholder="AG-...">
+                <input class="inp" id="appr-f-agenda" placeholder="Nomor agenda…">
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Status Pengajuan</label>
@@ -988,6 +996,8 @@
             </div>
           </div>
 
+          <div class="card" id="appr-a-progress"></div>
+
           <div class="form-2col">
             <div class="review-card">
               <div class="review-card-head" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
@@ -1027,6 +1037,8 @@
             </div>
           </div>
 
+          <div class="card" id="appr-b-progress"></div>
+
           <div class="card">
             <div class="grid2">
               <div class="field" style="margin-bottom:0">
@@ -1035,7 +1047,7 @@
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Nomor Agenda</label>
-                <input class="inp" id="appr-b-f-agenda" placeholder="AG-...">
+                <input class="inp" id="appr-b-f-agenda" placeholder="Nomor agenda…">
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Kesatuan Pengaju</label>
@@ -1063,6 +1075,10 @@
                 </tr></thead>
                 <tbody id="appr-b-body"></tbody>
               </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="appr-b-count" style="margin:0"></div>
+              <div id="appr-b-pagination" style="display:flex;gap:4px"></div>
             </div>
           </div>
 
@@ -1109,12 +1125,12 @@
         </div>
       </section>
 
-      <!-- ---------- PENDAFTARAN PESERTA BARU » BUKU DAFTAR NOMINATIF ---------- -->
+      <!-- ---------- PENDAFTARAN PESERTA BARU » DAFTAR NOMINATIF ---------- -->
       <section class="screen" id="s-pendaftaran-nominatif">
-        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Buku Daftar Nominatif</b></div>
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><span>Pendaftaran Peserta Baru</span><span>›</span><b>Daftar Nominatif</b></div>
         <div class="page-head" id="nominatif-page-head">
           <div>
-            <h1 class="page-title">Buku Daftar Nominatif — Kolektif</h1>
+            <h1 class="page-title">Daftar Nominatif — Kolektif</h1>
             <div class="page-sub">Halaman ini hanya menampilkan batch berstatus bersih — yang telah tervalidasi (approved).</div>
           </div>
         </div>
@@ -1129,7 +1145,7 @@
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Nomor Agenda</label>
-                <input class="inp" id="nominatif-f-agenda" placeholder="AG-...">
+                <input class="inp" id="nominatif-f-agenda" placeholder="Nomor agenda…">
               </div>
               <div class="field" style="margin-bottom:0">
                 <label class="fl caps">Kesatuan Pengaju</label>
@@ -3039,6 +3055,9 @@
               <div class="hint" id="pmd-riwayat-detail-sub" style="margin:2px 0 0"></div>
             </div>
           </div>
+
+          <div class="card" id="pmd-riwayat-detail-progress"></div>
+
           <div class="card">
             <div class="tbl-wrap">
               <table>
@@ -3071,30 +3090,23 @@
               <div style="flex:1.3;min-width:300px;display:flex;align-items:center;gap:12px;border-left:1px solid var(--line-soft);padding-left:26px">
                 <div style="width:38px;height:38px;border-radius:8px;background:var(--green-soft);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">📗</div>
                 <div style="flex:1;min-width:0">
-                  <div style="font-weight:600;font-size:13px" id="pmd-template-title">Template Data Keluarga Peserta</div>
+                  <div style="font-weight:600;font-size:13px" id="pmd-template-title"></div>
                   <div class="hint" style="margin:1px 0 0">Excel (.xlsx) — termasuk sheet petunjuk pengisian</div>
                 </div>
-                <button class="btn btn-ghost btn-sm" id="pmd-btn-template" style="flex-shrink:0">⤓ Unduh</button>
+                <a class="btn btn-ghost btn-sm" id="pmd-btn-template" style="flex-shrink:0" download>⤓ Unduh</a>
               </div>
             </div>
           </div>
 
-          <div style="display:grid;grid-template-columns:1.6fr 1fr;gap:16px;margin-top:16px" class="pmd-grid">
-            <div class="card" style="display:flex;flex-direction:column;margin-top:0">
-              <div class="dropzone" id="pmd-dropzone">
-                <div style="font-size:26px;color:var(--slate);margin-bottom:10px">☁⬆</div>
-                <div style="font-weight:600;margin-bottom:4px" id="pmd-file-title">Tarik file ke sini atau klik untuk memilih</div>
-                <div class="hint" style="margin:0" id="pmd-file-sub">Format .xlsx, maksimal 5 MB</div>
-              </div>
-              <div style="margin-top:16px;display:flex;gap:10px">
-                <button class="btn btn-ghost" id="pmd-batal">← Kembali</button>
-                <button class="btn btn-primary" id="pmd-btn-validasi" disabled>✓ Validasi Berkas</button>
-              </div>
+          <div class="card" style="display:flex;flex-direction:column">
+            <div class="dropzone" id="pmd-dropzone">
+              <div style="font-size:26px;color:var(--slate);margin-bottom:10px">☁⬆</div>
+              <div style="font-weight:600;margin-bottom:4px" id="pmd-file-title">Tarik file ke sini atau klik untuk memilih</div>
+              <div class="hint" style="margin:0" id="pmd-file-sub">Format .xlsx, maksimal 5 MB</div>
             </div>
-
-            <div class="card" style="background:var(--blue-soft);border:1px solid #D7E6F5;margin-top:0">
-              <h2 class="card-title" style="font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--blue-ink);margin-bottom:14px">Langkah Pengisian</h2>
-              <ol class="numbered-list" id="pmd-langkah"></ol>
+            <div style="margin-top:16px;display:flex;gap:10px">
+              <button class="btn btn-ghost" id="pmd-batal">← Kembali</button>
+              <button class="btn btn-primary" id="pmd-btn-validasi" disabled>✓ Validasi Berkas</button>
             </div>
           </div>
         </div>
@@ -3209,6 +3221,9 @@
               <div class="hint" id="pma-detail-sub" style="margin:2px 0 0"></div>
             </div>
           </div>
+
+          <div class="card" id="pma-detail-progress"></div>
+
           <div class="card">
             <div class="tbl-wrap">
               <table>
