@@ -5,10 +5,12 @@ tujuannya agar user bisa *mencoba* alurnya, bukan hanya melihat gambar statis.
 
 ## Cara menjalankan
 
-1. Pastikan **keempat file berada dalam satu folder yang sama**
+1. Pastikan **semua file berada dalam satu folder yang sama**
 2. Klik dua kali `index.html`
 
-Tidak perlu install apa pun, tanpa server, tanpa internet.
+Tidak perlu install apa pun dan tanpa server. Tanpa internet pun jalan —
+hanya font Plus Jakarta Sans yang tidak terunduh, dan tampilan otomatis
+memakai font sistem.
 
 > Jika suatu saat tampilan jadi polos/tanpa warna, biasanya karena `style.css`
 > terpisah dari `index.html`. Pastikan semua file tetap satu folder.
@@ -21,6 +23,14 @@ Tidak perlu install apa pun, tanpa server, tanpa internet.
 | `data.js` | **Semua data contoh** | **Sering — mulai dari sini** |
 | `app.js` | Logika interaksi (navigasi, validasi) | Jarang |
 | `style.css` | Warna, ukuran, tata letak | Jarang |
+| `logo-asabri-white.png` | Logo di navbar | Tidak |
+| `CLAUDE.md` | Panduan untuk yang menambah layar/fitur baru | Jarang |
+
+Seluruh warna dan komponen (tombol, tabel, form, badge) didefinisikan di
+`style.css`, dan yang mengatur temanya cukup blok `:root` di bagian atas file
+itu. **Kalau menambah layar baru, ikuti gaya yang sudah ada di folder ini** —
+langkah dan daftar kelasnya ada di [CLAUDE.md](CLAUDE.md). Folder ini berdiri
+sendiri; tidak perlu repo atau tool lain.
 
 ## Mengedit data sendiri
 
