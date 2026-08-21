@@ -60,6 +60,9 @@
 
     <button class="nav-item" data-go="dapem">Pembentukan DAPEM</button>
     <button class="nav-item" data-go="non-dapem">Pembentukan NON DAPEM</button>
+    <button class="nav-item" data-go="dapem-validasi">Validasi Dapem <span class="pill pill-warn" style="margin-left:6px">10</span></button>
+    <button class="nav-item" data-go="dapem-keuangan">Rekap III Dapem</button>
+    <button class="nav-item" data-go="non-dapem-keuangan">Rekap III Non Dapem</button>
 
     <button class="nav-item nav-parent" id="nav-flagging-mitra" aria-expanded="true">
       <span>Pengelolaan Flagging Pinjaman Mitra</span><span class="chevron">⌄</span>
@@ -1299,11 +1302,100 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Pembentukan DAPEM</h1>
-            <div class="page-sub">Pembentukan Daftar Pembayaran (DAPEM).</div>
+            <div class="page-sub">Pembentukan Daftar Pembayaran (DAPEM) induk dan susulan per bulan bayar.</div>
+          </div>
+          <button class="btn btn-primary" id="dapem-baru">+ Mulai Periode Baru</button>
+        </div>
+
+        <div class="metrics m4" id="dapem-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Daftar Periode</h3>
+          <div class="toolbar">
+            <select class="inp" id="dapem-f-jenis" style="max-width:180px">
+              <option value="">Semua jenis</option>
+              <option>Induk</option>
+              <option>Susulan</option>
+            </select>
+            <select class="inp" id="dapem-f-status" style="max-width:180px">
+              <option value="">Semua status</option>
+              <option>Berjalan</option>
+              <option>Draft</option>
+              <option>Selesai</option>
+            </select>
+            <input class="inp" id="dapem-f-cari" placeholder="⌕ Cari bulan bayar…" style="max-width:220px">
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Bulan Bayar</th><th>Jenis</th><th>Tahap</th><th>Status</th>
+                  <th>Menunggu</th><th>Nopens</th><th>Bruto</th><th>Netto</th>
+                  <th>Temuan</th><th>Cut-off</th><th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="dapem-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="dapem-note"></div>
+        </div>
+      </section>
+
+      <!-- ---------- RUANG KERJA PEMBENTUKAN DAPEM ---------- -->
+      <section class="screen" id="s-dapem-proses">
+        <div class="head-row">
+          <button class="link-back" data-go="dapem">‹ Daftar Periode</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title" id="dp-judul">Pembentukan DAPEM</h1>
+            <div class="page-sub" id="dp-sub"></div>
           </div>
         </div>
+
+        <div id="dp-demo"></div>
+        <div id="dp-banner"></div>
+
+        <div class="review-card" style="margin-bottom:18px">
+          <div class="review-card-head">Parameter Run — dipakai seluruh tahap</div>
+          <div class="review-card-body">
+            <div class="grid3" id="dp-param"></div>
+          </div>
+        </div>
+
+        <div class="tabs" id="dp-tabs"></div>
+        <div id="dp-isi"></div>
+      </section>
+
+      <!-- ---------- TINJAU TEMUAN ---------- -->
+      <section class="screen" id="s-dapem-temuan">
+        <div class="head-row">
+          <button class="link-back" data-go="dapem-proses">‹ Kembali ke Tahap</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title" id="dtm-judul">Temuan</h1>
+            <div class="page-sub" id="dtm-sub"></div>
+          </div>
+        </div>
+
+        <div class="alert alert-info" id="dtm-aturan"><span>ⓘ</span><span></span></div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <div class="toolbar">
+            <button class="btn btn-ghost btn-sm" id="dtm-all">Pilih semua</button>
+            <button class="btn btn-ghost btn-sm" id="dtm-none">Kosongkan pilihan</button>
+            <span class="tbl-note" style="margin:0" id="dtm-param"></span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr id="dtm-head"></tr></thead>
+              <tbody id="dtm-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="dtm-note"></div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="dtm-abaikan">Abaikan terpilih…</button>
+            <button class="btn btn-primary" id="dtm-terapkan">Terapkan perbaikan</button>
+          </div>
         </div>
       </section>
 
@@ -1313,11 +1405,269 @@
         <div class="page-head">
           <div>
             <h1 class="page-title">Pembentukan NON DAPEM</h1>
-            <div class="page-sub">Pembentukan Daftar Pembayaran di luar mekanisme DAPEM.</div>
+            <div class="page-sub">Pembayaran di luar dapem: pensiun pertama, kekurangan pensiun, dan uang duka wafat.</div>
+          </div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-ghost" id="nd-log">▤ Log Eksekusi</button>
+            <button class="btn btn-primary" data-go="non-dapem-data">▤ Daftar Peserta</button>
           </div>
         </div>
+
+        <div id="nd-demo"></div>
+        <div id="nd-banner"></div>
+
+        <div class="review-card" style="margin-bottom:18px">
+          <div class="review-card-head">Parameter Run — dipakai seluruh langkah</div>
+          <div class="review-card-body">
+            <div class="grid3" id="nd-param"></div>
+            <div class="tbl-note" style="text-align:left" id="nd-param-note"></div>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="nd-metrics"></div>
+
+        <div id="nd-isi"></div>
+      </section>
+
+      <!-- ---------- TINJAU TEMUAN NON DAPEM ---------- -->
+      <section class="screen" id="s-non-dapem-temuan">
+        <div class="head-row">
+          <button class="link-back" data-go="non-dapem">‹ Kembali ke Pembentukan NON DAPEM</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title" id="ndt-judul">Temuan</h1>
+            <div class="page-sub" id="ndt-sub"></div>
+          </div>
+        </div>
+
+        <div class="alert alert-info" id="ndt-aturan"><span>ⓘ</span><span></span></div>
+
         <div class="card">
-          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+          <div class="toolbar">
+            <button class="btn btn-ghost btn-sm" id="ndt-all">Pilih semua</button>
+            <button class="btn btn-ghost btn-sm" id="ndt-none">Kosongkan pilihan</button>
+            <span class="tbl-note" style="margin:0" id="ndt-param"></span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr id="ndt-head"></tr></thead>
+              <tbody id="ndt-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="ndt-note"></div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" id="ndt-abaikan">Abaikan terpilih…</button>
+            <button class="btn btn-primary" id="ndt-terapkan">Terapkan perbaikan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- DAFTAR PESERTA YANG MASUK NON DAPEM ---------- -->
+      <section class="screen" id="s-non-dapem-data">
+        <div class="head-row">
+          <button class="link-back" data-go="non-dapem">‹ Pembentukan NON DAPEM</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title">Daftar Peserta NON DAPEM</h1>
+            <div class="page-sub" id="nn-sub"></div>
+          </div>
+          <div style="margin-left:auto">
+            <button class="btn btn-ghost" id="nn-export">⬇ Export Data</button>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="nn-metrics"></div>
+
+        <div class="card">
+          <div class="toolbar">
+            <select class="inp" id="nn-f-jenis" style="max-width:230px">
+              <option value="">Semua jenis bayar</option>
+              <option value="10">10 — Pensiun Pertama</option>
+              <option value="11">11 — Kekurangan Pensiun</option>
+              <option value="12">12 — Uang Duka Wafat</option>
+            </select>
+            <select class="inp" id="nn-f-bank" style="max-width:230px"></select>
+            <select class="inp" id="nn-f-pph" style="max-width:200px">
+              <option value="">Semua potongan PPh</option>
+              <option value="ada">Ada potongan PPh</option>
+              <option value="nol">Tanpa potongan PPh</option>
+            </select>
+            <input class="inp" id="nn-f-cari" placeholder="⌕ Cari nopens, nama, atau NIK…" style="max-width:260px">
+            <button class="btn btn-ghost btn-sm" id="nn-reset">Bersihkan filter</button>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th class="stick-l">Nopens</th><th>Nama</th><th>Jenis Bayar</th><th>NIK</th>
+                  <th>MAK</th><th>Kantor Bayar</th><th>Cabang</th><th>No. Rekening</th>
+                  <th>Pens. Pokok</th><th>Tunj. Istri</th><th>Tunj. Anak</th><th>Tunj. Beras</th>
+                  <th>Tunj. Lain</th><th>PPh 21</th><th>Pembulatan</th><th>Jml Bruto</th>
+                  <th>Jml Potongan</th><th>Jml Netto</th><th class="stick-r">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="nn-body"></tbody>
+            </table>
+          </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="nn-note" style="margin:0"></div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                  Baris
+                  <select class="inp" id="nn-per" style="width:70px;height:30px;padding:0 6px;font-size:11px">
+                    <option selected>10</option><option>25</option><option>50</option><option>100</option>
+                  </select>
+                </div>
+                <div id="nn-pager" style="display:flex;gap:4px"></div>
+              </div>
+            </div>
+        </div>
+      </section>
+
+      <!-- ---------- REKAP III NON DAPEM — SISI KEUANGAN ---------- -->
+      <section class="screen" id="s-non-dapem-keuangan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Rekap III Non Dapem</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap III Non Dapem</h1>
+            <div class="page-sub" id="ndk-sub">Rekapitulasi pembayaran di luar dapem per mata anggaran untuk dicetak Div. Keuangan.</div>
+          </div>
+          <button class="btn btn-primary" id="ndk-cetak" disabled>🖨 Cetak Rekap III</button>
+        </div>
+
+        <div id="ndk-banner"></div>
+        <div class="metrics m4" id="ndk-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Rekapitulasi per Mata Anggaran</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr><th>MAK</th><th>Uraian</th><th>Jumlah Nopens</th><th>Bruto</th><th>Netto</th></tr>
+              </thead>
+              <tbody id="ndk-body"></tbody>
+              <tfoot><tr id="ndk-total"></tr></tfoot>
+            </table>
+          </div>
+          <div class="tbl-note">Angka mengikuti hasil perhitungan ulang setelah balikan Bagian Pajak. Jumlah nopens tidak dijumlahkan antar mata anggaran karena satu peserta dapat muncul pada beberapa mata anggaran.</div>
+        </div>
+      </section>
+
+      <!-- ---------- DAFTAR PESERTA YANG MASUK DAPEM (dari Daftar Periode) ---------- -->
+      <section class="screen" id="s-dapem-data">
+        <div class="head-row">
+          <button class="link-back" data-go="dapem">‹ Daftar Periode</button>
+          <div class="head-divider"></div>
+          <div>
+            <h1 class="page-title">Daftar Peserta DAPEM</h1>
+            <div class="page-sub" id="dd-sub"></div>
+          </div>
+          <div style="margin-left:auto">
+            <button class="btn btn-ghost" id="dd-export">⬇ Export Data</button>
+          </div>
+        </div>
+
+        <div class="metrics m4" id="dd-metrics"></div>
+
+        <div class="card">
+          <div class="toolbar">
+            <select class="inp" id="dd-f-jiwa" style="max-width:190px"></select>
+            <select class="inp" id="dd-f-bank" style="max-width:230px"></select>
+            <select class="inp" id="dd-f-oten" style="max-width:190px">
+              <option value="">Semua kode otentikasi</option>
+              <option value="31">31 — bayar langsung</option>
+              <option value="00">00 — dijamin</option>
+            </select>
+            <input class="inp" id="dd-f-cari" placeholder="⌕ Cari nopens, nama, atau NIK…" style="max-width:260px">
+            <button class="btn btn-ghost btn-sm" id="dd-reset">Bersihkan filter</button>
+          </div>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th class="stick-l">Nopens</th><th>Nama</th><th>Kode Jiwa</th><th>NIK</th>
+                  <th>MAK</th><th>Kantor Bayar</th><th>Cabang</th><th>No. Rekening</th>
+                  <th>Pens. Pokok</th><th>Tunj. Istri</th><th>Tunj. Anak</th><th>Tunj. Beras</th>
+                  <th>Tunj. Lain</th><th>Pembulatan</th><th>Jml Bruto</th><th>Jml Potongan</th>
+                  <th>Jml Netto</th><th>OTEN</th><th class="stick-r">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="dd-body"></tbody>
+            </table>
+          </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="dd-note" style="margin:0"></div>
+              <div style="display:flex;align-items:center;gap:14px">
+                <div style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)">
+                  Baris
+                  <select class="inp" id="dd-per" style="width:70px;height:30px;padding:0 6px;font-size:11px">
+                    <option selected>10</option><option>25</option><option>50</option><option>100</option>
+                  </select>
+                </div>
+                <div id="dd-pager" style="display:flex;gap:4px"></div>
+              </div>
+            </div>
+        </div>
+      </section>
+
+      <!-- ---------- VALIDASI DAPEM — SISI DIV. KEPESERTAAN ---------- -->
+      <section class="screen" id="s-dapem-validasi">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Validasi Dapem</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Validasi Dapem</h1>
+            <div class="page-sub" id="dv-sub">Pemeriksaan calon dapem oleh Div. Kepesertaan sebelum diproses lebih lanjut.</div>
+          </div>
+        </div>
+
+        <div id="dv-banner"></div>
+        <div class="metrics m3" id="dv-metrics"></div>
+        <div class="alert alert-info" id="dv-pengantar"><span>ⓘ</span><span></span></div>
+
+        <div id="dv-isi"></div>
+
+        <div class="card">
+          <div class="head-row" style="margin-bottom:0">
+            <div>
+              <h3 class="card-title" style="margin:0">Kirim Hasil Validasi</h3>
+              <div class="page-sub" id="dv-progres"></div>
+            </div>
+            <div style="margin-left:auto;display:flex;gap:9px">
+              <button class="btn btn-ghost" id="dv-simpan">Simpan Sementara</button>
+              <button class="btn btn-primary" id="dv-kirim" disabled>Kirim ke TI Manajemen Data</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ---------- REKAP III DAPEM — SISI KEUANGAN ---------- -->
+      <section class="screen" id="s-dapem-keuangan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Kepesertaan</span><span>›</span><b>Rekap III Dapem</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Rekap III Dapem</h1>
+            <div class="page-sub" id="dk-sub">Rekapitulasi belanja pensiun per mata anggaran untuk dicetak Div. Keuangan.</div>
+          </div>
+          <div style="display:flex;gap:9px">
+            <button class="btn btn-ghost" id="dk-export" disabled>⬇ Export Rekap III</button>
+            <button class="btn btn-primary" id="dk-cetak" disabled>🖨 Cetak Rekap III</button>
+          </div>
+        </div>
+
+        <div id="dk-banner"></div>
+        <div class="metrics m4" id="dk-metrics"></div>
+
+        <div class="card">
+          <h3 class="card-title">Rekapitulasi per Mata Anggaran</h3>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr><th>MAK</th><th>Uraian</th><th>Jumlah Nopens</th><th>Bruto</th><th>Netto</th></tr>
+              </thead>
+              <tbody id="dk-body"></tbody>
+              <tfoot><tr id="dk-total"></tr></tfoot>
+            </table>
+          </div>
+          <div class="tbl-note">Angka mengikuti data dapem yang sudah diunggah ke tabel pembayaran. Jumlah nopens tidak dijumlahkan antar mata anggaran karena satu peserta dapat muncul pada beberapa mata anggaran.</div>
         </div>
       </section>
 

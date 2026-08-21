@@ -13,8 +13,9 @@
 
 /* ---------------------------------------------------------------------------
    1. DAFTAR KOLOM DATA PESERTA
-   Dipakai bersama oleh: tabel List Kotor, tabel Preview & Simpan,
-   form Revisi, dan form Registrasi Individu.
+   Dipakai bersama oleh alur Kolektif: tabel List Kotor, form Revisi,
+   tabel Preview & Simpan, dan tabel batch di Verifikasi Kolektif.
+   (Pendaftaran Perorangan punya daftar kolomnya sendiri di app.js.)
    Format: ["kunci_data", "JUDUL KOLOM YANG TAMPIL"]
    Menambah kolom di sini otomatis menambahkannya di semua tampilan tersebut.
    --------------------------------------------------------------------------- */
@@ -1303,7 +1304,7 @@ const DATA_SPTB = [
 ];
 
 /* ---------------------------------------------------------------------------
-   18. PENGELOLAAN REQUEST UMUM
+   25. PENGELOLAAN REQUEST UMUM
    Permintaan pemutakhiran/informasi data peserta yang dikirim Kantor Cabang
    kepada Divisi Kepesertaan dan Pengembangan Manfaat. `riwayat` adalah utas
    percakapan per request — entri pertama selalu dari Kantor Cabang (pengirim
@@ -1432,4 +1433,699 @@ const DATA_REQUEST_UMUM = [
     riwayat:[
       { jam:"31 Jul 2026 08:00", user:"Christine / KC Manado", isi:"Data angkatan peserta kosong pada sistem, mohon dilengkapi sesuai SK terlampir.", file:"sk-teguh.pdf" }
     ] }
+];
+
+/* ===========================================================================
+   20. PEMBENTUKAN DAPEM
+   ---------------------------------------------------------------------------
+   Parameter run — di proses manual, nilai-nilai ini di-hardcode dan diulang
+   ratusan kali di file SQL (dengan catatan "ubah bulan bayar"). Di sini
+   diisi SEKALI saat periode dibuka, lalu dipakai semua tahap & pemeriksaan.
+   =========================================================================== */
+const DAPEM_PARAM = {
+  blnbyr:        "202607",       // bulan bayar dapem yang dibentuk
+  blnbyrPrev:    "202606",       // bulan bayar sebelumnya (pembanding)
+  jnsbyr:        "20",           // 20 = Induk, 23 = Susulan
+  jenis:         "Induk",
+  tglCutoff:     "15 Jun 2026",  // entri < 16 Jun 2026
+  tglDapem:      "01 Jul 2026",
+  otenDari:      "01 Jun 2026",
+  otenSampai:    "16 Jun 2026",
+  tahunPajakAwal:"202601"
+};
+
+/* Enam tahap. 26 langkah di dokumen proses dikelompokkan ke sini. */
+const DAPEM_TAHAP = [
+  { no:1, kode:"generate",    nama:"Generate & Cleansing",   aktor:"TI (Manajemen Data)",  status:"aktif" },
+  { no:2, kode:"kepesertaan", nama:"Validasi Kepesertaan",   aktor:"Div. Kepesertaan",     status:"terkunci" },
+  { no:3, kode:"tunsil",      nama:"Tunjuk Silang & NIK",    aktor:"TI + Kepesertaan",     status:"terkunci" },
+  { no:4, kode:"pajak",       nama:"Validasi Pajak",         aktor:"Bagian Pajak",         status:"terkunci" },
+  { no:5, kode:"sipp",        nama:"Validasi SIPP",          aktor:"SIPP",                 status:"terkunci" },
+  { no:6, kode:"yar",         nama:"Upload YAR & Kode OTEN", aktor:"TI + Keuangan",        status:"terkunci" }
+];
+
+/* Angka kontrol per tahap. Menggantikan kebiasaan mencatat "Generate 1 -> 1.845"
+   sebagai komentar di file SQL. */
+const DAPEM_RINGKAS = {
+  generate:    { nopens:245310, delta:128,  bruto:1024800000000, netto:983400000000 },
+  kepesertaan: { nopens:245297, delta:-13,  bruto:1024310000000, netto:982950000000 },
+  tunsil:      { nopens:245297, delta:0,    bruto:1024310000000, netto:982950000000 },
+  pajak:       { nopens:245297, delta:0,    bruto:1026880000000, netto:982950000000 },
+  sipp:        { nopens:245297, delta:0,    bruto:1026880000000, netto:982950000000 },
+  yar:         { nopens:245297, delta:0,    bruto:1026880000000, netto:982950000000 }
+};
+
+/* Langkah tanpa keputusan — dijalankan sistem, tidak perlu tombol.
+   Ditampilkan ringkas supaya tetap bisa diaudit. */
+const DAPEM_OTOMATIS = {
+  generate: [
+    { nama:"Isi kode cabang dari mitra bayar",        param:"CAB IN ('0','1000') / NULL", baris:412 },
+    { nama:"Bersihkan koma pada NRP_NIP & NOPENS",    param:"LIKE '%,%'",                 baris:3 },
+    { nama:"Bersihkan spasi pada rekening BRI",       param:"BANK = 'AAA'",               baris:27 },
+    { nama:"Hitung ulang bruto, potongan & netto",    param:"seluruh baris periode",      baris:245310 },
+    { nama:"Pembulatan netto ke kelipatan 100",       param:"seluruh baris periode",      baris:245310 }
+  ],
+  kepesertaan: [
+    { nama:"Terapkan pemutakhiran NIK dari Kepesertaan", param:"berkas balikan", baris:0 }
+  ],
+  tunsil: [
+    { nama:"Tandai penanggung PPh per NIK",          param:"agregasi per NIK",     baris:238104 },
+    { nama:"Susun ADK tunjuk silang",                param:"BLNBYR = 202607",      baris:245297 }
+  ],
+  pajak: [
+    { nama:"Bentuk data bruto sebelum pajak",        param:"seluruh baris periode", baris:245297 },
+    { nama:"Hitung PPh 21 dengan tarif TER",         param:"per NIK, status PTKP",  baris:238104 }
+  ],
+  sipp: [
+    { nama:"Bentuk berkas master & bayar ADK",       param:"BLNBYR 202607 / JNSBYR 20", baris:245297 },
+    { nama:"Deteksi mutasi terhadap bulan lalu",     param:"pembanding 202606",         baris:1842 }
+  ],
+  yar: [
+    { nama:"Salin data dapem ke tabel pembayaran",   param:"BLNBYR 202607", baris:245297 }
+  ]
+};
+
+/* Pemeriksaan (gate). Kolom `param` memperlihatkan parameter SQL yang dipakai,
+   supaya operator tahu persis dasar pemeriksaannya. */
+const DAPEM_GATE = [
+  /* --- Tahap 1: Generate & Cleansing --- */
+  { tahap:"generate", kode:"D-01", nama:"Nomor pensiun ganda",
+    param:"COUNT(NOPENS) > 1", sev:"tinggi", temuan:0 },
+  { tahap:"generate", kode:"D-02", nama:"Cabang / bank / MAK kosong",
+    param:"CAB, BANK, BRANCH, MAK, F_BYR IS NULL", sev:"tinggi", temuan:0 },
+  { tahap:"generate", kode:"D-03", nama:"Pensiun pertama sendiri tidak terbit",
+    param:"JNSBYR 10 · entri 01–15 Jun 2026", sev:"tinggi", temuan:0 },
+  { tahap:"generate", kode:"D-04", nama:"Pensiun wari & tunjangan tidak terbit",
+    param:"JNSBYR 10 · tgl dapem end = tgl lahir/SM", sev:"tinggi", temuan:0 },
+  { tahap:"generate", kode:"D-05", nama:"Kancab Aceh selain POS & BSI",
+    param:"CAB IN ('2200','2201') AND BANK NOT IN ('AAG','ABE')", sev:"sedang", temuan:0 },
+  { tahap:"generate", kode:"D-06", nama:"Bank Mandiri masih terpakai",
+    param:"BANK = 'ABD'", sev:"sedang", temuan:0 },
+  { tahap:"generate", kode:"D-07", nama:"Bank BNC sudah tidak berlaku PKS",
+    param:"BANK = 'AAD'", sev:"sedang", temuan:0 },
+  { tahap:"generate", kode:"D-08", nama:"Pembayaran tunai",
+    param:"F_BYR = 'T'", sev:"sedang", temuan:0 },
+  { tahap:"generate", kode:"D-09", nama:"Tunjangan anak di atas 21 tahun",
+    param:"KODE_JIWA IN ('0001','0002') · umur > 20 per 01 Jul 2026", sev:"tinggi", temuan:13 },
+  { tahap:"generate", kode:"D-10", nama:"Tunjangan cacat tidak sama dengan master",
+    param:"TUNJ_CACAT <> master tunjangan cacat", sev:"tinggi", temuan:7 },
+  { tahap:"generate", kode:"D-11", nama:"Tunjangan IRJA tanpa provinsi Papua",
+    param:"prov_id IN (35,36,37,38,…) AND TUNJ_IRJA = 0", sev:"sedang", temuan:0 },
+  { tahap:"generate", kode:"D-12", nama:"Pensiun bagi PNS — 1 KTPA lebih dari 1 nopens",
+    param:"KODE_JIWA IN ('0100','0101','0102','0001','0002') · status personil = 2", sev:"tinggi", temuan:2 },
+  { tahap:"generate", kode:"D-13", nama:"Rekening flagging berbeda dengan set dapem",
+    param:"status flagging = 3 AND norek dapem = norek flagging", sev:"tinggi", temuan:5 },
+  /* --- Tahap 2: Validasi Kepesertaan --- */
+  { tahap:"kepesertaan", kode:"K-01", nama:"Belum otentikasi 2 bulan terakhir",
+    param:"tidak ada otentikasi sejak 202605", sev:"tinggi", temuan:34 },
+  { tahap:"kepesertaan", kode:"K-02", nama:"Seharusnya terbit tapi tidak muncul",
+    param:"balikan Kepesertaan", sev:"tinggi", temuan:6 },
+  { tahap:"kepesertaan", kode:"K-03", nama:"Seharusnya tidak terbit",
+    param:"balikan Kepesertaan", sev:"tinggi", temuan:9 },
+  { tahap:"kepesertaan", kode:"K-04", nama:"Mitra calon dapem ≠ mitra flagging kredit",
+    param:"mitra dapem <> mitra flagging", sev:"sedang", temuan:3 },
+  /* --- Tahap 3: Tunjuk Silang & NIK --- */
+  { tahap:"tunsil", kode:"T-01", nama:"NIK kosong",
+    param:"NIK IS NULL OR NIK = ''", sev:"tinggi", temuan:0 },
+  { tahap:"tunsil", kode:"T-02", nama:"NIK ganda lebih dari 2 nopens",
+    param:"COUNT(*) > 2 GROUP BY NIK", sev:"sedang", temuan:11 },
+  { tahap:"tunsil", kode:"T-03", nama:"Penanggung PPh ganda dalam satu NIK",
+    param:"kode jiwa kembar dalam satu NIK", sev:"tinggi", temuan:2 },
+  /* --- Tahap 4: Validasi Pajak --- */
+  { tahap:"pajak", kode:"P-01", nama:"Selisih PPh terhadap balikan Bagian Pajak",
+    param:"PPh sistem <> PPh balikan", sev:"tinggi", temuan:0 },
+  { tahap:"pajak", kode:"P-02", nama:"Sudah masuk dapem terusan tahun berjalan",
+    param:"BLNBYR 202601–202607 · sudah dilaporkan", sev:"sedang", temuan:0 },
+  /* --- Tahap 5: Validasi SIPP --- */
+  { tahap:"sipp", kode:"S-01", nama:"Pensiun pokok ≠ penetapan pokok ADK",
+    param:"PENS_POKOK <> penspok per kode jiwa", sev:"tinggi", temuan:0 },
+  { tahap:"sipp", kode:"S-02", nama:"Ada tunjangan cacat tapi gaji pokok kosong",
+    param:"TUNJ_CACAT > 0 AND GAPOK IS NULL", sev:"tinggi", temuan:0 },
+  { tahap:"sipp", kode:"S-03", nama:"Kode provinsi tidak terbaca SIPP",
+    param:"prov_id di luar 33–38", sev:"sedang", temuan:0 },
+  { tahap:"sipp", kode:"S-04", nama:"Potongan hutang padahal sudah lunas",
+    param:"POT_HUTANG > 0 AND sisa hutang = 0", sev:"tinggi", temuan:0 },
+  { tahap:"sipp", kode:"S-05", nama:"Selisih rekap SIPP dengan data internal",
+    param:"per MAK · jumlah, bruto, netto", sev:"tinggi", temuan:0 },
+  /* --- Tahap 6: Upload YAR & Kode OTEN --- */
+  { tahap:"yar", kode:"Y-01", nama:"Kode otentikasi masih kosong",
+    param:"OTEN IS NULL", sev:"tinggi", temuan:0 },
+  { tahap:"yar", kode:"Y-02", nama:"Kode cabang kosong di tabel pembayaran",
+    param:"CAB IS NULL · BLNBYR 202607", sev:"tinggi", temuan:0 },
+  { tahap:"yar", kode:"Y-03", nama:"Tanggal entri tidak seragam",
+    param:"TG_INP1 <> 01 Jul 2026", sev:"sedang", temuan:0 }
+];
+
+/* Rincian temuan. Sengaja hanya beberapa gate yang diisi — cukup untuk
+   memperagakan alur tinjau → pilih → terapkan. */
+const DAPEM_TEMUAN = {
+  "D-09": {
+    aturan:"Anak berumur lebih dari 21 tahun per 01 Jul 2026 dan tanggal dapem end-nya sudah terlewat, sehingga tunjangan seharusnya tidak terbit. Anak yang masih kuliah dikecualikan.",
+    aksi:"Keluarkan dari dapem",
+    kolom:["Nopens","Nama","Kode Jiwa","Umur","Tgl Dapem End","Catatan"],
+    baris:[
+      { pilih:true,  sel:["2013110847","ANANDA PRATAMA","0001","22","01 Mei 2026",""] },
+      { pilih:true,  sel:["2011210299","BAGAS SETIAWAN","0001","23","01 Apr 2026",""] },
+      { pilih:false, sel:["2014140204","CITRA DEWANTI","0002","21","01 Ags 2027","Masih kuliah — dikecualikan"] },
+      { pilih:true,  sel:["2012110558","DIMAS ANGGARA","0001","22","01 Mar 2026",""] },
+      { pilih:true,  sel:["2013110992","ERIKA PUTRI","0002","24","01 Feb 2026",""] },
+      { pilih:false, sel:["2015110331","FARHAN MAULANA","0001","21","01 Des 2027","Masih kuliah — dikecualikan"] },
+      { pilih:true,  sel:["2011210447","GITA RAHAYU","0001","23","01 Jan 2026",""] }
+    ]
+  },
+  "D-10": {
+    aturan:"Nilai tunjangan cacat pada calon dapem berbeda dengan master tunjangan cacat. Peserta yang sudah meninggal (dapem terusan) tidak berhak atas tunjangan cacat.",
+    aksi:"Samakan dengan master",
+    kolom:["Nopens","Nama","Tunj. Cacat Dapem","Tunj. Cacat Master","Selisih","Catatan"],
+    baris:[
+      { pilih:true,  sel:["1997110357","HADI SUSANTO","1.808.300","904.150","+904.150",""] },
+      { pilih:true,  sel:["2000110100","INDRA GUNAWAN","1.731.600","1.298.700","+432.900",""] },
+      { pilih:false, sel:["1990120012","JOKO WIDODO","1.448.400","0","+1.448.400","Sudah meninggal — nolkan lewat koreksi manual"] },
+      { pilih:true,  sel:["2002110253","KARTIKA SARI","2.284.900","1.713.675","+571.225",""] },
+      { pilih:true,  sel:["2002110562","LUKMAN HAKIM","1.731.600","1.298.700","+432.900",""] }
+    ]
+  },
+  "D-12": {
+    aturan:"Satu nomor KTPA memiliki lebih dari satu nomor pensiun dengan status personil PNS. Pensiun pokoknya harus dibagi, bukan diberikan penuh ke masing-masing.",
+    aksi:"Bagi pensiun pokok",
+    kolom:["KTPA","Nopens","Nama","Kode Jiwa","Pens. Pokok","Seharusnya"],
+    baris:[
+      { pilih:true, sel:["CZ103326","CZ10332612","SITI AMINAH","0100","1.591.200","795.600"] },
+      { pilih:true, sel:["CZ103326","CZ10332613","RIZKY AMANDA","0001","1.591.200","795.600"] }
+    ]
+  },
+  "D-13": {
+    aturan:"Nomor rekening pada calon dapem mengikuti rekening flagging pinjaman milik peserta lain dalam satu KTPA. Rekening yatim seharusnya mengikuti set rekening dapem, bukan rekening flagging.",
+    aksi:"Kembalikan ke set dapem",
+    kolom:["KTPA","Nopens","Nama","Norek Dapem","Norek Set Dapem","Mitra"],
+    baris:[
+      { pilih:true, sel:["EZ109152","EZ10915213","NOVITA SARI","1448****0502","1448****0502","BRI KK ASABRI"] },
+      { pilih:true, sel:["BE385294","BE38529413","OKTAVIAN HANIF","0002****4929","0187****1704","SMBC KCP Wonosari"] },
+      { pilih:true, sel:["DE306629","DE30662913","PUTRI HAWI","2006****8890","2006****8890","Mantap KC Tasikmalaya"] },
+      { pilih:true, sel:["ED366529","ED36652913","QORI ANANDA","0177****5502","0177****5502","BRI KC Trenggalek"] },
+      { pilih:false,sel:["BZ115850","BZ11585013","RAHMA ELSA","0000****6756","0000****6756","KPRK Ujungberung"] }
+    ]
+  },
+  "K-01": {
+    aturan:"Peserta belum melakukan otentikasi dalam dua bulan terakhir. Sesuai ketentuan semester II, dapem tetap dibentuk tetapi diberi kode otentikasi blokir sampai peserta melakukan otentikasi.",
+    aksi:"Beri kode blokir",
+    kolom:["Nopens","Nama","Otentikasi Terakhir","Kanal","Kantor Bayar","Catatan"],
+    baris:[
+      { pilih:true, sel:["1996140026","SUPARMAN","12 Mar 2026","Digital","BRI KC Solo",""] },
+      { pilih:true, sel:["1991140523","TUTI HERAWATI","28 Feb 2026","Manual","POS Yogyakarta",""] },
+      { pilih:true, sel:["1999120053","UMAR BAKRI","05 Mar 2026","Digital","BSI KC Medan",""] }
+    ]
+  },
+  "K-02": {
+    aturan:"Menurut Kepesertaan nopens berikut seharusnya terbit pada dapem bulan ini, tetapi tidak muncul saat pembentukan.",
+    aksi:"Terbitkan ke dapem",
+    kolom:["Nopens","Nama","Kode Jiwa","Alasan Kepesertaan","Tgl Dapem End"],
+    baris:[
+      { pilih:true, sel:["2006140118","AGUS SALIM","1000","SK pensiun sudah terbit 12 Mei 2026","—"] },
+      { pilih:true, sel:["2007140226","BUDIONO","0100","Perbaikan tanggal batas sudah dilakukan","—"] }
+    ]
+  },
+  "K-03": {
+    aturan:"Menurut Kepesertaan nopens berikut seharusnya tidak terbit pada dapem bulan ini karena haknya sudah berakhir.",
+    aksi:"Keluarkan dari dapem",
+    kolom:["Nopens","Nama","Kode Jiwa","Alasan Kepesertaan","Tgl Dapem End"],
+    baris:[
+      { pilih:true, sel:["1994110552","CAHYONO","1000","Meninggal 03 Jun 2026","01 Jul 2026"] },
+      { pilih:true, sel:["2003120884","DEWI ANGGRAINI","0100","Menikah lagi, hak wari berakhir","01 Jun 2026"] },
+      { pilih:true, sel:["2009140337","EKO PRASETYO","0001","Sudah bekerja tetap","01 Mei 2026"] }
+    ]
+  },
+  "K-04": {
+    aturan:"Mitra bayar pada calon dapem berbeda dengan mitra flagging kredit yang tercatat di Kepesertaan.",
+    aksi:"Sesuaikan mitra bayar",
+    kolom:["Nopens","Nama","Mitra Dapem","Mitra Flagging","Catatan"],
+    baris:[
+      { pilih:true, sel:["2002140771","FAJAR NUGROHO","BRI KC Solo","Mantap KC Solo","Flagging aktif sejak Mei 2026"] },
+      { pilih:true, sel:["1998110443","GALIH SAPUTRA","SMBC KCP Wonosari","BWS KC Cirebon","Take over Juni 2026"] }
+    ]
+  },
+  "T-02": {
+    aturan:"Satu NIK dipakai oleh lebih dari dua nomor pensiun. Perlu dipastikan memang satu keluarga penerima, karena PPh 21 dihitung atas gabungan penghasilan per NIK.",
+    aksi:"Tandai sudah diverifikasi",
+    kolom:["NIK","Jumlah Nopens","Nopens","Hubungan","Total Bruto"],
+    baris:[
+      { pilih:true, sel:["3174****0117","3","2008140xxx, 2008140yyy, 2008140zzz","Janda + 2 anak","7.240.600"] },
+      { pilih:true, sel:["3273****0442","3","2011210xxx, 2011210yyy, 2011210zzz","Janda + 2 anak","6.880.150"] },
+      { pilih:true, sel:["3515****0908","4","2005110xxx dan 3 lainnya","Janda + 3 anak","9.120.400"] }
+    ]
+  },
+  "T-03": {
+    aturan:"Dalam satu NIK terdapat lebih dari satu baris dengan kode jiwa yang sama, sehingga penanggung PPh tidak dapat ditentukan secara tunggal. Jika dibiarkan, PPh atas bruto gabungan berpotensi dipotong dua kali.",
+    aksi:"Tetapkan penanggung",
+    kolom:["NIK","Nopens","Nama","Kode Jiwa","Bruto","Status"],
+    baris:[
+      { pilih:true, sel:["3174****0001","2010110447","VINA MARLINA","0100","4.820.400","Kandidat penanggung"] },
+      { pilih:true, sel:["3174****0001","2010110448","VINA MARLINA","0100","4.820.400","Kandidat penanggung"] }
+    ]
+  }
+};
+
+/* Riwayat kirim–terima dengan pihak luar. Loop ini bisa terjadi berkali-kali
+   dan di proses manual hanya terekam di rantai email. */
+const DAPEM_PUTARAN = {
+  pajak: [
+    { putaran:1, kirim:"18 Jun 2026 16:20", oleh:"Menda", berkas:"dapem-202607-pajak.xlsx", balas:"20 Jun 2026 09:45", hasil:"Selisih pada 12 nopens", status:"Selesai" },
+    { putaran:2, kirim:"20 Jun 2026 14:10", oleh:"Menda", berkas:"dapem-202607-pajak-rev1.xlsx", balas:"—", hasil:"Menunggu balasan", status:"Menunggu" }
+  ],
+  sipp: [
+    { putaran:1, kirim:"22 Jun 2026 17:00", oleh:"Menda", berkas:"6 berkas (master, bayar, susulan, mutasi, stop, tunjuk silang)", balas:"23 Jun 2026 11:20", hasil:"Penspok tidak sama pada 8 nopens", status:"Selesai" },
+    { putaran:2, kirim:"23 Jun 2026 15:40", oleh:"Menda", berkas:"2 berkas (master, bayar)", balas:"—", hasil:"Menunggu balasan", status:"Menunggu" }
+  ]
+};
+
+/* Berkas ADK untuk SIPP. Penamaan dibentuk sistem — di proses manual diketik
+   tangan dan penanggalannya mudah salah. */
+const DAPEM_BERKAS_SIPP = [
+  { urut:1, jenis:"Master",          nama:"Master 20260721100001_16-06-2026", baris:245297, status:"Siap" },
+  { urut:2, jenis:"Bayar",           nama:"20260721100001_16-06-2026",        baris:245297, status:"Siap" },
+  { urut:3, jenis:"Susulan",         nama:"20260722100001_16-06-2026",        baris:1845,   status:"Siap" },
+  { urut:4, jenis:"Mutasi",          nama:"20260723100001_16-06-2026",        baris:1842,   status:"Siap" },
+  { urut:5, jenis:"Stop",            nama:"20260724100001_16-06-2026",        baris:612,    status:"Siap" },
+  { urut:6, jenis:"ADK Tunjuk Silang",nama:"ADK_TUNJUK_SILANG_202607",        baris:245297, status:"Siap" }
+];
+
+/* Daftar periode pada layar utama. */
+const DAPEM_PERIODE = [
+  { periode:"202607", jenis:"Induk",   tahap:"Generate & Cleansing", tahapNo:1, status:"Berjalan", menunggu:"TI (Manajemen Data)",
+    nopens:245310, bruto:1024800000000, netto:983400000000, temuan:27, cutoff:"15 Jun 2026" },
+  { periode:"202607", jenis:"Susulan", tahap:"Belum dimulai",        tahapNo:0, status:"Draft",    menunggu:"—",
+    nopens:0, bruto:0, netto:0, temuan:0, cutoff:"30 Jun 2026" },
+  { periode:"202606", jenis:"Induk",   tahap:"Selesai",              tahapNo:6, status:"Selesai",  menunggu:"—",
+    nopens:245182, bruto:1021400000000, netto:980100000000, temuan:0, cutoff:"15 Mei 2026" },
+  { periode:"202606", jenis:"Susulan", tahap:"Selesai",              tahapNo:6, status:"Selesai",  menunggu:"—",
+    nopens:1793,   bruto:7480000000,    netto:7190000000,   temuan:0, cutoff:"31 Mei 2026" },
+  { periode:"202605", jenis:"Induk",   tahap:"Selesai",              tahapNo:6, status:"Selesai",  menunggu:"—",
+    nopens:245044, bruto:1019800000000, netto:978600000000, temuan:0, cutoff:"15 Apr 2026" }
+];
+
+/* ===========================================================================
+   21. PEMBENTUKAN NON DAPEM
+   Jenis bayar 10 (pensiun pertama), 11 (kekurangan pensiun), 12 (uang duka).
+   =========================================================================== */
+const NONDAPEM_PARAM = {
+  blnbyr:      "202606",   // bulan bayar data non dapem yang ditarik
+  blnbyrDapem: "202607",   // dibentuk berbarengan dapem induk bulan berikutnya
+  jnsbyr:      "10, 11, 12"
+};
+
+const NONDAPEM_RINGKAS = { nopens:2627, jenis10:844, jenis11:1591, jenis12:192, bruto:41280000000, netto:39640000000 };
+
+/* Tiga lajur aktor. Sama seperti dapem, yang membedakan perlakuan adalah jenis
+   batasnya: Pajak tidak memakai YANDU sehingga penyerahannya di luar sistem. */
+const NONDAPEM_LANE = [
+  { kode:"ti",       nama:"TI (Menda)", jenis:"dalam sistem" },
+  { kode:"pajak",    nama:"Pajak",      jenis:"luar sistem" },
+  { kode:"keuangan", nama:"Keuangan",   jenis:"dalam sistem" }
+];
+
+/* F1.2.1 & F1.2.2 — rekonsiliasi ringkasan vs rincian.
+   Di proses manual dua tabel ditarik lalu dicocokkan di Excel. */
+const NONDAPEM_SELISIH = [
+  { pilih:true, nopens:"1995210160", nama:"WAHYU SANTOSO",  jenis:"11", ringkasan:"1.250.000", rincian:"1.250.050", selisih:"50",      sebab:"Nilai bruto rincian berbeda" },
+  { pilih:true, nopens:"1993110284", nama:"XAVERIUS DONI",  jenis:"11", ringkasan:"2.480.000", rincian:"0",         sebab:"Tanggal entri tidak cocok", rincianKosong:true },
+  { pilih:true, nopens:"2001120039", nama:"YULIANA DEWI",   jenis:"11", ringkasan:"3.120.000", rincian:"3.120.000", selisih:"0",       sebab:"Nomor pengajuan berbeda" },
+  { pilih:true, nopens:"1998110771", nama:"ZAINAL ABIDIN",  jenis:"11", ringkasan:"960.000",   rincian:"1.920.000", selisih:"-960.000",sebab:"Rincian terhitung dua kali" }
+];
+
+/* F1.2.3 — kelengkapan data. N-01 angkanya mengikuti sisa selisih di atas. */
+const NONDAPEM_GATE = [
+  { kode:"N-01", nama:"Ringkasan tidak sama dengan rincian",
+    param:"JNSBYR 11 · bruto ringkasan vs rincian", sev:"tinggi", temuan:4 },
+  { kode:"N-02", nama:"Kode cabang kosong atau tidak valid",
+    param:"CAB IN ('0','1000') OR CAB IS NULL", sev:"tinggi", temuan:0 },
+  { kode:"N-03", nama:"Kantor bayar POS tanpa kode juru bayar",
+    param:"BANK = 'AAG' AND KD_JBY IS NULL", sev:"sedang", temuan:0 },
+  { kode:"N-04", nama:"Uang duka wafat terkena potongan pajak",
+    param:"JNSBYR 12 AND POT_PPH21 <> 0", sev:"tinggi", temuan:2 }
+];
+
+/* Rincian temuan yang bisa ditinjau. N-02 dan N-03 bersih pada periode ini,
+   jadi tidak punya rincian — sengaja dibiarkan begitu. */
+const NONDAPEM_TEMUAN = {
+  "N-04": {
+    aturan:"Uang duka wafat (jenis bayar 12) tidak dikenakan PPh 21. Baris berikut masih memiliki potongan PPh, sehingga netto yang dibayarkan kurang dari yang seharusnya.",
+    aksi:"Nolkan potongan PPh",
+    kolom:["Nopens","Nama Penerima","Jenis Bayar","Bruto","POT PPh21","Netto Seharusnya"],
+    baris:[
+      { pilih:true, sel:["1997120884","SUMIYATI","12","29.380.000","1.469.000","29.380.000"] },
+      { pilih:true, sel:["2001120147","HERLINA WATI","12","24.120.000","1.206.000","24.120.000"] }
+    ]
+  }
+};
+
+/* F1.2.4 — backup ke DB Dev sebelum data diserahkan ke Pajak.
+   Langkah ini tidak punya kotak keputusan, tetapi wajib dan mudah terlewat. */
+const NONDAPEM_BACKUP = {
+  sumber: "DB_PROD.asabri_peserta.dbo.AP3_TBL_YAR_ALL",
+  tujuan: "x_AP3_TBL_YAR_ALL_NONDAPEM_BCK (DB Dev)",
+  param:  "JNSBYR IN ('10','11','12') AND BLNBYR = '202606'",
+  baris:  2627
+};
+
+/* F1.2.5 – F1.2.7 — satu putaran penyerahan ke Pajak.
+   Berbeda dengan dapem: Pajak MENARIK sendiri datanya, bukan dikirimi berkas. */
+const NONDAPEM_PUTARAN = {
+  putaran: 1,
+  info:    "02 Jul 2026 10:15",
+  oleh:    "Menda",
+  sumber:  "Aplikasi Pensiun (Dropping Dana) + Yandu (Report UKP)",
+  balas:   "03 Jul 2026 14:30",
+  berkas:  "NON DAPEM JUN KIRIM SISFO.xlsx",
+  tabel:   "x_tbl_nondapem_ALL_202606",
+  hasil:   "Selisih PPh pada 6 nopens",
+  lama:    "1 hari 4 jam"
+};
+
+/* F1.2.8 — perhitungan ulang setelah balikan pajak masuk.
+   Perhatikan jenis bayar: PPh & potongan hanya 10 dan 11, sedangkan bruto dan
+   pembulatan mencakup 12 — karena uang duka wafat tidak dikenakan pajak. */
+const NONDAPEM_HITUNG = [
+  { urut:1, nama:"Perbarui PPh 21 dari balikan Pajak",
+    rumus:"POT_PPH21 = [PPH 21] pada tabel balikan", param:"JNSBYR 10, 11",     baris:2435 },
+  { urut:2, nama:"Hitung ulang jumlah potongan",
+    rumus:"JML_POTONG = POT_ASKES + POT_HUTANG + POT_LAIN + POT_PPH21", param:"JNSBYR 10, 11", baris:2435 },
+  { urut:3, nama:"Hitung ulang tunjangan lain",
+    rumus:"TUNJ_LAIN = TUNJ_CACAT + POT_PPH21 + TUNJ_IRJA", param:"JNSBYR 10, 11", baris:2435 },
+  { urut:4, nama:"Hitung ulang jumlah bruto",
+    rumus:"JML_BRUTO = JML_NETTO + JML_POTONG", param:"JNSBYR 10, 11, 12", baris:2627 },
+  { urut:5, nama:"Hitung ulang pembulatan",
+    rumus:"PEMBULATAN = JML_BRUTO − (PENS_POKOK + TUNJ_ISTRI + TUNJ_ANAK + TUNJ_BERAS + TUNJ_LAIN)",
+    param:"JNSBYR 10, 11, 12", baris:2627 }
+];
+
+/* F1.2.10 — Rekap III Non Dapem yang dicetak Div. Keuangan.
+   Jumlah nopens tidak dijumlahkan antar mata anggaran: satu peserta dapat
+   muncul pada beberapa mata anggaran sekaligus. */
+const NONDAPEM_REKAP_MAK = [
+  { mak:"51311", uraian:"Pensiun Pokok",          jumlah:2435, bruto:28640000000, netto:27980000000 },
+  { mak:"51312", uraian:"Tunjangan Keluarga",     jumlah:1982, bruto: 3410000000, netto: 3310000000 },
+  { mak:"51313", uraian:"Tunjangan Beras",        jumlah:2435, bruto: 2180000000, netto: 2120000000 },
+  { mak:"51322", uraian:"Tunjangan Cacat",        jumlah:  41, bruto:  180000000, netto:  176000000 },
+  { mak:"51324", uraian:"Tunjangan Lain & Pajak", jumlah:2435, bruto: 1230000000, netto:  894000000 },
+  { mak:"51411", uraian:"Uang Duka Wafat",        jumlah: 192, bruto: 5640000000, netto: 5160000000 }
+];
+
+/* ---------------------------------------------------------------------------
+   22. LINTAS UNIT — siapa yang sedang memegang proses
+   Tiga jenis batas yang berbeda perlakuannya:
+     dalam sistem    → serah terima tugas, status berpindah pemilik seketika
+     luar sistem     → tukar berkas (unit ASABRI yang belum pakai YANDU)
+     luar organisasi → putaran asinkron, tidak bisa dikejar lewat sistem
+   --------------------------------------------------------------------------- */
+const DAPEM_LANE = [
+  { kode:"ti",          nama:"TI (Menda)",   jenis:"dalam sistem" },
+  { kode:"kepesertaan", nama:"Kepesertaan",  jenis:"dalam sistem" },
+  { kode:"pajak",       nama:"Pajak",        jenis:"luar sistem" },
+  { kode:"sipp",        nama:"SIPP",         jenis:"luar organisasi" },
+  { kode:"keuangan",    nama:"Keuangan",     jenis:"dalam sistem" }
+];
+
+/* tahap → lane pemiliknya */
+const DAPEM_TAHAP_LANE = {
+  generate:"ti", kepesertaan:"kepesertaan", tunsil:"ti",
+  pajak:"pajak", sipp:"sipp", yar:"ti"
+};
+
+/* Keadaan menunggu per tahap. Lama menunggu sengaja nilai tetap supaya
+   tampilan prototipe selalu sama tiap kali didemokan. */
+const DAPEM_MENUNGGU = {
+  kepesertaan:{ sejak:"18 Jun 2026 16:40", lama:"1 hari 3 jam",  oleh:"Menda",
+                rincian:"10 temuan dikirim untuk diperiksa",
+                aksi:"buka", aksiLabel:"Buka Layar Kepesertaan", tujuan:"dapem-validasi" },
+  pajak:      { sejak:"20 Jun 2026 14:10", lama:"2 hari 4 jam",  oleh:"Menda",
+                rincian:"putaran 2 · 12.350 baris dikirim",
+                aksi:"unggah", aksiLabel:"⬆ Unggah Balikan Pajak" },
+  sipp:       { sejak:"23 Jun 2026 15:40", lama:"3 hari 1 jam",  oleh:"Menda",
+                rincian:"putaran 2 · 2 dari 6 berkas dikirim ulang",
+                aksi:"unggah", aksiLabel:"⬆ Unggah Balikan SIPP" }
+};
+
+/* ---------------------------------------------------------------------------
+   23. VALIDASI DAPEM — SISI DIV. KEPESERTAAN
+   Layar terpisah dengan data yang sama tetapi kewenangan berbeda: hanya
+   menyatakan sesuai / tidak sesuai, tanpa tombol perbaikan apa pun.
+   --------------------------------------------------------------------------- */
+const DAPEM_VALIDASI_KEP = {
+  periode:"202607", jenis:"Induk",
+  dikirim:"18 Jun 2026 16:40", oleh:"Menda (TI Manajemen Data)",
+  batas:"20 Jun 2026",
+  pengantar:"Mohon diperiksa daftar berikut sebelum dapem diproses ke tahap berikutnya. Tandai setiap baris Sesuai atau Tidak Sesuai; yang ditandai tidak sesuai akan dikembalikan ke TI untuk diperbaiki."
+};
+
+/* ---------------------------------------------------------------------------
+   24. REKAP III — SISI KEUANGAN
+   Ujung alur: F1.1.25 (TI menginformasikan) → F1.1.26 (Keuangan mencetak).
+   Di YANDU lama ini menu YARPEN → KU 000 - REK III.
+   --------------------------------------------------------------------------- */
+const DAPEM_REKAP_MAK = [
+  { mak:"51311", uraian:"Pensiun Pokok",            jumlah:245297, bruto:812450000000, netto:790120000000 },
+  { mak:"51312", uraian:"Tunjangan Keluarga",       jumlah:198442, bruto: 96180000000, netto: 93640000000 },
+  { mak:"51313", uraian:"Tunjangan Beras",          jumlah:245297, bruto: 74310000000, netto: 72880000000 },
+  { mak:"51321", uraian:"Tunjangan IRJA",           jumlah:  1284, bruto:  1280000000, netto:  1240000000 },
+  { mak:"51322", uraian:"Tunjangan Cacat",          jumlah:   612, bruto:  1090000000, netto:  1060000000 },
+  { mak:"51324", uraian:"Tunjangan Lain & Pajak",   jumlah:238104, bruto: 41570000000, netto: 24010000000 }
+];
+
+/* Empat langkah di tahap akhir. Dua di antaranya (mode pemeliharaan dan kode
+   otentikasi) tidak punya kotak sendiri di bagan proses, padahal menentukan
+   peserta dibayar atau tidak. */
+const DAPEM_LANGKAH_YAR = [
+  { urut:1, nama:"Aktifkan mode pemeliharaan",             ket:"Mencegah transaksi lain masuk saat data dipindahkan ke tabel pembayaran" },
+  { urut:2, nama:"Unggah data dapem ke tabel pembayaran",  ket:"Beserta proses potong hutang dapem" },
+  { urut:3, nama:"Tetapkan kode otentikasi",               ket:"Dijamin / bayar langsung / blokir sampai peserta melakukan otentikasi" },
+  { urut:4, nama:"Nonaktifkan mode pemeliharaan",          ket:"Dikembalikan setelah seluruh proses selesai" }
+];
+
+/* ===========================================================================
+   26. DATA DAPEM — seluruh baris dapem yang sudah terbentuk
+   Satu baris = satu nomor pensiun pada satu bulan bayar. Di proses manual
+   daftar ini hanya bisa dilihat dengan menarik tabel langsung dari basis data.
+   Jumlah bruto, pembulatan, dan netto TIDAK disimpan: dihitung ulang di app.js
+   memakai rumus yang sama dengan dapem, supaya angkanya tidak mungkin
+   bertentangan satu sama lain.
+     JML_BRUTO  = pokok + istri + anak + beras + lain + PEMBULATAN
+     JML_NETTO  = JML_BRUTO - JML_POTONG   (kelipatan 100)
+   =========================================================================== */
+const DAPEM_DATA = [
+  { periode:"202607", jenis:"Induk", nopens:"198411000", nama:"SUPARMAN", jiwa:"1000", nik:"3174****0100", mak:"51311",
+    bank:"BRI KC Solo", cab:"1201", norek:"0177****5502", pokok:1736400, istri:173640, anak:86820, beras:289680, lain:52092,
+    pot:57163, bulat:31, oten:"00" },
+  { periode:"202607", jenis:"Induk", nopens:"198511007", nama:"TUTI HERAWATI", jiwa:"1000", nik:"3175****0103", mak:"51311",
+    bank:"POS Yogyakarta", cab:"1401", norek:"AAG****1704", pokok:1744600, istri:174460, anak:0, beras:289680, lain:52338,
+    pot:55218, bulat:40, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"198601014", nama:"UMAR BAKRI", jiwa:"1000", nik:"3176****0106", mak:"51311",
+    bank:"BSI KC Medan", cab:"2200", norek:"0002****4929", pokok:1752700, istri:175270, anak:0, beras:289680, lain:52581,
+    pot:55441, bulat:10, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"198711021", nama:"ANANDA PRATAMA", jiwa:"0100", nik:"3177****0109", mak:"51312",
+    bank:"Mantap KC Tasikmalaya", cab:"1300", norek:"2006****8890", pokok:1760800, istri:0, anak:0, beras:144840, lain:52824,
+    pot:47641, bulat:77, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"198821028", nama:"KARTIKA SARI", jiwa:"0100", nik:"3178****0112", mak:"51313",
+    bank:"SMBC KCP Wonosari", cab:"1401", norek:"0187****1704", pokok:1768900, istri:0, anak:0, beras:144840, lain:53067,
+    pot:47843, bulat:36, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"198911035", nama:"HADI SUSANTO", jiwa:"0001", nik:"3179****0115", mak:"51322",
+    bank:"BRI KC Trenggalek", cab:"1502", norek:"0177****9021", pokok:620800, istri:0, anak:0, beras:144840, lain:922774,
+    pot:19141, bulat:27, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199011042", nama:"AGUS SALIM", jiwa:"0002", nik:"3180****0118", mak:"51321",
+    bank:"KPRK Ujungberung", cab:"1300", norek:"0000****6756", pokok:620900, istri:0, anak:0, beras:144840, lain:1298627,
+    pot:19143, bulat:76, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199111049", nama:"RASYID HALIM", jiwa:"0102", nik:"3181****0121", mak:"51311",
+    bank:"BRI KC Banjar", cab:"1300", norek:"0162****9503", pokok:1793300, istri:0, anak:0, beras:289680, lain:53799,
+    pot:52074, bulat:95, oten:"00" },
+  { periode:"202607", jenis:"Induk", nopens:"199201056", nama:"SITI AMINAH", jiwa:"1000", nik:"3182****0124", mak:"51311",
+    bank:"Mantap KCP Jakarta ASABRI", cab:"2000", norek:"2003****4135", pokok:1801400, istri:180140, anak:0, beras:289680, lain:54042,
+    pot:56780, bulat:18, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199311063", nama:"BUDIONO", jiwa:"1000", nik:"3183****0127", mak:"51311",
+    bank:"BRI KK ASABRI Jakarta", cab:"2000", norek:"1448****0502", pokok:1809500, istri:180950, anak:90475, beras:289680, lain:54285,
+    pot:59265, bulat:75, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199421070", nama:"EKO PRASETYO", jiwa:"1000", nik:"3184****0130", mak:"51312",
+    bank:"BRI KC Solo", cab:"1201", norek:"0177****5502", pokok:1817600, istri:181760, anak:0, beras:289680, lain:54528,
+    pot:57226, bulat:58, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199511077", nama:"CAHYONO", jiwa:"0100", nik:"3185****0133", mak:"51313",
+    bank:"POS Yogyakarta", cab:"1401", norek:"AAG****1704", pokok:1825700, istri:0, anak:0, beras:144840, lain:54771,
+    pot:49263, bulat:52, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199611084", nama:"DEWI ANGGRAINI", jiwa:"0100", nik:"3186****0136", mak:"51322",
+    bank:"BSI KC Medan", cab:"2200", norek:"0002****4929", pokok:1833800, istri:0, anak:0, beras:144840, lain:959164,
+    pot:49466, bulat:62, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199711091", nama:"FAJAR NUGROHO", jiwa:"0001", nik:"3187****0139", mak:"51321",
+    bank:"Mantap KC Tasikmalaya", cab:"1300", norek:"2006****8890", pokok:621900, istri:0, anak:0, beras:144840, lain:1298657,
+    pot:19168, bulat:71, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"199801098", nama:"GALIH SAPUTRA", jiwa:"0002", nik:"3188****0142", mak:"51311",
+    bank:"SMBC KCP Wonosari", cab:"1401", norek:"0187****1704", pokok:622000, istri:0, anak:0, beras:144840, lain:18660,
+    pot:19171, bulat:71, oten:"00" },
+  { periode:"202607", jenis:"Induk", nopens:"199911105", nama:"INDRA GUNAWAN", jiwa:"0102", nik:"3189****0145", mak:"51311",
+    bank:"BRI KC Trenggalek", cab:"1502", norek:"0177****9021", pokok:1858200, istri:0, anak:0, beras:289680, lain:55746,
+    pot:53697, bulat:71, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"200021112", nama:"JOKO PURNOMO", jiwa:"1000", nik:"3190****0148", mak:"51311",
+    bank:"KPRK Ujungberung", cab:"1300", norek:"0000****6756", pokok:1866300, istri:186630, anak:0, beras:289680, lain:55989,
+    pot:58565, bulat:66, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"200111119", nama:"LUKMAN HAKIM", jiwa:"1000", nik:"3191****0151", mak:"51312",
+    bank:"BRI KC Banjar", cab:"1300", norek:"0162****9503", pokok:1874400, istri:187440, anak:0, beras:289680, lain:56232,
+    pot:58788, bulat:36, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"200211126", nama:"MARYAM SOLEHA", jiwa:"1000", nik:"3192****0154", mak:"51313",
+    bank:"Mantap KCP Jakarta ASABRI", cab:"2000", norek:"2003****4135", pokok:1882500, istri:188250, anak:94125, beras:289680, lain:56475,
+    pot:61363, bulat:33, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"200311133", nama:"NOVITA SARI", jiwa:"0100", nik:"3193****0157", mak:"51322",
+    bank:"BRI KK ASABRI Jakarta", cab:"2000", norek:"1448****0502", pokok:1890700, istri:0, anak:0, beras:144840, lain:960871,
+    pot:50888, bulat:77, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"200401140", nama:"OKTAVIAN HANIF", jiwa:"0100", nik:"3194****0160", mak:"51321",
+    bank:"BRI KC Solo", cab:"1201", norek:"0177****5502", pokok:1898800, istri:0, anak:0, beras:144840, lain:1336964,
+    pot:51091, bulat:87, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"200511147", nama:"PUTRI HAWI", jiwa:"0001", nik:"3195****0163", mak:"51311",
+    bank:"POS Yogyakarta", cab:"1401", norek:"AAG****1704", pokok:623000, istri:0, anak:0, beras:144840, lain:18690,
+    pot:19196, bulat:66, oten:"00" },
+  { periode:"202607", jenis:"Induk", nopens:"200621154", nama:"QORI ANANDA", jiwa:"0002", nik:"3196****0166", mak:"51311",
+    bank:"BSI KC Medan", cab:"2200", norek:"0002****4929", pokok:623100, istri:0, anak:0, beras:144840, lain:18693,
+    pot:19198, bulat:65, oten:"31" },
+  { periode:"202607", jenis:"Induk", nopens:"200711161", nama:"RAHMA ELSA", jiwa:"0102", nik:"3197****0169", mak:"51311",
+    bank:"Mantap KC Tasikmalaya", cab:"1300", norek:"2006****8890", pokok:1923100, istri:0, anak:0, beras:289680, lain:57693,
+    pot:55319, bulat:46, oten:"31" },
+  { periode:"202606", jenis:"Induk", nopens:"200811168", nama:"SLAMET RIYADI", jiwa:"1000", nik:"3198****0172", mak:"51312",
+    bank:"SMBC KCP Wonosari", cab:"1401", norek:"0187****1704", pokok:1931200, istri:193120, anak:96560, beras:289680, lain:57936,
+    pot:62764, bulat:68, oten:"31" },
+  { periode:"202606", jenis:"Induk", nopens:"200911175", nama:"TRI WAHYUNI", jiwa:"1000", nik:"3199****0175", mak:"51313",
+    bank:"BRI KC Trenggalek", cab:"1502", norek:"0177****9021", pokok:1939400, istri:193940, anak:0, beras:289680, lain:58182,
+    pot:60575, bulat:73, oten:"31" },
+  { periode:"202606", jenis:"Induk", nopens:"198401182", nama:"USMAN EFENDI", jiwa:"1000", nik:"3200****0178", mak:"51322",
+    bank:"KPRK Ujungberung", cab:"1300", norek:"0000****6756", pokok:1947500, istri:194750, anak:0, beras:289680, lain:962575,
+    pot:60798, bulat:93, oten:"31" },
+  { periode:"202606", jenis:"Induk", nopens:"198511189", nama:"VINA MARLINA", jiwa:"0100", nik:"3201****0181", mak:"51321",
+    bank:"BRI KC Banjar", cab:"1300", norek:"0162****9503", pokok:1955600, istri:0, anak:0, beras:144840, lain:1338668,
+    pot:52511, bulat:3, oten:"31" },
+  { periode:"202606", jenis:"Induk", nopens:"198621196", nama:"WAWAN SETIAWAN", jiwa:"0100", nik:"3202****0184", mak:"51311",
+    bank:"Mantap KCP Jakarta ASABRI", cab:"2000", norek:"2003****4135", pokok:1963700, istri:0, anak:0, beras:144840, lain:58911,
+    pot:52713, bulat:62, oten:"00" },
+  { periode:"202606", jenis:"Induk", nopens:"198711203", nama:"YANTI KUSUMA", jiwa:"0001", nik:"3203****0187", mak:"51311",
+    bank:"BRI KK ASABRI Jakarta", cab:"2000", norek:"1448****0502", pokok:624100, istri:0, anak:0, beras:144840, lain:18723,
+    pot:19223, bulat:60, oten:"31" },
+  { periode:"202606", jenis:"Susulan", nopens:"198811210", nama:"ZULKIFLI NUR", jiwa:"0002", nik:"3204****0190", mak:"51311",
+    bank:"BRI KC Solo", cab:"1201", norek:"0177****5502", pokok:624200, istri:0, anak:0, beras:144840, lain:18726,
+    pot:19226, bulat:60, oten:"31" },
+  { periode:"202606", jenis:"Susulan", nopens:"198911217", nama:"ADI SUCIPTO", jiwa:"0102", nik:"3205****0193", mak:"51312",
+    bank:"POS Yogyakarta", cab:"1401", norek:"AAG****1704", pokok:1988100, istri:0, anak:0, beras:289680, lain:59643,
+    pot:56944, bulat:21, oten:"31" },
+  { periode:"202606", jenis:"Susulan", nopens:"199001224", nama:"BAMBANG IRAWAN", jiwa:"1000", nik:"3206****0196", mak:"51313",
+    bank:"BSI KC Medan", cab:"2200", norek:"0002****4929", pokok:1996200, istri:199620, anak:0, beras:289680, lain:59886,
+    pot:62137, bulat:51, oten:"31" },
+  { periode:"202606", jenis:"Susulan", nopens:"199111231", nama:"CHANDRA WIJAYA", jiwa:"1000", nik:"3207****0199", mak:"51322",
+    bank:"Mantap KC Tasikmalaya", cab:"1300", norek:"2006****8890", pokok:2004300, istri:200430, anak:100215, beras:289680, lain:964279,
+    pot:64865, bulat:61, oten:"31" },
+  { periode:"202605", jenis:"Induk", nopens:"199221238", nama:"DIAN PERTIWI", jiwa:"1000", nik:"3208****0202", mak:"51321",
+    bank:"SMBC KCP Wonosari", cab:"1401", norek:"0187****1704", pokok:2012400, istri:201240, anak:0, beras:289680, lain:1340372,
+    pot:62583, bulat:91, oten:"31" },
+  { periode:"202605", jenis:"Induk", nopens:"199311245", nama:"ENDANG SRI", jiwa:"0100", nik:"3209****0205", mak:"51311",
+    bank:"BRI KC Trenggalek", cab:"1502", norek:"0177****9021", pokok:2020500, istri:0, anak:0, beras:144840, lain:60615,
+    pot:54133, bulat:78, oten:"00" },
+  { periode:"202605", jenis:"Induk", nopens:"199411252", nama:"FIRMAN SYAH", jiwa:"0100", nik:"3210****0208", mak:"51311",
+    bank:"KPRK Ujungberung", cab:"1300", norek:"0000****6756", pokok:2028700, istri:0, anak:0, beras:144840, lain:60861,
+    pot:54338, bulat:37, oten:"31" },
+  { periode:"202605", jenis:"Induk", nopens:"199511259", nama:"GUNAWAN HADI", jiwa:"0001", nik:"3211****0211", mak:"51311",
+    bank:"BRI KC Banjar", cab:"1300", norek:"0162****9503", pokok:625200, istri:0, anak:0, beras:144840, lain:18756,
+    pot:19251, bulat:55, oten:"31" }
+];
+
+/* ---------------------------------------------------------------------------
+   27. DOKUMEN BALIKAN DARI SIPP
+   SIPP di luar organisasi: berkas ADK dikirim dan hasil validasinya diterima
+   lewat SharePoint Validasi SIPP. Di proses manual berkas-berkas ini hanya
+   tersimpan di folder pribadi, tidak terlacak per putaran.
+   --------------------------------------------------------------------------- */
+const DAPEM_SIPP_JENIS = [
+  "Hasil Validasi Master",
+  "Hasil Validasi Bayar",
+  "Rekap Selisih per MAK",
+  "Berita Acara Validasi",
+  "Lain-lain"
+];
+
+const DAPEM_SIPP_DOK = [
+  { putaran:1, jenis:"Hasil Validasi Master", nama:"Hasil_Validasi_Master_202607.xlsx",
+    ukuran:"1,8 MB", oleh:"Menda", tgl:"23 Jun 2026 11:20",
+    catatan:"Penspok tidak sama pada 8 nopens" },
+  { putaran:1, jenis:"Hasil Validasi Bayar", nama:"Hasil_Validasi_Bayar_202607.xlsx",
+    ukuran:"2,4 MB", oleh:"Menda", tgl:"23 Jun 2026 11:22",
+    catatan:"Sesuai" }
+];
+
+/* ---------------------------------------------------------------------------
+   28. DATA NON DAPEM — peserta yang masuk pembayaran di luar dapem
+   Jenis bayar 10 (pensiun pertama), 11 (kekurangan pensiun), 12 (uang duka).
+   Yang disimpan hanya komponennya; TUNJ_LAIN, bruto, potongan, dan netto
+   dihitung ulang di app.js dengan rumus yang sama seperti SQL non dapem:
+     TUNJ_LAIN  = TUNJ_CACAT + POT_PPH21 + TUNJ_IRJA
+     JML_POTONG = potongan lain + POT_PPH21
+     JML_BRUTO  = pokok + istri + anak + beras + TUNJ_LAIN + PEMBULATAN
+     JML_NETTO  = JML_BRUTO - JML_POTONG   (kelipatan 100)
+   Dua baris jenis 12 masih memiliki PPh — itulah temuan N-04 yang bisa
+   ditinjau di layar Pembentukan NON DAPEM.
+   --------------------------------------------------------------------------- */
+const NONDAPEM_JENIS_LABEL = {
+  "10": "Pensiun Pertama", "11": "Kekurangan Pensiun", "12": "Uang Duka Wafat"
+};
+
+const NONDAPEM_DATA = [
+  { nopens:"2006140118", nama:"AGUS SALIM", jenis:"10", nik:"3174****0200", mak:"51312",
+    bank:"BRI KC Solo", cab:"1201", norek:"0177****5502", pokok:2664300, istri:266430, anak:133215, beras:289680,
+    cacat:0, irja:0, pph:79929, potLain:66607, bulat:82 },
+  { nopens:"2007140226", nama:"BUDIONO", jenis:"10", nik:"3175****0205", mak:"51311",
+    bank:"POS Yogyakarta", cab:"1401", norek:"AAG****1704", pokok:1892400, istri:0, anak:0, beras:144840,
+    cacat:0, irja:0, pph:56772, potLain:47310, bulat:70 },
+  { nopens:"2010110447", nama:"VINA MARLINA", jenis:"10", nik:"3176****0210", mak:"51311",
+    bank:"BSI KC Medan", cab:"2200", norek:"0002****4929", pokok:2320800, istri:232080, anak:0, beras:289680,
+    cacat:0, irja:0, pph:69624, potLain:58020, bulat:60 },
+  { nopens:"2011210299", nama:"BAGAS SETIAWAN", jenis:"10", nik:"3177****0215", mak:"51311",
+    bank:"Mantap KC Tasikmalaya", cab:"1300", norek:"2006****8890", pokok:1745600, istri:0, anak:0, beras:144840,
+    cacat:0, irja:0, pph:52368, potLain:43640, bulat:0 },
+  { nopens:"2012110558", nama:"DIMAS ANGGARA", jenis:"10", nik:"3178****0220", mak:"51312",
+    bank:"SMBC KCP Wonosari", cab:"1401", norek:"0187****1704", pokok:2088900, istri:208890, anak:104445, beras:289680,
+    cacat:0, irja:0, pph:62667, potLain:52222, bulat:7 },
+  { nopens:"2013110992", nama:"ERIKA PUTRI", jenis:"10", nik:"3179****0225", mak:"51311",
+    bank:"BRI KC Trenggalek", cab:"1502", norek:"0177****9021", pokok:1960400, istri:0, anak:0, beras:144840,
+    cacat:0, irja:0, pph:58812, potLain:49010, bulat:70 },
+  { nopens:"2014140204", nama:"CITRA DEWANTI", jenis:"10", nik:"3180****0230", mak:"51311",
+    bank:"KPRK Ujungberung", cab:"1300", norek:"0000****6756", pokok:2470100, istri:247010, anak:0, beras:289680,
+    cacat:0, irja:0, pph:74103, potLain:61752, bulat:62 },
+  { nopens:"1995210160", nama:"WAHYU SANTOSO", jenis:"11", nik:"3181****0235", mak:"51311",
+    bank:"BRI KC Banjar", cab:"1300", norek:"0162****9503", pokok:986400, istri:98640, anak:0, beras:144840,
+    cacat:0, irja:0, pph:29592, potLain:24660, bulat:80 },
+  { nopens:"1993110284", nama:"XAVERIUS DONI", jenis:"11", nik:"3182****0240", mak:"51311",
+    bank:"Mantap KCP Jakarta ASABRI", cab:"2000", norek:"2003****4135", pokok:2480000, istri:248000, anak:0, beras:289680,
+    cacat:0, irja:0, pph:74400, potLain:62000, bulat:20 },
+  { nopens:"1998110771", nama:"ZAINAL ABIDIN", jenis:"11", nik:"3183****0245", mak:"51311",
+    bank:"BRI KK ASABRI Jakarta", cab:"2000", norek:"1448****0502", pokok:960000, istri:96000, anak:0, beras:144840,
+    cacat:0, irja:0, pph:28800, potLain:24000, bulat:60 },
+  { nopens:"2001120039", nama:"YULIANA DEWI", jenis:"11", nik:"3184****0250", mak:"51312",
+    bank:"BRI KC Solo", cab:"1201", norek:"0177****5502", pokok:3120000, istri:312000, anak:156000, beras:289680,
+    cacat:0, irja:0, pph:93600, potLain:78000, bulat:20 },
+  { nopens:"1997110357", nama:"HADI SUSANTO", jenis:"11", nik:"3185****0255", mak:"51311",
+    bank:"POS Yogyakarta", cab:"1401", norek:"AAG****1704", pokok:2108600, istri:210860, anak:0, beras:289680,
+    cacat:904150, irja:0, pph:63258, potLain:52715, bulat:25 },
+  { nopens:"1984110044", nama:"RASYID HALIM", jenis:"11", nik:"3186****0260", mak:"51311",
+    bank:"BSI KC Medan", cab:"2200", norek:"0002****4929", pokok:3120800, istri:312080, anak:0, beras:289680,
+    cacat:0, irja:1280000, pph:93624, potLain:78020, bulat:60 },
+  { nopens:"1991140523", nama:"TUTI HERAWATI", jenis:"11", nik:"3187****0265", mak:"51311",
+    bank:"Mantap KC Tasikmalaya", cab:"1300", norek:"2006****8890", pokok:1736490, istri:0, anak:0, beras:144840,
+    cacat:0, irja:0, pph:52094, potLain:43412, bulat:82 },
+  { nopens:"1996140026", nama:"SUPARMAN", jenis:"11", nik:"3188****0270", mak:"51311",
+    bank:"SMBC KCP Wonosari", cab:"1401", norek:"0187****1704", pokok:2480700, istri:248070, anak:0, beras:289680,
+    cacat:0, irja:0, pph:74421, potLain:62017, bulat:67 },
+  { nopens:"1997120884", nama:"SUMIYATI", jenis:"12", nik:"3189****0275", mak:"51411",
+    bank:"BRI KC Trenggalek", cab:"1502", norek:"0177****9021", pokok:27911000, istri:0, anak:0, beras:0,
+    cacat:0, irja:0, pph:1469000, potLain:0, bulat:0 },
+  { nopens:"2001120147", nama:"HERLINA WATI", jenis:"12", nik:"3190****0280", mak:"51411",
+    bank:"KPRK Ujungberung", cab:"1300", norek:"0000****6756", pokok:22914000, istri:0, anak:0, beras:0,
+    cacat:0, irja:0, pph:1206000, potLain:0, bulat:0 },
+  { nopens:"1994110552", nama:"MARYAM SOLEHA", jenis:"12", nik:"3191****0285", mak:"51411",
+    bank:"BRI KC Banjar", cab:"1300", norek:"0162****9503", pokok:19240000, istri:0, anak:0, beras:0,
+    cacat:0, irja:0, pph:0, potLain:0, bulat:0 },
+  { nopens:"1990120012", nama:"SRI WAHYUNI", jenis:"12", nik:"3192****0290", mak:"51411",
+    bank:"Mantap KCP Jakarta ASABRI", cab:"2000", norek:"2003****4135", pokok:24680000, istri:0, anak:0, beras:0,
+    cacat:0, irja:0, pph:0, potLain:0, bulat:0 },
+  { nopens:"2003120884", nama:"DEWI ANGGRAINI", jenis:"12", nik:"3193****0295", mak:"51411",
+    bank:"BRI KK ASABRI Jakarta", cab:"2000", norek:"1448****0502", pokok:21450000, istri:0, anak:0, beras:0,
+    cacat:0, irja:0, pph:0, potLain:0, bulat:0 }
 ];

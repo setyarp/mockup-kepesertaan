@@ -76,6 +76,10 @@ function go(id) {
     $("#pel-detail").style.display = "none";
     cekJatuhTempoPelunasan();
   }
+  if (id === "dapem")        { renderDapemMetrics(); renderDapemList(); }
+  if (id === "dapem-proses")   renderDapemProses();
+  if (id === "dapem-validasi") renderValidasiKep();
+  if (id === "dapem-keuangan") renderKeuangan();
 }
 document.addEventListener("click", e => {
   const b = e.target.closest("[data-go]");
@@ -5184,3 +5188,1947 @@ isiPilihanSptb();
 renderSptb();
 renderHome();
 go("home");
+
+/* ============================================================ PEMBENTUKAN DAPEM
+   Model kerja: Periode → Run → Tahap → Temuan → Koreksi.
+   Langkah tanpa keputusan dijalankan sistem (tidak diberi tombol); yang
+   diberi tombol hanya temuan yang butuh keputusan manusia.                  */
+
+/* salinan hidup — data.js dibiarkan utuh */
+let dapemTahap  = DAPEM_TAHAP.map(t => ({ ...t }));
+let dapemGate   = DAPEM_GATE.map(g => ({ ...g, sisa: g.temuan, catatan: "" }));
+let dapemTemuan = JSON.parse(JSON.stringify(DAPEM_TEMUAN));
+let dapemAktif  = { periode: DAPEM_PARAM.blnbyr, jenis: DAPEM_PARAM.jenis };
+let dapemTab    = "generate";
+let dapemGateAktif = null;
+
+const PILL_STATUS = {
+  "Berjalan": "pill-warn", "Draft": "pill-info", "Selesai": "pill-ok",
+  "Menunggu": "pill-warn", "Siap": "pill-ok"
+};
+const miliar = n => n >= 1e12 ? (n / 1e12).toFixed(2).replace(".", ",") + " T"
+              : n >= 1e9  ? (n / 1e9 ).toFixed(2).replace(".", ",") + " M"
+              : n >= 1e6  ? (n / 1e6 ).toFixed(2).replace(".", ",") + " Jt"
+              : rp(n);
+
+/* status sebuah pemeriksaan selalu punya tiga keadaan yang dibedakan tegas —
+   "bersih" TIDAK BOLEH terlihat sama dengan "belum dijalankan". */
+function statusGate(g) {
+  const t = dapemTahap.find(x => x.kode === g.tahap);
+  if (t && t.status === "terkunci")             return { pill: "pill-info", teks: "● Belum dijalankan" };
+  if (g.catatan)                                return { pill: "pill-info", teks: "Diabaikan" };
+  if (g.sisa > 0)                               return { pill: "pill-warn", teks: "⚠ Perlu tindakan" };
+  return                                             { pill: "pill-ok",   teks: "✓ Bersih" };
+}
+
+/* ---------------------------------------------------- daftar periode dapem */
+function renderDapemList() {
+  const jenis  = $("#dapem-f-jenis").value;
+  const status = $("#dapem-f-status").value;
+  const cari   = $("#dapem-f-cari").value.trim().toLowerCase();
+
+  const rows = DAPEM_PERIODE.filter(d =>
+    (!jenis  || d.jenis  === jenis) &&
+    (!status || d.status === status) &&
+    (!cari   || d.periode.includes(cari)));
+
+  $("#dapem-body").innerHTML = rows.length ? rows.map(d => {
+    const buka = d.status === "Draft"   ? `<button class="btn btn-ghost btn-sm" data-dapem-buka="${esc(d.periode)}|${esc(d.jenis)}">Mulai</button>`
+               : d.status === "Selesai" ? `<button class="btn btn-info btn-sm"  data-dapem-buka="${esc(d.periode)}|${esc(d.jenis)}">Lihat</button>`
+               :                          `<button class="btn btn-info btn-sm"  data-dapem-buka="${esc(d.periode)}|${esc(d.jenis)}">Buka</button>`;
+    /* periode yang sudah punya baris bisa langsung dibuka datanya */
+    const adaData = DAPEM_DATA.some(r => r.periode === d.periode && r.jenis === d.jenis);
+    const aksi = `<div style="display:flex;gap:6px">${buka}${adaData
+      ? `<button class="btn btn-ghost btn-sm" data-dapem-data="${esc(d.periode)}|${esc(d.jenis)}">Peserta</button>` : ""}</div>`;
+    return `<tr>
+      <td><b>${esc(d.periode)}</b></td>
+      <td>${esc(d.jenis)}</td>
+      <td>${esc(d.tahap)}${d.tahapNo ? ` <span style="color:var(--faint)">(${d.tahapNo}/6)</span>` : ""}</td>
+      <td><span class="pill ${PILL_STATUS[d.status] || "pill-info"}">${esc(d.status)}</span></td>
+      <td>${esc(d.menunggu)}</td>
+      <td>${d.nopens ? d.nopens.toLocaleString("id-ID") : "—"}</td>
+      <td>${d.bruto ? miliar(d.bruto) : "—"}</td>
+      <td>${d.netto ? miliar(d.netto) : "—"}</td>
+      <td>${d.temuan ? `<b style="color:var(--amber-ink)">${d.temuan}</b>` : "—"}</td>
+      <td>${esc(d.cutoff)}</td>
+      <td>${aksi}</td>
+    </tr>`;
+  }).join("") : `<tr><td colspan="11"><div class="empty"><h4>Tidak ada periode</h4><p>Ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+
+  $("#dapem-note").textContent = `${rows.length} periode ditampilkan`;
+}
+
+function renderDapemMetrics() {
+  const aktif  = DAPEM_PERIODE.find(d => d.status === "Berjalan");
+  const temuan = dapemGate.reduce((a, g) => {
+    const t = dapemTahap.find(x => x.kode === g.tahap);
+    return a + (t && t.status !== "terkunci" ? g.sisa : 0);
+  }, 0);
+  const items = [
+    { l: "Periode Berjalan", v: aktif ? `${aktif.periode} · ${aktif.jenis}` : "—", c: "navy" },
+    { l: "Tahap Saat Ini",   v: aktif ? `${aktif.tahapNo} dari 6` : "—",           c: "" },
+    { l: "Temuan Terbuka",   v: temuan,                                            c: temuan ? "bad" : "ok" },
+    { l: "Batas Cut-off",    v: aktif ? aktif.cutoff : "—",                        c: "" }
+  ];
+  $("#dapem-metrics").innerHTML = items.map(m => `
+    <div class="metric">
+      <div class="metric-lbl">${esc(m.l)}</div>
+      <div class="metric-val ${m.c}">${esc(m.v)}</div>
+    </div>`).join("");
+}
+
+/* ------------------------------------------------------------ ruang kerja */
+function renderDapemProses() {
+  $("#dp-judul").textContent = `Pembentukan DAPEM · ${dapemAktif.jenis} · ${dapemAktif.periode}`;
+  const t = dapemTahap.find(x => x.status === "aktif") || dapemTahap[dapemTahap.length - 1];
+  $("#dp-sub").innerHTML = `Tahap ${t.no} dari 6 — ${esc(t.nama)} · <span class="pill pill-warn">Menunggu: ${esc(t.aktor)}</span>`;
+
+  /* Parameter run: di proses manual nilai-nilai ini diketik ulang di ratusan
+     tempat. Di sini ditetapkan sekali dan dipakai seluruh pemeriksaan. */
+  const p = DAPEM_PARAM;
+  const param = [
+    ["Bulan Bayar Dapem", p.blnbyr], ["Bulan Pembanding", p.blnbyrPrev],
+    ["Jenis Bayar", `${p.jnsbyr} — ${p.jenis}`], ["Tanggal Cut-off", p.tglCutoff],
+    ["Tanggal Dapem", p.tglDapem], ["Rentang Otentikasi", `${p.otenDari} – ${p.otenSampai}`],
+    ["Awal Tahun Pajak", p.tahunPajakAwal], ["Dijalankan Oleh", PENGATURAN.namaUser || "TI Manajemen Data"]
+  ];
+  $("#dp-param").innerHTML = param.map(([l, v]) => `
+    <div class="review-row"><div class="fl">${esc(l)}</div><div class="val">${esc(v)}</div></div>`).join("");
+
+  renderDemo();
+  renderBannerTahap();
+
+  $("#dp-tabs").innerHTML = dapemTahap.map(t => `
+    <button class="tab ${t.kode === dapemTab ? "active" : ""}" data-dp-tab="${t.kode}" title="${esc(t.aktor)}">
+      ${t.no} · ${esc(t.nama)}${t.status === "terkunci" ? " 🔒" : t.status === "selesai" ? " ✓" : ""}
+    </button>`).join("");
+
+  renderDapemTahap();
+}
+
+function renderDapemTahap() {
+  const t = dapemTahap.find(x => x.kode === dapemTab);
+  const r = DAPEM_RINGKAS[dapemTab];
+  const gates = dapemGate.filter(g => g.tahap === dapemTab);
+  const perlu = t.status === "terkunci" ? [] : gates.filter(g => g.sisa > 0 && !g.catatan);
+  /* keputusan hanya milik lajur TI; tahap lain sekadar dilihat dari sini */
+  const milikKita = laneTahap(dapemTab) === "ti";
+  const sisa  = gates.filter(g => !perlu.includes(g));
+  const html = [];
+
+  if (t.status === "terkunci") html.push(`
+    <div class="alert alert-info"><span>🔒</span><span>Tahap ini terkunci sampai tahap sebelumnya ditandai selesai. Isinya ditampilkan sebagai pratinjau — pemeriksaan belum dijalankan.</span></div>`);
+
+  /* angka kontrol — menggantikan catatan jumlah baris di komentar SQL */
+  html.push(`
+    <div class="metrics m4">
+      <div class="metric"><div class="metric-lbl">Jumlah Nopens</div>
+        <div class="metric-val navy">${r.nopens.toLocaleString("id-ID")}
+          ${r.delta ? `<span style="font-size:12px;color:${r.delta > 0 ? "var(--green)" : "var(--red)"}"> ${r.delta > 0 ? "+" : ""}${r.delta}</span>` : ""}
+        </div></div>
+      <div class="metric"><div class="metric-lbl">Bruto</div><div class="metric-val">${miliar(r.bruto)}</div></div>
+      <div class="metric"><div class="metric-lbl">Netto</div><div class="metric-val">${miliar(r.netto)}</div></div>
+      <div class="metric"><div class="metric-lbl">Penanggung Jawab</div><div class="metric-val" style="font-size:14px">${esc(t.aktor)}</div></div>
+    </div>`);
+
+  /* langkah otomatis — tanpa tombol, tapi tetap bisa diaudit */
+  const oto = DAPEM_OTOMATIS[dapemTab] || [];
+  const totalBaris = oto.reduce((a, o) => a + o.baris, 0);
+  html.push(`
+    <div class="card" style="margin-bottom:18px">
+      <div class="head-row" style="margin-bottom:12px">
+        <h3 class="card-title" style="margin:0">Dikerjakan sistem</h3>
+        <div class="head-divider"></div>
+        <span class="pill pill-ok">${oto.length} langkah${t.status === "terkunci" ? " (belum dijalankan)" : ` · ${totalBaris.toLocaleString("id-ID")} baris disesuaikan`}</span>
+        <button class="btn btn-ghost btn-sm" style="margin-left:auto" data-dp-log="${esc(dapemTab)}">▤ Lihat Log</button>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Langkah</th><th>Parameter</th><th>Baris Terpengaruh</th></tr></thead>
+        <tbody>${oto.length ? oto.map(o => `
+          <tr><td>${esc(o.nama)}</td><td style="color:var(--muted)">${esc(o.param)}</td>
+              <td>${t.status === "terkunci" ? "—" : o.baris.toLocaleString("id-ID")}</td></tr>`).join("")
+          : `<tr><td colspan="3"><div class="empty"><h4>Tidak ada langkah otomatis</h4><p>Seluruh pekerjaan di tahap ini butuh keputusan.</p></div></td></tr>`}
+        </tbody>
+      </table></div>
+    </div>`);
+
+  /* yang butuh keputusan — fokus layar */
+  html.push(`
+    <div class="card" style="margin-bottom:18px">
+      <h3 class="card-title">${milikKita
+        ? `Perlu keputusan Anda — ${perlu.length} dari ${gates.length} pemeriksaan`
+        : `Menunggu keputusan ${esc(t.aktor)} — ${perlu.length} dari ${gates.length} pemeriksaan`}</h3>
+      ${!milikKita && perlu.length ? `<div class="alert alert-info"><span>ⓘ</span><span>Keputusan atas temuan ini ada di ${esc(t.aktor)}. Dari layar ini Anda hanya dapat melihat daftarnya.</span></div>` : ""}
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="width:76px">Kode</th><th>Pemeriksaan</th><th style="width:82px">Temuan</th><th style="width:168px">Status</th><th style="width:96px">Aksi</th></tr></thead>
+        <tbody>${perlu.length ? perlu.map(g => baris_gate(g, t)).join("")
+          : `<tr><td colspan="7"><div class="empty"><h4>Tidak ada yang perlu diputuskan</h4><p>${t.status === "terkunci" ? "Pemeriksaan tahap ini belum dijalankan." : "Seluruh pemeriksaan tahap ini bersih."}</p></div></td></tr>`}
+        </tbody>
+      </table></div>
+    </div>`);
+
+  if (sisa.length) html.push(`
+    <div class="card" style="margin-bottom:18px">
+      <div class="head-row" style="margin-bottom:12px">
+        <h3 class="card-title" style="margin:0">Pemeriksaan lain</h3>
+        <div class="head-divider"></div>
+        <span class="pill pill-info">${sisa.length} pemeriksaan</span>
+      </div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="width:76px">Kode</th><th>Pemeriksaan</th><th style="width:82px">Temuan</th><th style="width:168px">Status</th><th style="width:96px">Aksi</th></tr></thead>
+        <tbody>${sisa.map(g => baris_gate(g, t)).join("")}</tbody>
+      </table></div>
+    </div>`);
+
+  if (dapemTab === "pajak" || dapemTab === "sipp") html.push(kartu_putaran(dapemTab));
+  if (dapemTab === "sipp") html.push(kartu_berkas());
+  if (dapemTab === "sipp") html.push(kartuSippDok());
+  if (dapemTab === "yar")  html.push(kartuYarBaru());
+
+  const bisa = t.status === "aktif" && perlu.length === 0;
+  html.push(`
+    <div class="form-actions">
+      <button class="btn btn-ghost" data-dp-log="${esc(dapemTab)}">Ekspor Ringkasan Tahap</button>
+      <button class="btn btn-primary" id="dp-selesai" ${bisa ? "" : "disabled"}>Tandai Tahap ${t.no} Selesai →</button>
+    </div>
+    ${t.status === "aktif" && perlu.length
+      ? `<div class="tbl-note">${milikKita
+          ? `Masih ada ${perlu.length} pemeriksaan yang perlu diputuskan sebelum tahap ini bisa ditutup.`
+          : `Tahap ini baru dapat ditutup setelah ${esc(t.aktor)} mengirim hasil validasinya.`}</div>`
+      : ""}`);
+
+  $("#dp-isi").innerHTML = html.join("");
+}
+
+function baris_gate(g, t) {
+  const st = statusGate(g);
+  const bisaTinjau = t.status !== "terkunci" && g.sisa > 0 && dapemTemuan[g.kode];
+  const label = laneTahap(g.tahap) === "ti" ? "Tinjau" : "Lihat";
+  return `<tr>
+    <td><b>${esc(g.kode)}</b></td>
+    <td>
+      <div>${esc(g.nama)}
+        <span class="pill ${g.sev === "tinggi" ? "pill-bad" : "pill-info"}" style="margin-left:6px">${esc(g.sev)}</span>
+      </div>
+      <div style="color:var(--muted);font-size:11px;margin-top:3px">${esc(g.param)}</div>
+    </td>
+    <td>${t.status === "terkunci" ? "—" : `<b>${g.sisa || 0}</b>`}</td>
+    <td><span class="pill ${st.pill}">${esc(st.teks)}</span></td>
+    <td>${bisaTinjau
+      ? `<button class="btn btn-info btn-sm" data-dp-tinjau="${esc(g.kode)}">${label}</button>`
+      : `<button class="btn btn-ghost btn-sm" disabled>${label}</button>`}</td>
+  </tr>`;
+}
+
+/* putaran kirim–terima dengan pihak luar — di proses manual hanya ada di email */
+function kartu_putaran(kode) {
+  const judul = kode === "pajak" ? "Putaran Validasi Bagian Pajak" : "Putaran Validasi SIPP";
+  const rows  = DAPEM_PUTARAN[kode] || [];
+  return `
+    <div class="card" style="margin-bottom:18px">
+      <h3 class="card-title">${esc(judul)}</h3>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Putaran</th><th>Dikirim</th><th>Oleh</th><th>Berkas</th><th>Dibalas</th><th>Hasil</th><th>Status</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+          <td><b>${r.putaran}</b></td><td>${esc(r.kirim)}</td><td>${esc(r.oleh)}</td>
+          <td>${esc(r.berkas)}</td><td>${esc(r.balas)}</td><td>${esc(r.hasil)}</td>
+          <td><span class="pill ${PILL_STATUS[r.status] || "pill-info"}">${esc(r.status)}</span></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+      <div class="tbl-note">Hanya berkas yang datanya berubah yang dikirim ulang pada putaran berikutnya.</div>
+    </div>`;
+}
+
+/* nama berkas dibentuk sistem — di proses manual diketik dan mudah salah tanggal */
+function kartu_berkas() {
+  return `
+    <div class="card" style="margin-bottom:18px">
+      <h3 class="card-title">Berkas ADK untuk SIPP</h3>
+      <div class="alert alert-info"><span>ⓘ</span><span>Penamaan berkas dibentuk otomatis dari bulan bayar dan tanggal pembentukan, sehingga tidak perlu diketik manual.</span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>No</th><th>Jenis</th><th>Nama Berkas</th><th>Jumlah Baris</th><th>Status</th></tr></thead>
+        <tbody>${DAPEM_BERKAS_SIPP.map(b => `<tr>
+          <td>${b.urut}</td><td>${esc(b.jenis)}</td>
+          <td style="font-family:ui-monospace,monospace;font-size:11.5px">${esc(b.nama)}</td>
+          <td>${b.baris.toLocaleString("id-ID")}</td>
+          <td><span class="pill ${PILL_STATUS[b.status] || "pill-info"}">${esc(b.status)}</span></td>
+        </tr>`).join("")}</tbody>
+      </table></div>
+    </div>`;
+}
+
+/* dua langkah yang di dokumen proses tidak punya kotaknya sendiri, padahal
+   menentukan peserta dibayar atau tidak */
+function kartu_yar() {
+  return `
+    <div class="card" style="margin-bottom:18px">
+      <h3 class="card-title">Langkah Wajib Sebelum & Sesudah Unggah</h3>
+      <div class="alert alert-info"><span>⚠</span><span>Kedua langkah ini tidak tercantum di bagan proses, tetapi wajib dikerjakan dan berpengaruh langsung pada pembayaran peserta.</span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>Urutan</th><th>Langkah</th><th>Keterangan</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Aktifkan mode pemeliharaan</td><td>Mencegah transaksi lain masuk saat data dipindahkan ke tabel pembayaran</td><td><span class="pill pill-info">Belum</span></td></tr>
+          <tr><td>2</td><td>Unggah data dapem ke tabel pembayaran</td><td>Beserta proses potong hutang dapem</td><td><span class="pill pill-info">Belum</span></td></tr>
+          <tr><td>3</td><td>Tetapkan kode otentikasi</td><td>Dijamin / bayar langsung / blokir sampai peserta melakukan otentikasi</td><td><span class="pill pill-info">Belum</span></td></tr>
+          <tr><td>4</td><td>Nonaktifkan mode pemeliharaan</td><td>Dikembalikan setelah seluruh proses selesai</td><td><span class="pill pill-info">Belum</span></td></tr>
+        </tbody>
+      </table></div>
+    </div>`;
+}
+
+/* ------------------------------------------------------------ tinjau temuan */
+function bukaTemuan(kode) {
+  dapemGateAktif = kode;
+  const g = dapemGate.find(x => x.kode === kode);
+  const d = dapemTemuan[kode];
+  $("#dtm-judul").textContent = `${g.kode} · ${g.nama}`;
+  $("#dtm-sub").textContent   = `${dapemAktif.jenis} · ${dapemAktif.periode} — ${d.baris.length} temuan`;
+  $("#dtm-aturan").lastElementChild.textContent = d.aturan;
+  $("#dtm-param").textContent = "Parameter: " + g.param;
+  const punyaWewenang = laneTahap(g.tahap) === "ti";
+  ["#dtm-terapkan", "#dtm-abaikan", "#dtm-all", "#dtm-none"]
+    .forEach(sel => $(sel).style.display = punyaWewenang ? "" : "none");
+  $("#dtm-terapkan").textContent = d.aksi;
+  $("#dtm-head").innerHTML = `<th style="width:34px"></th>` +
+    d.kolom.map(k => `<th>${esc(k)}</th>`).join("");
+  renderTemuanBody();
+  go("dapem-temuan");
+}
+
+function renderTemuanBody() {
+  const d = dapemTemuan[dapemGateAktif];
+  $("#dtm-body").innerHTML = d.baris.map((b, i) => `
+    <tr>
+      <td><input type="checkbox" data-dtm-row="${i}" ${b.pilih ? "checked" : ""}></td>
+      ${b.sel.map((v, j) => `<td>${j === 0 ? `<b>${esc(v)}</b>` : esc(v)}</td>`).join("")}
+    </tr>`).join("");
+  const n = d.baris.filter(b => b.pilih).length;
+  $("#dtm-note").innerHTML = `<b>${n}</b> dari ${d.baris.length} baris terpilih. Baris yang tidak dicentang dianggap sudah benar dan tidak akan diubah.`;
+  $("#dtm-terapkan").disabled = n === 0;
+}
+
+/* pratinjau dampak — rumus dapem berantai, satu perubahan merambat ke tujuh
+   kolom, jadi hasilnya diperlihatkan sebelum disimpan */
+function pratinjauDampak() {
+  const d = dapemTemuan[dapemGateAktif];
+  const g = dapemGate.find(x => x.kode === dapemGateAktif);
+  const n = d.baris.filter(b => b.pilih).length;
+  const contoh = d.baris.find(b => b.pilih);
+  const dampak = [
+    ["Pensiun pokok",   "1.058.700", "794.000"],
+    ["Tunjangan anak",     "21.174",       "0"],
+    ["Tunjangan beras",   "144.840",  "72.420"],
+    ["Tunjangan lain",     "68.320",  "34.160"],
+    ["Jumlah bruto",    "1.293.034", "900.580"],
+    ["Jumlah potongan",    "21.597",  "15.880"],
+    ["Jumlah netto",    "1.271.500", "884.700"]
+  ];
+  $("#modal-title").textContent = d.aksi;
+  $("#modal-sub").textContent   = `${g.kode} · ${n} baris akan diubah pada dapem ${dapemAktif.periode}`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Perubahan pada satu kolom merambat ke bruto, potongan, netto, pembulatan, dan kembali ke bruto. Berikut dampaknya pada baris pertama yang terpilih.</span></div>
+    <div class="subsection-title">CONTOH DAMPAK — ${esc(contoh.sel[0])} · ${esc(contoh.sel[1])}</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Kolom</th><th>Sebelum</th><th>Sesudah</th></tr></thead>
+      <tbody>${dampak.map(([k, a, b]) => `<tr><td>${esc(k)}</td>
+        <td style="color:var(--muted)">${esc(a)}</td><td><b>${esc(b)}</b></td></tr>`).join("")}</tbody>
+    </table></div>
+    <div class="field" style="margin-top:16px">
+      <label class="fl" for="dtm-alasan">Alasan / nomor tiket <span class="req">*</span></label>
+      <input class="inp" id="dtm-alasan" placeholder="Contoh: hasil validasi Kepesertaan 20 Jun 2026 / #23817">
+      <div class="hint">Alasan tersimpan bersama nilai lama, sehingga koreksi bisa ditelusuri kembali.</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="dtm-batal">Batal</button>
+      <button class="btn btn-primary" id="dtm-konfirm">Terapkan ke ${n} baris</button>
+    </div>`;
+  openModal();
+  $("#dtm-batal").onclick = closeModal;
+  $("#dtm-konfirm").onclick = () => {
+    const alasan = $("#dtm-alasan").value.trim();
+    if (!alasan) { toast("Alasan wajib diisi.", "bad"); $("#dtm-alasan").focus(); return; }
+    d.baris = d.baris.filter(b => !b.pilih);
+    g.sisa  = d.baris.length;
+    closeModal();
+    toast(`${n} baris diperbaiki pada ${g.kode}.`, "ok");
+    if (!d.baris.length) { renderDapemProses(); go("dapem-proses"); }
+    else renderTemuanBody();
+  };
+}
+
+function abaikanTemuan() {
+  const d = dapemTemuan[dapemGateAktif];
+  const g = dapemGate.find(x => x.kode === dapemGateAktif);
+  const n = d.baris.filter(b => b.pilih).length;
+  if (!n) { toast("Belum ada baris yang dipilih.", "bad"); return; }
+  $("#modal-title").textContent = "Abaikan temuan";
+  $("#modal-sub").textContent   = `${g.kode} · ${n} baris akan ditandai sudah benar`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Temuan yang diabaikan tetap tercatat beserta alasannya, dan akan muncul kembali pada periode berikutnya bila kondisinya masih sama.</span></div>
+    <div class="field">
+      <label class="fl" for="dtm-alasan2">Alasan diabaikan <span class="req">*</span></label>
+      <input class="inp" id="dtm-alasan2" placeholder="Contoh: sudah sesuai, kelebihan potong periode lalu">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="dtm-batal2">Batal</button>
+      <button class="btn btn-primary" id="dtm-konfirm2">Abaikan ${n} baris</button>
+    </div>`;
+  openModal();
+  $("#dtm-batal2").onclick = closeModal;
+  $("#dtm-konfirm2").onclick = () => {
+    const alasan = $("#dtm-alasan2").value.trim();
+    if (!alasan) { toast("Alasan wajib diisi.", "bad"); $("#dtm-alasan2").focus(); return; }
+    d.baris = d.baris.filter(b => !b.pilih);
+    g.sisa  = d.baris.length;
+    closeModal();
+    toast(`${n} baris diabaikan dengan alasan tercatat.`);
+    if (!d.baris.length) { renderDapemProses(); go("dapem-proses"); }
+    else renderTemuanBody();
+  };
+}
+
+function logEksekusi(tahapKode) {
+  const t = dapemTahap.find(x => x.kode === tahapKode);
+  const oto = DAPEM_OTOMATIS[tahapKode] || [];
+  $("#modal-title").textContent = "Log Eksekusi";
+  $("#modal-sub").textContent   = `Tahap ${t.no} · ${t.nama} — dapem ${dapemAktif.periode}`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Seluruh langkah otomatis tercatat lengkap dengan parameter dan jumlah baris terpengaruh, sehingga hasilnya tetap bisa diperiksa tanpa membuka basis data.</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Waktu</th><th>Langkah</th><th>Parameter</th><th>Baris</th><th>Oleh</th></tr></thead>
+      <tbody>${oto.map((o, i) => `<tr>
+        <td>16 Jun 2026 ${String(8 + i).padStart(2, "0")}:${String(12 + i * 7).padStart(2, "0")}</td>
+        <td>${esc(o.nama)}</td><td style="color:var(--muted)">${esc(o.param)}</td>
+        <td>${o.baris.toLocaleString("id-ID")}</td><td>Sistem</td></tr>`).join("")}</tbody>
+    </table></div>`;
+  openModal();
+}
+
+/* --------------------------------------------------------------- interaksi */
+document.addEventListener("click", e => {
+  const buka = e.target.closest("[data-dapem-buka]");
+  if (buka) {
+    const [periode, jenis] = buka.dataset.dapemBuka.split("|");
+    dapemAktif = { periode, jenis };
+    dapemTab = (dapemTahap.find(t => t.status === "aktif") || dapemTahap[0]).kode;
+    renderDapemProses();
+    go("dapem-proses");
+    return;
+  }
+  const tab = e.target.closest("[data-dp-tab]");
+  if (tab) { dapemTab = tab.dataset.dpTab; renderDapemProses(); return; }
+
+  const tinjau = e.target.closest("[data-dp-tinjau]");
+  if (tinjau) { bukaTemuan(tinjau.dataset.dpTinjau); return; }
+
+  const log = e.target.closest("[data-dp-log]");
+  if (log) { logEksekusi(log.dataset.dpLog); return; }
+
+  if (e.target.id === "dp-selesai") {
+    const t = dapemTahap.find(x => x.kode === dapemTab);
+    t.status = "selesai";
+    const next = dapemTahap.find(x => x.no === t.no + 1);
+    if (next) { next.status = "aktif"; dapemTab = next.kode; toast(`Tahap ${t.no} selesai. Tahap ${next.no} dibuka.`, "ok"); }
+    else toast("Seluruh tahap selesai. Rekap III siap dicek Keuangan.", "ok");
+    renderDapemProses();
+    renderDapemMetrics();
+    return;
+  }
+  if (e.target.id === "dapem-baru") { toast("Periode baru dibuat sebagai draft."); return; }
+});
+
+document.addEventListener("change", e => {
+  const row = e.target.closest("[data-dtm-row]");
+  if (row) {
+    dapemTemuan[dapemGateAktif].baris[+row.dataset.dtmRow].pilih = row.checked;
+    renderTemuanBody();
+  }
+});
+
+["dapem-f-jenis", "dapem-f-status", "dapem-f-cari"].forEach(id => {
+  const el = $("#" + id);
+  if (el) el.addEventListener("input", renderDapemList);
+});
+
+/* ======================================================== PEMBENTUKAN NON DAPEM
+   Sepuluh langkah F1.2.1–F1.2.10 dikelompokkan menjadi lima kartu berurutan.
+   Kartu berikutnya baru terbuka setelah kartu sebelumnya bersih — di dokumen
+   proses syarat ini tertulis tegas: "jika tidak ada selisih maka melanjutkan".
+   Beda mendasar dengan dapem: di sini Pajak MENARIK sendiri datanya, bukan
+   dikirimi berkas, sehingga TI hanya bisa menginformasikan lalu menunggu.     */
+
+let nd = {
+  selisih:      NONDAPEM_SELISIH.map(r => ({ ...r })),
+  gate:         NONDAPEM_GATE.map(g => ({ ...g, sisa: g.temuan, catatan: "" })),
+  temuan:       JSON.parse(JSON.stringify(NONDAPEM_TEMUAN)),
+  hitung:       NONDAPEM_HITUNG.map(h => ({ ...h, selesai: false })),
+  backup:       false,
+  infoPajak:    false,
+  balikan:      false,
+  infoKeuangan: false
+};
+let ndGateAktif = null;
+
+/* tone lajur ditulis lokal — JENIS_TONE baru dibuat di blok setelah ini */
+const ND_TONE = {
+  "dalam sistem":    "pill-info",
+  "luar sistem":     "pill-warn",
+  "luar organisasi": "pill-bad"
+};
+
+/* angka temuan disamakan dengan jumlah baris contoh yang tersedia, supaya
+   kolom Temuan tidak pernah berbeda dengan isi tabelnya */
+nd.gate.forEach(g => {
+  if (g.kode === "N-01") { g.temuan = nd.selisih.length; g.sisa = nd.selisih.length; return; }
+  const d = nd.temuan[g.kode];
+  if (d) { g.temuan = d.baris.length; g.sisa = d.baris.length; }
+});
+
+/* ------------------------------------------------- keadaan tiap langkah */
+const ndBersih = () => nd.gate.filter(g => g.kode !== "N-01").every(g => g.sisa === 0);
+
+function ndLangkah() {
+  if (nd.selisih.length)                                    return 1;  /* F1.2.1 · F1.2.2 */
+  if (!ndBersih())                                          return 2;  /* F1.2.3          */
+  if (!nd.backup || !nd.infoPajak)                          return 3;  /* F1.2.4 · F1.2.5 */
+  if (!nd.balikan)                                          return 4;  /* F1.2.6 · F1.2.7 */
+  if (!nd.hitung.every(h => h.selesai) || !nd.infoKeuangan)  return 5;  /* F1.2.8 · F1.2.9 */
+  return 6;                                                            /* F1.2.10        */
+}
+
+const ND_JUDUL = ["", "Rekonsiliasi Ringkasan vs Rincian", "Kelengkapan Data",
+                  "Backup & Penyerahan ke Bagian Pajak", "Validasi Bagian Pajak",
+                  "Perhitungan Ulang & Penyerahan ke Keuangan"];
+
+/* bola sedang di tangan siapa */
+const ndLane = () => {
+  const l = ndLangkah();
+  return l <= 3 ? "ti" : l === 4 ? "pajak" : l === 5 ? "ti" : "keuangan";
+};
+
+/* ------------------------------------------------------------ layar utama */
+function renderNondapem() {
+  const p = NONDAPEM_PARAM;
+  $("#nd-param").innerHTML = [
+    ["Bulan Bayar Non Dapem",  p.blnbyr],
+    ["Dibentuk Bersama Dapem", p.blnbyrDapem],
+    ["Jenis Bayar",            p.jnsbyr]
+  ].map(([l, v]) => `<div class="review-row"><div class="fl">${esc(l)}</div><div class="val">${esc(v)}</div></div>`).join("");
+  $("#nd-param-note").textContent =
+    `Bulan bayar non dapem selalu satu bulan di belakang dapem yang sedang dikerjakan — ${p.blnbyr} ditarik saat dapem ${p.blnbyrDapem} dibentuk. Hanya bulan bayar yang berubah tiap periode.`;
+
+  const r = NONDAPEM_RINGKAS;
+  $("#nd-metrics").innerHTML = [
+    { l: "Jumlah Nopens",           v: r.nopens.toLocaleString("id-ID"),  c: "navy" },
+    { l: "Pensiun Pertama (10)",    v: r.jenis10.toLocaleString("id-ID"), c: "" },
+    { l: "Kekurangan Pensiun (11)", v: r.jenis11.toLocaleString("id-ID"), c: "" },
+    { l: "Uang Duka Wafat (12)",    v: r.jenis12.toLocaleString("id-ID"), c: "" }
+  ].map(m => `<div class="metric"><div class="metric-lbl">${esc(m.l)}</div><div class="metric-val ${m.c}">${esc(m.v)}</div></div>`).join("");
+
+  renderNdDemo();
+  renderNdBanner();
+  renderNdIsi();
+}
+
+/* kerangka kartu — nomor langkah + indeks proses supaya mudah dicocokkan
+   dengan dokumen Business Process Non Dapem */
+function ndKartu(no, judul, fidx, isi, terkunci) {
+  return `<div class="card" style="margin-bottom:18px">
+    <div class="head-row" style="margin-bottom:12px">
+      <h3 class="card-title" style="margin:0">${no}. ${esc(judul)}</h3>
+      <div class="head-divider"></div>
+      <span class="pill pill-info">${esc(fidx)}</span>
+      ${terkunci ? `<span class="pill pill-info" style="margin-left:auto">🔒 Terkunci</span>` : ""}
+    </div>
+    ${terkunci ? `<div class="alert alert-info"><span>🔒</span><span>Langkah ini terbuka setelah langkah sebelumnya bersih. Isinya ditampilkan sebagai pratinjau — belum dijalankan.</span></div>` : ""}
+    ${isi}
+  </div>`;
+}
+
+function renderNdIsi() {
+  $("#nd-isi").innerHTML = [ndKartu1(), ndKartu2(), ndKartu3(), ndKartu4(), ndKartu5()].join("");
+}
+
+/* ------------------------------------------- 1. rekonsiliasi (F1.2.1 · F1.2.2) */
+function ndKartu1() {
+  const n = nd.selisih.filter(r => r.pilih).length;
+  const isi = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Membandingkan <b>AP3_TBL_YAR_ALL</b> (ringkasan) dengan <b>yan_yar_all_detil</b> (rincian) untuk jenis bayar 11. Hanya baris yang berselisih yang ditampilkan — sebelumnya dua tabel ini ditarik lalu dicocokkan di Excel.</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th style="width:34px"></th><th>Nopens</th><th>Nama</th><th>Jenis Bayar</th>
+        <th>Bruto Ringkasan</th><th>Bruto Rincian</th><th>Selisih</th><th>Dugaan Sebab</th></tr></thead>
+      <tbody>${nd.selisih.length ? nd.selisih.map((r, i) => `<tr>
+        <td><input type="checkbox" data-nd-row="${i}" ${r.pilih ? "checked" : ""}></td>
+        <td><b>${esc(r.nopens)}</b></td><td>${esc(r.nama)}</td><td>${esc(r.jenis)}</td>
+        <td>${esc(r.ringkasan)}</td>
+        <td>${r.rincianKosong ? `<span style="color:var(--red)">tidak ada rincian</span>` : esc(r.rincian)}</td>
+        <td>${esc(r.selisih ?? "—")}</td>
+        <td style="color:var(--muted)">${esc(r.sebab)}</td></tr>`).join("")
+      : `<tr><td colspan="8"><div class="empty"><h4>Tidak ada selisih</h4><p>Ringkasan dan rincian sudah sama untuk seluruh nopens.</p></div></td></tr>`}
+      </tbody>
+    </table></div>
+    ${nd.selisih.length ? `
+      <div class="tbl-note"><b>${n}</b> dari ${nd.selisih.length} baris terpilih. Baris yang tidak dicentang dianggap sudah benar.</div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" id="nd-abaikan" ${n ? "" : "disabled"}>Abaikan terpilih…</button>
+        <button class="btn btn-primary" id="nd-samakan" ${n ? "" : "disabled"}>Samakan nomor pengajuan</button>
+      </div>` : ""}`;
+  return ndKartu(1, ND_JUDUL[1], "F1.2.1 · F1.2.2", isi, false);
+}
+
+/* ---------------------------------------- 2. kelengkapan data (F1.2.3) */
+function ndKartu2() {
+  const kunci = nd.selisih.length > 0;
+  const isi = `
+    <div class="tbl-wrap"><table>
+      <thead><tr><th style="width:76px">Kode</th><th>Pemeriksaan</th><th style="width:82px">Temuan</th>
+        <th style="width:168px">Status</th><th style="width:96px">Aksi</th></tr></thead>
+      <tbody>${nd.gate.map(g => ndBarisGate(g, kunci)).join("")}</tbody>
+    </table></div>
+    <div class="tbl-note" style="text-align:left">N-01 mengikuti sisa selisih pada langkah 1. N-02 dan N-03 bersih pada periode ini, jadi tidak punya rincian untuk ditinjau.</div>`;
+  return ndKartu(2, ND_JUDUL[2], "F1.2.3", isi, kunci);
+}
+
+function ndBarisGate(g, kunci) {
+  const st = kunci      ? { pill: "pill-info", teks: "● Belum dijalankan" }
+           : g.catatan  ? { pill: "pill-info", teks: "Diabaikan" }
+           : g.sisa > 0 ? { pill: "pill-warn", teks: "⚠ Perlu tindakan" }
+                        : { pill: "pill-ok",   teks: "✓ Bersih" };
+  const bisa = !kunci && g.sisa > 0 && nd.temuan[g.kode];
+  return `<tr>
+    <td><b>${esc(g.kode)}</b></td>
+    <td>
+      <div>${esc(g.nama)}
+        <span class="pill ${g.sev === "tinggi" ? "pill-bad" : "pill-info"}" style="margin-left:6px">${esc(g.sev)}</span>
+      </div>
+      <div style="color:var(--muted);font-size:11px;margin-top:3px">${esc(g.param)}</div>
+    </td>
+    <td>${kunci ? "—" : `<b>${g.sisa || 0}</b>`}</td>
+    <td><span class="pill ${st.pill}">${esc(st.teks)}</span></td>
+    <td>${bisa ? `<button class="btn btn-info btn-sm" data-nd-gate="${esc(g.kode)}">Tinjau</button>`
+               : `<button class="btn btn-ghost btn-sm" disabled>Tinjau</button>`}</td>
+  </tr>`;
+}
+
+/* -------------------------------- 3. backup & serah ke pajak (F1.2.4 · F1.2.5) */
+function ndKartu3() {
+  const kunci = nd.selisih.length > 0 || !ndBersih();
+  const b = NONDAPEM_BACKUP;
+  const isi = `
+    <div class="alert alert-warn"><span>⚠</span><span>Backup tidak tercantum sebagai kotak keputusan di bagan proses, tetapi wajib dikerjakan sebelum data diserahkan ke Pajak — begitu PPh diperbarui, nilai lamanya hanya ada di salinan ini.</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th style="width:64px">Urutan</th><th>Langkah</th><th>Keterangan</th>
+        <th style="width:110px">Baris</th><th style="width:120px">Status</th><th style="width:130px">Aksi</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>Backup data non dapem ke DB Dev</td>
+          <td style="color:var(--muted)">${esc(b.sumber)} → ${esc(b.tujuan)}
+            <div style="font-family:ui-monospace,monospace;font-size:11px;margin-top:3px">${esc(b.param)}</div></td>
+          <td>${nd.backup ? b.baris.toLocaleString("id-ID") : "—"}</td>
+          <td><span class="pill ${nd.backup ? "pill-ok" : "pill-info"}">${nd.backup ? "✓ Selesai" : "Belum"}</span></td>
+          <td>${nd.backup ? `<button class="btn btn-ghost btn-sm" disabled>Selesai</button>`
+                          : `<button class="btn btn-info btn-sm" id="nd-backup" ${kunci ? "disabled" : ""}>Jalankan</button>`}</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Informasikan ke Bagian Pajak</td>
+          <td style="color:var(--muted)">Pajak menarik sendiri datanya dari ${esc(NONDAPEM_PUTARAN.sumber)}</td>
+          <td>—</td>
+          <td><span class="pill ${nd.infoPajak ? "pill-ok" : "pill-info"}">${nd.infoPajak ? "✓ Sudah" : "Belum"}</span></td>
+          <td>${nd.infoPajak ? `<button class="btn btn-ghost btn-sm" disabled>Sudah</button>`
+                             : `<button class="btn btn-info btn-sm" id="nd-info-pajak" ${nd.backup && !kunci ? "" : "disabled"}>Informasikan</button>`}</td>
+        </tr>
+      </tbody>
+    </table></div>`;
+  return ndKartu(3, ND_JUDUL[3], "F1.2.4 · F1.2.5", isi, kunci);
+}
+
+/* ------------------------------------ 4. validasi pajak (F1.2.6 · F1.2.7) */
+function ndKartu4() {
+  const kunci = !nd.infoPajak;
+  const P = NONDAPEM_PUTARAN;
+  const isi = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Pada non dapem, Bagian Pajak <b>menarik sendiri</b> datanya — tidak ada berkas yang dikirim dari sini. Yang bisa dilakukan hanya menginformasikan lalu menunggu balikan, dan itu berjalan di luar sistem.</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Putaran</th><th>Diinfokan</th><th>Oleh</th><th>Sumber Tarikan Pajak</th>
+        <th>Balikan Diterima</th><th>Berkas Balikan</th><th>Hasil</th><th>Status</th></tr></thead>
+      <tbody>${kunci
+        ? `<tr><td colspan="8"><div class="empty"><h4>Belum ada putaran</h4><p>Putaran tercatat setelah Bagian Pajak diinformasikan pada langkah 3.</p></div></td></tr>`
+        : `<tr>
+            <td><b>${P.putaran}</b></td><td>${esc(P.info)}</td><td>${esc(P.oleh)}</td>
+            <td style="color:var(--muted)">${esc(P.sumber)}</td>
+            <td>${nd.balikan ? esc(P.balas) : "—"}</td>
+            <td>${nd.balikan ? `<span style="font-family:ui-monospace,monospace;font-size:11.5px">${esc(P.berkas)}</span>` : "—"}</td>
+            <td>${nd.balikan ? esc(P.hasil) : "Menunggu balasan"}</td>
+            <td><span class="pill ${nd.balikan ? "pill-ok" : "pill-warn"}">${nd.balikan ? "Selesai" : "Menunggu"}</span></td>
+          </tr>`}
+      </tbody>
+    </table></div>
+    ${nd.balikan ? `<div class="tbl-note" style="text-align:left">Balikan diunggah ke tabel <b>${esc(P.tabel)}</b> — nama tabel ikut berubah tiap periode. Nama kolom pada berkas balikan sering berbeda, jadi dicocokkan ulang setiap putaran.</div>` : ""}
+    <div class="form-actions">
+      <button class="btn btn-primary" data-nd-unggah="1" ${!kunci && !nd.balikan ? "" : "disabled"}>⬆ Unggah Balikan Pajak</button>
+    </div>`;
+  return ndKartu(4, ND_JUDUL[4], "F1.2.6 · F1.2.7", isi, kunci);
+}
+
+/* --------------------------- 5. perhitungan ulang & keuangan (F1.2.8 · F1.2.9) */
+function ndKartu5() {
+  const kunci = !nd.balikan;
+  const semua = nd.hitung.every(h => h.selesai);
+  const isi = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Lima perhitungan berurutan — satu perubahan PPh merambat ke potongan, tunjangan lain, bruto, lalu pembulatan. Langkah 1–3 hanya jenis bayar 10 dan 11; uang duka wafat (12) tidak dikenakan PPh, tetapi tetap ikut pada langkah 4 dan 5.</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th style="width:64px">Urutan</th><th>Langkah</th><th>Rumus</th>
+        <th style="width:130px">Parameter</th><th style="width:100px">Baris</th>
+        <th style="width:120px">Status</th><th style="width:110px">Aksi</th></tr></thead>
+      <tbody>${nd.hitung.map((h, i) => {
+        const siap = i === 0 || nd.hitung[i - 1].selesai;
+        return `<tr>
+          <td>${h.urut}</td><td>${esc(h.nama)}</td>
+          <td style="font-family:ui-monospace,monospace;font-size:11px;color:var(--muted)">${esc(h.rumus)}</td>
+          <td style="color:var(--muted)">${esc(h.param)}</td>
+          <td>${h.selesai ? h.baris.toLocaleString("id-ID") : "—"}</td>
+          <td><span class="pill ${h.selesai ? "pill-ok" : "pill-info"}">${h.selesai ? "✓ Selesai" : "Belum"}</span></td>
+          <td>${h.selesai ? `<button class="btn btn-ghost btn-sm" disabled>Selesai</button>`
+                          : `<button class="btn btn-info btn-sm" data-nd-hitung="${i}" ${siap && !kunci ? "" : "disabled"}>Jalankan</button>`}</td>
+        </tr>`;
+      }).join("")}</tbody>
+    </table></div>
+    <div class="form-actions">
+      <button class="btn btn-primary" id="nd-rekap" ${semua && !nd.infoKeuangan && !kunci ? "" : "disabled"}>
+        Informasikan ke Keuangan bahwa Rekap III Non Dapem siap
+      </button>
+    </div>
+    ${nd.infoKeuangan ? `<div class="tbl-note">Keuangan sudah diberi tahu — Rekap III dapat dicetak dari menu <b>Rekap III Non Dapem</b>.</div>` : ""}`;
+  return ndKartu(5, ND_JUDUL[5], "F1.2.8 · F1.2.9", isi, kunci);
+}
+
+/* -------------------------------------------------------------- banner lajur */
+function renderNdBanner() {
+  const slot = $("#nd-banner");
+  if (!slot) return;
+  const l = ndLangkah(), lane = ndLane();
+  const selesai = lane === "keuangan" ? ["ti", "pajak"] : nd.balikan ? ["pajak"] : [];
+  const info  = NONDAPEM_LANE.find(x => x.kode === lane);
+  const strip = stripLane(lane, selesai, NONDAPEM_LANE);
+  const P = NONDAPEM_PUTARAN;
+
+  if (l === 6) {
+    slot.innerHTML = strip + `<div class="alert alert-ok" style="margin-bottom:18px"><span>✓</span><span>Seluruh langkah selesai. Rekap III Non Dapem siap dicetak Div. Keuangan.</span></div>`;
+    return;
+  }
+  if (lane === "ti") {
+    slot.innerHTML = strip + `
+      <div class="alert alert-ok" style="margin-bottom:18px">
+        <span>⚑</span><span><b>Giliran Anda</b> — Langkah ${l} dari 5: ${esc(ND_JUDUL[l])}.</span>
+      </div>`;
+    return;
+  }
+  slot.innerHTML = strip + `
+    <div class="card" style="margin-bottom:18px;border-left:3px solid var(--amber)">
+      <div class="head-row" style="margin-bottom:0">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--ink)">
+            ⏳ Menunggu Bagian Pajak — ${esc(P.lama)}
+            <span class="pill ${ND_TONE[info.jenis]}" style="margin-left:8px">${esc(info.jenis)}</span>
+          </div>
+          <div class="page-sub" style="margin-top:4px">
+            Diinfokan ${esc(P.info)} oleh ${esc(P.oleh)} · Pajak menarik sendiri dari ${esc(P.sumber)}
+          </div>
+          <div class="tbl-note" style="text-align:left;margin-top:6px">Penyerahan dan balikan berjalan lewat email, di luar sistem.</div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:9px">
+          <button class="btn btn-ghost btn-sm" id="nd-ingatkan">Ingatkan</button>
+          <button class="btn btn-primary btn-sm" data-nd-unggah="1">⬆ Unggah Balikan Pajak</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ------------------------------------------------------------ tinjau temuan */
+function bukaTemuanNd(kode) {
+  const d = nd.temuan[kode];
+  if (!d) { toast(`Rincian ${kode} tidak tersedia pada periode ini.`, "bad"); return; }
+  ndGateAktif = kode;
+  const g = nd.gate.find(x => x.kode === kode);
+  $("#ndt-judul").textContent = `${g.kode} · ${g.nama}`;
+  $("#ndt-sub").textContent   = `Non Dapem ${NONDAPEM_PARAM.blnbyr} — ${d.baris.length} temuan`;
+  $("#ndt-aturan").lastElementChild.textContent = d.aturan;
+  $("#ndt-param").textContent = "Parameter: " + g.param;
+  $("#ndt-terapkan").textContent = d.aksi;
+  $("#ndt-head").innerHTML = `<th style="width:34px"></th>` + d.kolom.map(k => `<th>${esc(k)}</th>`).join("");
+  renderNdTemuanBody();
+  go("non-dapem-temuan");
+}
+
+function renderNdTemuanBody() {
+  const d = nd.temuan[ndGateAktif];
+  $("#ndt-body").innerHTML = d.baris.map((b, i) => `
+    <tr>
+      <td><input type="checkbox" data-ndt-row="${i}" ${b.pilih ? "checked" : ""}></td>
+      ${b.sel.map((v, j) => `<td>${j === 0 ? `<b>${esc(v)}</b>` : esc(v)}</td>`).join("")}
+    </tr>`).join("");
+  const n = d.baris.filter(b => b.pilih).length;
+  $("#ndt-note").innerHTML = `<b>${n}</b> dari ${d.baris.length} baris terpilih. Baris yang tidak dicentang dianggap sudah benar dan tidak akan diubah.`;
+  $("#ndt-terapkan").disabled = n === 0;
+}
+
+/* dampaknya dihitung dari angka baris itu sendiri, bukan contoh tetap */
+const ndAngka = t => +String(t).replace(/\./g, "") || 0;
+
+function ndPratinjauDampak() {
+  const d = nd.temuan[ndGateAktif];
+  const g = nd.gate.find(x => x.kode === ndGateAktif);
+  const n = d.baris.filter(b => b.pilih).length;
+  const c = d.baris.find(b => b.pilih);
+  const bruto = ndAngka(c.sel[3]), pph = ndAngka(c.sel[4]);
+  const f = v => v.toLocaleString("id-ID");
+  const dampak = [
+    ["POT_PPH21",       f(pph),         "0"],
+    ["Jumlah potongan", f(pph),         "0"],
+    ["Jumlah bruto",    f(bruto),       f(bruto)],
+    ["Jumlah netto",    f(bruto - pph), f(bruto)]
+  ];
+  $("#modal-title").textContent = d.aksi;
+  $("#modal-sub").textContent   = `${g.kode} · ${n} baris akan diubah pada non dapem ${NONDAPEM_PARAM.blnbyr}`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Menolkan PPh ikut mengubah jumlah potongan dan netto. Berikut dampaknya pada baris pertama yang terpilih.</span></div>
+    <div class="subsection-title">CONTOH DAMPAK — ${esc(c.sel[0])} · ${esc(c.sel[1])}</div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Kolom</th><th>Sebelum</th><th>Sesudah</th></tr></thead>
+      <tbody>${dampak.map(([k, a, b]) => `<tr><td>${esc(k)}</td>
+        <td style="color:var(--muted)">${esc(a)}</td><td><b>${esc(b)}</b></td></tr>`).join("")}</tbody>
+    </table></div>
+    <div class="field" style="margin-top:16px">
+      <label class="fl" for="ndt-alasan">Alasan / nomor tiket <span class="req">*</span></label>
+      <input class="inp" id="ndt-alasan" placeholder="Contoh: konfirmasi Bagian Pajak 03 Jul 2026 / #24019">
+      <div class="hint">Alasan tersimpan bersama nilai lama, sehingga koreksi bisa ditelusuri kembali.</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="ndt-batal">Batal</button>
+      <button class="btn btn-primary" id="ndt-konfirm">Terapkan ke ${n} baris</button>
+    </div>`;
+  openModal();
+  $("#ndt-batal").onclick = closeModal;
+  $("#ndt-konfirm").onclick = () => {
+    if (!$("#ndt-alasan").value.trim()) { toast("Alasan wajib diisi.", "bad"); $("#ndt-alasan").focus(); return; }
+    d.baris = d.baris.filter(b => !b.pilih);
+    g.sisa  = d.baris.length;
+    closeModal();
+    toast(`${n} baris diperbaiki pada ${g.kode}.`, "ok");
+    if (!d.baris.length) { renderNondapem(); go("non-dapem"); } else renderNdTemuanBody();
+  };
+}
+
+function ndAbaikanTemuan() {
+  const d = nd.temuan[ndGateAktif];
+  const g = nd.gate.find(x => x.kode === ndGateAktif);
+  const n = d.baris.filter(b => b.pilih).length;
+  if (!n) { toast("Belum ada baris yang dipilih.", "bad"); return; }
+  $("#modal-title").textContent = "Abaikan temuan";
+  $("#modal-sub").textContent   = `${g.kode} · ${n} baris akan ditandai sudah benar`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Temuan yang diabaikan tetap tercatat beserta alasannya, dan akan muncul kembali pada periode berikutnya bila kondisinya masih sama.</span></div>
+    <div class="field">
+      <label class="fl" for="ndt-alasan2">Alasan diabaikan <span class="req">*</span></label>
+      <input class="inp" id="ndt-alasan2" placeholder="Contoh: sudah dikoreksi lewat pengajuan terpisah">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="ndt-batal2">Batal</button>
+      <button class="btn btn-primary" id="ndt-konfirm2">Abaikan ${n} baris</button>
+    </div>`;
+  openModal();
+  $("#ndt-batal2").onclick = closeModal;
+  $("#ndt-konfirm2").onclick = () => {
+    if (!$("#ndt-alasan2").value.trim()) { toast("Alasan wajib diisi.", "bad"); $("#ndt-alasan2").focus(); return; }
+    d.baris = d.baris.filter(b => !b.pilih);
+    g.sisa  = d.baris.length;
+    closeModal();
+    toast(`${n} baris diabaikan dengan alasan tercatat.`);
+    if (!d.baris.length) { renderNondapem(); go("non-dapem"); } else renderNdTemuanBody();
+  };
+}
+
+/* rekonsiliasi langkah 1 — pola sama, tapi datanya baris selisih */
+function ndAbaikanSelisih() {
+  const n = nd.selisih.filter(r => r.pilih).length;
+  $("#modal-title").textContent = "Abaikan selisih";
+  $("#modal-sub").textContent   = `${n} baris akan ditandai sudah benar`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Selisih yang diabaikan tetap tercatat beserta alasannya, dan akan muncul kembali bulan berikutnya bila kondisinya masih sama.</span></div>
+    <div class="field">
+      <label class="fl" for="nd-alasan">Alasan diabaikan <span class="req">*</span></label>
+      <input class="inp" id="nd-alasan" placeholder="Contoh: PP dan UKP diajukan bersamaan, sudah diverifikasi lewat KTPA">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="nd-alasan-batal">Batal</button>
+      <button class="btn btn-primary" id="nd-alasan-ok">Abaikan ${n} baris</button>
+    </div>`;
+  openModal();
+  $("#nd-alasan-batal").onclick = closeModal;
+  $("#nd-alasan-ok").onclick = () => {
+    if (!$("#nd-alasan").value.trim()) { toast("Alasan wajib diisi.", "bad"); $("#nd-alasan").focus(); return; }
+    nd.selisih = nd.selisih.filter(r => !r.pilih);
+    nd.gate[0].sisa = nd.selisih.length;
+    closeModal();
+    renderNondapem();
+    toast(`${n} baris diabaikan dengan alasan tercatat.`);
+  };
+}
+
+/* ---------------------------------------------------------------- log eksekusi */
+function ndLog() {
+  const baris = [];
+  if (nd.backup) baris.push(["Backup data non dapem ke DB Dev", NONDAPEM_BACKUP.param, NONDAPEM_BACKUP.baris]);
+  nd.hitung.filter(h => h.selesai).forEach(h => baris.push([h.nama, h.param, h.baris]));
+  $("#modal-title").textContent = "Log Eksekusi";
+  $("#modal-sub").textContent   = `Non Dapem ${NONDAPEM_PARAM.blnbyr} — langkah yang dijalankan sistem`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Hanya langkah tanpa keputusan yang tercatat di sini, lengkap dengan parameter dan jumlah baris terpengaruh, sehingga hasilnya tetap bisa diperiksa tanpa membuka basis data.</span></div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Waktu</th><th>Langkah</th><th>Parameter</th><th>Baris</th><th>Oleh</th></tr></thead>
+      <tbody>${baris.length ? baris.map(([n, pr, b], i) => `<tr>
+        <td>03 Jul 2026 ${String(9 + i).padStart(2, "0")}:${String(15 + i * 6).padStart(2, "0")}</td>
+        <td>${esc(n)}</td><td style="color:var(--muted)">${esc(pr)}</td>
+        <td>${b.toLocaleString("id-ID")}</td><td>Sistem</td></tr>`).join("")
+      : `<tr><td colspan="5"><div class="empty"><h4>Belum ada langkah otomatis</h4><p>Log terisi setelah backup dan perhitungan ulang dijalankan.</p></div></td></tr>`}
+      </tbody>
+    </table></div>`;
+  openModal();
+}
+
+/* --------------------------------------------------- Rekap III — sisi Keuangan */
+function renderNdKeuangan() {
+  if (!$("#ndk-body")) return;
+  const p = NONDAPEM_PARAM;
+  $("#ndk-sub").textContent =
+    `Non Dapem ${p.blnbyr} · jenis bayar ${p.jnsbyr} — dibentuk bersama dapem ${p.blnbyrDapem}.`;
+  $("#ndk-banner").innerHTML = nd.infoKeuangan
+    ? `<div class="alert alert-ok" style="margin-bottom:18px"><span>⚑</span><span><b>Giliran Anda</b> — TI Manajemen Data menyatakan Rekap III Non Dapem ${esc(p.blnbyr)} sudah bisa dicek dan dicetak.</span></div>`
+    : `<div class="alert alert-info" style="margin-bottom:18px"><span>⏳</span><span>Rekap III Non Dapem belum tersedia. Menunggu TI Manajemen Data menyelesaikan perhitungan ulang setelah balikan Bagian Pajak.</span></div>`;
+
+  const tot = NONDAPEM_REKAP_MAK.reduce((a, r) => ({
+    bruto: a.bruto + r.bruto, netto: a.netto + r.netto
+  }), { bruto: 0, netto: 0 });
+
+  $("#ndk-metrics").innerHTML = [
+    { l: "Bulan Bayar",   v: p.blnbyr,                    c: "navy" },
+    { l: "Mata Anggaran", v: NONDAPEM_REKAP_MAK.length,   c: "" },
+    { l: "Total Bruto",   v: miliar(tot.bruto),           c: "" },
+    { l: "Total Netto",   v: miliar(tot.netto),           c: nd.infoKeuangan ? "ok" : "" }
+  ].map(m => `<div class="metric"><div class="metric-lbl">${esc(m.l)}</div><div class="metric-val ${m.c}">${esc(m.v)}</div></div>`).join("");
+
+  $("#ndk-body").innerHTML = NONDAPEM_REKAP_MAK.map(r => `<tr>
+    <td><b>${esc(r.mak)}</b></td><td>${esc(r.uraian)}</td>
+    <td>${r.jumlah.toLocaleString("id-ID")}</td>
+    <td>${miliar(r.bruto)}</td><td>${miliar(r.netto)}</td>
+  </tr>`).join("");
+  /* jumlah nopens TIDAK dijumlahkan antar mata anggaran — satu peserta bisa
+     muncul di beberapa MAK sekaligus, sehingga totalnya akan menyesatkan */
+  $("#ndk-total").innerHTML = `<td colspan="2">TOTAL</td>
+    <td style="color:var(--muted);font-weight:600">—</td>
+    <td>${miliar(tot.bruto)}</td><td>${miliar(tot.netto)}</td>`;
+  $("#ndk-cetak").disabled = !nd.infoKeuangan;
+}
+
+/* ------------------------------------------------------- bar kendali peragaan */
+function renderNdDemo() {
+  const slot = $("#nd-demo");
+  if (!slot) return;
+  const l = ndLangkah();
+  slot.innerHTML = `
+    <div style="border:1.5px dashed var(--line); border-radius:12px; padding:12px 16px;
+                margin-bottom:18px; background:var(--field); display:flex; align-items:center;
+                gap:12px; flex-wrap:wrap">
+      <span class="pill pill-info">PERAGAAN</span>
+      <span style="font-size:11.5px;font-weight:700;color:var(--muted)">Lompat ke langkah</span>
+      ${[1, 2, 3, 4, 5].map(n => `
+        <button class="btn btn-sm ${n === l ? "btn-primary" : "btn-ghost"}" data-nd-demo="${n}">${n}</button>`).join("")}
+      <button class="btn btn-sm ${l === 6 ? "btn-primary" : "btn-ghost"}" data-nd-demo="6">Selesai</button>
+      <span style="margin-left:auto">
+        <button class="btn btn-ghost btn-sm" data-nd-demo="0">Ulang dari awal</button>
+      </span>
+    </div>`;
+}
+
+/* pindahkan run ke langkah tertentu: langkah sebelumnya dianggap beres */
+function ndKeLangkah(n) {
+  nd.selisih = n > 1 ? [] : NONDAPEM_SELISIH.map(r => ({ ...r }));
+  nd.temuan  = JSON.parse(JSON.stringify(NONDAPEM_TEMUAN));
+  nd.gate.forEach(g => {
+    g.catatan = "";
+    if (g.kode === "N-01") { g.sisa = nd.selisih.length; return; }
+    const d = nd.temuan[g.kode];
+    if (n > 2) { if (d) d.baris = []; g.sisa = 0; }
+    else       { g.sisa = d ? d.baris.length : 0; }
+  });
+  nd.backup       = n > 3;
+  nd.infoPajak    = n > 3;
+  nd.balikan      = n > 4;
+  nd.hitung.forEach(h => h.selesai = n > 5);
+  nd.infoKeuangan = n > 5;
+  renderNondapem();
+  renderNdKeuangan();
+}
+
+/* --------------------------------------------------------------- interaksi */
+document.addEventListener("click", e => {
+  if (e.target.id === "nd-samakan") {
+    const n = nd.selisih.filter(r => r.pilih).length;
+    nd.selisih = nd.selisih.filter(r => !r.pilih);
+    nd.gate[0].sisa = nd.selisih.length;
+    renderNondapem();
+    toast(`${n} baris disamakan nomor pengajuannya (yya_id).`, "ok");
+    return;
+  }
+  if (e.target.id === "nd-abaikan")    { ndAbaikanSelisih(); return; }
+  if (e.target.id === "nd-backup") {
+    nd.backup = true; renderNondapem();
+    toast(`Backup selesai — ${NONDAPEM_BACKUP.baris.toLocaleString("id-ID")} baris disalin ke DB Dev.`, "ok");
+    return;
+  }
+  if (e.target.id === "nd-info-pajak") {
+    nd.infoPajak = true; renderNondapem();
+    toast("Bagian Pajak diberi tahu bahwa Non Dapem sudah bisa ditarik.", "ok");
+    return;
+  }
+  if (e.target.id === "nd-ingatkan")   { toast("Pengingat dikirim ke Bagian Pajak."); return; }
+  if (e.target.id === "nd-rekap") {
+    nd.infoKeuangan = true; renderNondapem(); renderNdKeuangan();
+    toast("Div. Keuangan diberi tahu bahwa Rekap III Non Dapem sudah bisa dicek.", "ok");
+    return;
+  }
+  if (e.target.id === "nd-log")   { ndLog(); return; }
+  if (e.target.id === "ndk-cetak") { toast("Rekap III Non Dapem dicetak.", "ok"); return; }
+
+  const unggah = e.target.closest("[data-nd-unggah]");
+  if (unggah) {
+    nd.balikan = true; renderNondapem();
+    toast(`Balikan ${NONDAPEM_PUTARAN.berkas} diunggah ke ${NONDAPEM_PUTARAN.tabel}.`, "ok");
+    return;
+  }
+  const g = e.target.closest("[data-nd-gate]");
+  if (g) { bukaTemuanNd(g.dataset.ndGate); return; }
+
+  const h = e.target.closest("[data-nd-hitung]");
+  if (h) {
+    const l = nd.hitung[+h.dataset.ndHitung];
+    l.selesai = true;
+    renderNondapem();
+    toast(`${l.nama} — ${l.baris.toLocaleString("id-ID")} baris disesuaikan.`, "ok");
+    return;
+  }
+  const demo = e.target.closest("[data-nd-demo]");
+  if (demo) {
+    const n = +demo.dataset.ndDemo;
+    ndKeLangkah(n === 0 ? 1 : n);
+    toast(n === 0 ? "Peragaan dikembalikan ke kondisi awal."
+                  : n === 6 ? "Peragaan dipindahkan ke kondisi selesai."
+                            : `Peragaan dipindahkan ke Langkah ${n}.`);
+    return;
+  }
+});
+
+document.addEventListener("change", e => {
+  const row = e.target.closest("[data-nd-row]");
+  if (row) { nd.selisih[+row.dataset.ndRow].pilih = row.checked; renderNdIsi(); return; }
+  const trow = e.target.closest("[data-ndt-row]");
+  if (trow) { nd.temuan[ndGateAktif].baris[+trow.dataset.ndtRow].pilih = trow.checked; renderNdTemuanBody(); }
+});
+
+$("#ndt-all").onclick  = () => { nd.temuan[ndGateAktif].baris.forEach(b => b.pilih = true);  renderNdTemuanBody(); };
+$("#ndt-none").onclick = () => { nd.temuan[ndGateAktif].baris.forEach(b => b.pilih = false); renderNdTemuanBody(); };
+$("#ndt-terapkan").onclick = ndPratinjauDampak;
+$("#ndt-abaikan").onclick  = ndAbaikanTemuan;
+
+$("#dtm-all").onclick  = () => { dapemTemuan[dapemGateAktif].baris.forEach(b => b.pilih = true);  renderTemuanBody(); };
+$("#dtm-none").onclick = () => { dapemTemuan[dapemGateAktif].baris.forEach(b => b.pilih = false); renderTemuanBody(); };
+$("#dtm-terapkan").onclick = pratinjauDampak;
+$("#dtm-abaikan").onclick  = abaikanTemuan;
+
+renderDapemMetrics();
+renderDapemList();
+renderNondapem();
+
+/* ==================================================== LINTAS UNIT & VALIDASI
+   Menjawab satu pertanyaan tanpa perlu diklik: bola sedang di tangan siapa. */
+
+/* jumlah temuan disamakan dengan contoh baris yang tersedia, supaya angka di
+   daftar pemeriksaan tidak berbeda dengan isi tabelnya */
+dapemGate.forEach(g => {
+  const d = dapemTemuan[g.kode];
+  if (d) { g.temuan = d.baris.length; g.sisa = d.baris.length; }
+});
+
+let validasiKep = {};          // "K-01:0" → { putusan, catatan }
+let validasiKepTerkirim = false;
+
+let laneTahap = kode => DAPEM_TAHAP_LANE[kode];
+const JENIS_TONE = {
+  "dalam sistem":    "pill-info",
+  "luar sistem":     "pill-warn",
+  "luar organisasi": "pill-bad"
+};
+
+/* strip lajur aktor — versi hidup dari bagan proses yang sudah mereka kenal */
+function stripLane(laneAktif, selesai, lanes = DAPEM_LANE) {
+  return `<div class="stepper stepper-pill" style="margin-bottom:14px">
+    ${lanes.map(l => {
+      const kelas = l.kode === laneAktif ? "step active"
+                  : selesai.includes(l.kode) ? "step done" : "step";
+      return `<div class="${kelas}" style="cursor:default">
+        <div>${esc(l.nama)}${l.kode === laneAktif ? " ◉" : selesai.includes(l.kode) ? " ✓" : ""}</div>
+        <div style="font-size:9.5px;font-weight:700;opacity:.75;margin-top:2px">${esc(l.jenis)}</div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+function renderBannerTahap() {
+  const t    = dapemTahap.find(x => x.status === "aktif");
+  const slot = $("#dp-banner");
+  if (!slot) return;
+  if (!t) { slot.innerHTML = `<div class="alert alert-ok"><span>✓</span><span>Seluruh tahap selesai. Rekap III siap dicek Keuangan.</span></div>`; return; }
+
+  const lane    = laneTahap(t.kode);
+  const info    = DAPEM_LANE.find(l => l.kode === lane);
+  const selesai = dapemTahap.filter(x => x.status === "selesai").map(x => laneTahap(x.kode));
+  const tunggu  = DAPEM_MENUNGGU[t.kode];
+  const perlu   = dapemGate.filter(g => g.tahap === t.kode && g.sisa > 0).length;
+
+  /* giliran sendiri — pekerjaan ada di tangan pengguna layar ini */
+  if (lane === "ti") {
+    slot.innerHTML = stripLane(lane, selesai) + `
+      <div class="alert alert-ok" style="margin-bottom:18px">
+        <span>⚑</span>
+        <span><b>Giliran Anda</b> — Tahap ${t.no} ${esc(t.nama)}.
+        ${perlu ? `${perlu} pemeriksaan perlu diputuskan sebelum tahap ini bisa ditutup.`
+                : "Seluruh pemeriksaan bersih, tahap siap ditutup."}</span>
+      </div>`;
+    return;
+  }
+
+  /* menunggu pihak lain — yang menunggu manusia, bukan sistem */
+  const aksi = tunggu && tunggu.aksi === "buka"
+    ? `<button class="btn btn-primary btn-sm" data-go="${esc(tunggu.tujuan)}">${esc(tunggu.aksiLabel)}</button>`
+    : tunggu ? `<button class="btn btn-primary btn-sm" data-dp-unggah="${esc(t.kode)}">${esc(tunggu.aksiLabel)}</button>` : "";
+
+  slot.innerHTML = stripLane(lane, selesai) + `
+    <div class="card" style="margin-bottom:18px;border-left:3px solid var(--amber)">
+      <div class="head-row" style="margin-bottom:0">
+        <div>
+          <div style="font-size:14px;font-weight:800;color:var(--ink)">
+            ⏳ Menunggu ${esc(t.aktor)} — ${esc(tunggu ? tunggu.lama : "—")}
+            <span class="pill ${JENIS_TONE[info.jenis]}" style="margin-left:8px">${esc(info.jenis)}</span>
+          </div>
+          <div class="page-sub" style="margin-top:4px">
+            ${tunggu ? `Dikirim ${esc(tunggu.sejak)} oleh ${esc(tunggu.oleh)} · ${esc(tunggu.rincian)}` : ""}
+          </div>
+          ${info.jenis === "luar organisasi"
+            ? `<div class="tbl-note" style="text-align:left;margin-top:6px">Pengiriman dan balasan dilakukan di luar sistem melalui SharePoint Validasi SIPP.</div>` : ""}
+        </div>
+        <div style="margin-left:auto;display:flex;gap:9px">
+          <button class="btn btn-ghost btn-sm" data-dp-ingatkan="${esc(t.kode)}">Ingatkan</button>
+          ${aksi}
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ------------------------------------------- layar validasi sisi Kepesertaan */
+function renderValidasiKep() {
+  const v = DAPEM_VALIDASI_KEP;
+  const gates = dapemGate.filter(g => g.tahap === "kepesertaan" && dapemTemuan[g.kode]);
+  const total = gates.reduce((a, g) => a + dapemTemuan[g.kode].baris.length, 0);
+  const sudah = Object.keys(validasiKep).length;
+
+  $("#dv-sub").textContent = `Dapem ${v.jenis} · ${v.periode} — dikirim ${v.dikirim} oleh ${v.oleh}`;
+  $("#dv-pengantar").lastElementChild.textContent = v.pengantar;
+
+  $("#dv-banner").innerHTML = validasiKepTerkirim
+    ? `<div class="alert alert-ok" style="margin-bottom:18px"><span>✓</span><span><b>Hasil validasi sudah dikirim</b> ke TI Manajemen Data. Menunggu perbaikan dari sisi TI.</span></div>`
+    : `<div class="alert alert-warn" style="margin-bottom:18px"><span>⚑</span><span><b>Giliran Anda</b> — ${total} baris perlu diperiksa. Batas waktu ${esc(v.batas)}.</span></div>`;
+
+  $("#dv-metrics").innerHTML = [
+    { l: "Periode", v: `${v.periode} · ${v.jenis}`, c: "navy" },
+    { l: "Perlu Diperiksa", v: `${sudah} / ${total}`, c: sudah === total ? "ok" : "" },
+    { l: "Batas Waktu", v: v.batas, c: "" }
+  ].map(m => `<div class="metric"><div class="metric-lbl">${esc(m.l)}</div><div class="metric-val ${m.c}">${esc(m.v)}</div></div>`).join("");
+
+  $("#dv-isi").innerHTML = gates.map(g => {
+    const d = dapemTemuan[g.kode];
+    return `<div class="card" style="margin-bottom:18px">
+      <h3 class="card-title">${esc(g.kode)} · ${esc(g.nama)}</h3>
+      <div class="alert alert-info"><span>ⓘ</span><span>${esc(d.aturan)}</span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr>${d.kolom.map(k => `<th>${esc(k)}</th>`).join("")}<th style="width:210px">Putusan</th></tr></thead>
+        <tbody>${d.baris.map((b, i) => {
+          const key = `${g.kode}:${i}`, p = validasiKep[key];
+          return `<tr>
+            ${b.sel.map((val, j) => `<td>${j === 0 ? `<b>${esc(val)}</b>` : esc(val)}</td>`).join("")}
+            <td>
+              <div style="display:flex;gap:6px">
+                <button class="btn btn-sm ${p && p.putusan === "sesuai" ? "btn-success" : "btn-ghost"}"
+                        data-dv-putus="${esc(key)}|sesuai">Sesuai</button>
+                <button class="btn btn-sm ${p && p.putusan === "tidak" ? "btn-danger" : "btn-ghost"}"
+                        data-dv-putus="${esc(key)}|tidak">Tidak</button>
+              </div>
+              ${p && p.putusan === "tidak"
+                ? `<input class="inp" style="margin-top:6px" placeholder="Catatan untuk TI…"
+                          data-dv-catatan="${esc(key)}" value="${esc(p.catatan || "")}">` : ""}
+            </td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table></div>
+    </div>`;
+  }).join("");
+
+  const tidak = Object.values(validasiKep).filter(p => p.putusan === "tidak").length;
+  $("#dv-progres").textContent = validasiKepTerkirim
+    ? "Hasil validasi sudah dikirim."
+    : `${sudah} dari ${total} baris sudah diputuskan${tidak ? ` · ${tidak} ditandai tidak sesuai` : ""}.`;
+  $("#dv-kirim").disabled = validasiKepTerkirim || sudah < total;
+}
+
+/* --------------------------------------------------------------- interaksi */
+document.addEventListener("click", e => {
+  const putus = e.target.closest("[data-dv-putus]");
+  if (putus) {
+    const [key, nilai] = putus.dataset.dvPutus.split("|");
+    const lama = validasiKep[key];
+    validasiKep[key] = { putusan: nilai, catatan: lama ? lama.catatan : "" };
+    renderValidasiKep();
+    return;
+  }
+  const ingat = e.target.closest("[data-dp-ingatkan]");
+  if (ingat) {
+    const t = dapemTahap.find(x => x.kode === ingat.dataset.dpIngatkan);
+    toast(`Pengingat dikirim ke ${t.aktor}.`);
+    return;
+  }
+  const unggah = e.target.closest("[data-dp-unggah]");
+  if (unggah) {
+    if (unggah.dataset.dpUnggah === "sipp") { modalUnggahSipp(); return; }
+    toast("Pilih berkas balikan untuk diunggah.");
+    return;
+  }
+
+  if (e.target.id === "dv-simpan") { toast("Hasil sementara disimpan."); return; }
+  if (e.target.id === "dv-kirim") {
+    const tidak = Object.values(validasiKep).filter(p => p.putusan === "tidak").length;
+    validasiKepTerkirim = true;
+    renderValidasiKep();
+    toast(tidak ? `Hasil validasi dikirim — ${tidak} baris dikembalikan ke TI.` : "Hasil validasi dikirim — seluruh baris dinyatakan sesuai.", "ok");
+    return;
+  }
+});
+
+document.addEventListener("input", e => {
+  const c = e.target.closest("[data-dv-catatan]");
+  if (c) { const key = c.dataset.dvCatatan; if (validasiKep[key]) validasiKep[key].catatan = c.value; }
+});
+
+renderValidasiKep();
+renderDapemMetrics();
+
+/* ============================================== JALUR BALIK, PERAGAAN, KEUANGAN */
+
+/* F1.1.6 — begitu Kepesertaan mengirim hasil, temuan yang ditandai tidak sesuai
+   berpindah menjadi pekerjaan TI. Tanpa ini alur berhenti di Tahap 2. */
+laneTahap = kode =>
+  (kode === "kepesertaan" && validasiKepTerkirim) ? "ti" : DAPEM_TAHAP_LANE[kode];
+
+let langkahYar = DAPEM_LANGKAH_YAR.map(l => ({ ...l, selesai: false }));
+let rekapSiap  = false;
+
+function serahkanKembaliKeTI() {
+  dapemGate.filter(g => g.tahap === "kepesertaan").forEach(g => {
+    const d = dapemTemuan[g.kode];
+    if (!d) return;
+    d.baris = d.baris.filter((b, i) => {
+      const p = validasiKep[`${g.kode}:${i}`];
+      return p && p.putusan === "tidak";
+    });
+    d.baris.forEach(b => b.pilih = true);
+    g.sisa = d.baris.length;
+  });
+}
+
+/* --------------------------------------------------------- bar kendali peragaan
+   Sengaja dibedakan tampilannya supaya jelas ini alat bantu demo, bukan
+   bagian dari aplikasi yang akan dibangun. */
+function renderDemo() {
+  const slot = $("#dp-demo");
+  if (!slot) return;
+  const aktif = dapemTahap.find(t => t.status === "aktif");
+  slot.innerHTML = `
+    <div style="border:1.5px dashed var(--line); border-radius:12px; padding:12px 16px;
+                margin-bottom:18px; background:var(--field); display:flex; align-items:center;
+                gap:12px; flex-wrap:wrap">
+      <span class="pill pill-info">PERAGAAN</span>
+      <span style="font-size:11.5px;font-weight:700;color:var(--muted)">Lompat ke tahap</span>
+      ${dapemTahap.map(t => `
+        <button class="btn btn-sm ${aktif && t.kode === aktif.kode ? "btn-primary" : "btn-ghost"}"
+                data-demo-tahap="${t.no}">${t.no}</button>`).join("")}
+      <span style="margin-left:auto;display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" data-demo="isi">Isi ulang temuan</button>
+        <button class="btn btn-ghost btn-sm" data-demo="ulang">Ulang dari awal</button>
+      </span>
+    </div>`;
+}
+
+/* kembalikan seluruh temuan ke kondisi awal */
+function demoIsiUlang() {
+  dapemTemuan = JSON.parse(JSON.stringify(DAPEM_TEMUAN));
+  dapemGate.forEach(g => {
+    const d = dapemTemuan[g.kode];
+    if (d) { g.temuan = d.baris.length; g.sisa = d.baris.length; }
+    g.catatan = "";
+  });
+}
+
+/* pindahkan run ke tahap tertentu: tahap sebelumnya dianggap beres */
+function demoKeTahap(no) {
+  demoIsiUlang();
+  validasiKep = {};
+  validasiKepTerkirim = no > 2;
+  dapemTahap.forEach(t => {
+    t.status = t.no < no ? "selesai" : t.no === no ? "aktif" : "terkunci";
+    if (t.no < no) dapemGate.filter(g => g.tahap === t.kode).forEach(g => {
+      const d = dapemTemuan[g.kode]; if (d) d.baris = [];
+      g.sisa = 0;
+    });
+  });
+  langkahYar.forEach(l => l.selesai = no > 6);
+  rekapSiap = no > 6;
+  dapemTab = dapemTahap.find(t => t.no === no).kode;
+  renderDapemProses(); renderDapemMetrics(); renderValidasiKep(); renderKeuangan();
+}
+
+function demoUlang() {
+  dapemTahap = DAPEM_TAHAP.map(t => ({ ...t }));
+  langkahYar = DAPEM_LANGKAH_YAR.map(l => ({ ...l, selesai: false }));
+  validasiKep = {}; validasiKepTerkirim = false; rekapSiap = false;
+  demoIsiUlang();
+  dapemTab = "generate";
+  renderDapemProses(); renderDapemMetrics(); renderValidasiKep(); renderKeuangan();
+  toast("Peragaan dikembalikan ke kondisi awal.");
+}
+
+/* ------------------------------------------------------------ sisi Keuangan */
+function renderKeuangan() {
+  if (!$("#dk-body")) return;
+  const p = DAPEM_PERIODE[0];
+  $("#dk-sub").textContent = `Dapem ${p.jenis} · ${p.periode} — rekapitulasi belanja pensiun per mata anggaran.`;
+  $("#dk-banner").innerHTML = rekapSiap
+    ? `<div class="alert alert-ok" style="margin-bottom:18px"><span>⚑</span><span><b>Giliran Anda</b> — TI Manajemen Data menyatakan Rekap III dapem ${esc(p.periode)} sudah bisa dicek dan dicetak.</span></div>`
+    : `<div class="alert alert-info" style="margin-bottom:18px"><span>⏳</span><span>Rekap III belum tersedia. Menunggu TI Manajemen Data menyelesaikan unggah data dapem ke tabel pembayaran.</span></div>`;
+
+  const tot = DAPEM_REKAP_MAK.reduce((a, r) => ({
+    jumlah: a.jumlah + r.jumlah, bruto: a.bruto + r.bruto, netto: a.netto + r.netto
+  }), { jumlah: 0, bruto: 0, netto: 0 });
+
+  $("#dk-metrics").innerHTML = [
+    { l: "Periode",       v: `${p.periode} · ${p.jenis}`,            c: "navy" },
+    { l: "Mata Anggaran", v: DAPEM_REKAP_MAK.length,                 c: "" },
+    { l: "Total Bruto",   v: miliar(tot.bruto),                      c: "" },
+    { l: "Total Netto",   v: miliar(tot.netto),                      c: rekapSiap ? "ok" : "" }
+  ].map(m => `<div class="metric"><div class="metric-lbl">${esc(m.l)}</div><div class="metric-val ${m.c}">${esc(m.v)}</div></div>`).join("");
+
+  $("#dk-body").innerHTML = DAPEM_REKAP_MAK.map(r => `<tr>
+    <td><b>${esc(r.mak)}</b></td><td>${esc(r.uraian)}</td>
+    <td>${r.jumlah.toLocaleString("id-ID")}</td>
+    <td>${miliar(r.bruto)}</td><td>${miliar(r.netto)}</td>
+  </tr>`).join("");
+  /* jumlah nopens TIDAK dijumlahkan antar mata anggaran — satu peserta bisa
+     muncul di beberapa MAK sekaligus, sehingga totalnya akan menyesatkan */
+  $("#dk-total").innerHTML = `<td colspan="2">TOTAL</td>
+    <td style="color:var(--muted);font-weight:600">—</td>
+    <td>${miliar(tot.bruto)}</td><td>${miliar(tot.netto)}</td>`;
+  $("#dk-cetak").disabled  = !rekapSiap;
+  $("#dk-export").disabled = !rekapSiap;
+}
+
+/* ------------------------------------------------- daftar langkah wajib tahap 6 */
+function kartuYarBaru() {
+  const semua = langkahYar.every(l => l.selesai);
+  return `
+    <div class="card" style="margin-bottom:18px">
+      <h3 class="card-title">Langkah Wajib Sebelum & Sesudah Unggah</h3>
+      <div class="alert alert-warn"><span>⚠</span><span>Kedua langkah mode pemeliharaan tidak tercantum di bagan proses, tetapi wajib dikerjakan dan berpengaruh langsung pada pembayaran peserta.</span></div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th style="width:64px">Urutan</th><th>Langkah</th><th>Keterangan</th><th style="width:120px">Status</th><th style="width:110px">Aksi</th></tr></thead>
+        <tbody>${langkahYar.map((l, i) => {
+          const sebelumnya = i === 0 || langkahYar[i - 1].selesai;
+          return `<tr>
+            <td>${l.urut}</td><td>${esc(l.nama)}</td>
+            <td style="color:var(--muted)">${esc(l.ket)}</td>
+            <td><span class="pill ${l.selesai ? "pill-ok" : "pill-info"}">${l.selesai ? "✓ Selesai" : "Belum"}</span></td>
+            <td>${l.selesai
+              ? `<button class="btn btn-ghost btn-sm" disabled>Selesai</button>`
+              : `<button class="btn btn-info btn-sm" data-yar-langkah="${i}" ${sebelumnya ? "" : "disabled"}>Jalankan</button>`}</td>
+          </tr>`;
+        }).join("")}</tbody>
+      </table></div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="yar-info" ${semua && !rekapSiap ? "" : "disabled"}>
+          Informasikan ke Keuangan bahwa Rekap III siap
+        </button>
+      </div>
+      ${rekapSiap ? `<div class="tbl-note">Keuangan sudah diberi tahu — Rekap III dapat dicetak dari menu Rekap III Dapem.</div>` : ""}
+    </div>`;
+}
+
+/* --------------------------------------------------------------- interaksi */
+document.addEventListener("click", e => {
+  const lompat = e.target.closest("[data-demo-tahap]");
+  if (lompat) { demoKeTahap(+lompat.dataset.demoTahap); toast(`Peragaan dipindahkan ke Tahap ${lompat.dataset.demoTahap}.`); return; }
+  const demo = e.target.closest("[data-demo]");
+  if (demo) {
+    if (demo.dataset.demo === "isi") { demoIsiUlang(); renderDapemProses(); renderValidasiKep(); toast("Temuan contoh diisi ulang."); }
+    else demoUlang();
+    return;
+  }
+  const lang = e.target.closest("[data-yar-langkah]");
+  if (lang) {
+    langkahYar[+lang.dataset.yarLangkah].selesai = true;
+    renderDapemTahap();
+    toast(`${langkahYar[+lang.dataset.yarLangkah].nama} — selesai.`, "ok");
+    return;
+  }
+  if (e.target.id === "yar-info") {
+    rekapSiap = true; renderDapemTahap(); renderKeuangan();
+    toast("Div. Keuangan diberi tahu bahwa Rekap III sudah bisa dicek.", "ok");
+    return;
+  }
+  if (e.target.id === "dk-cetak") { toast("Rekap III (KU 000) dicetak.", "ok"); return; }
+});
+
+/* Jalur balik F1.1.6. Didaftarkan setelah handler asli, sehingga berjalan
+   ketika pengiriman sudah benar-benar ditandai. */
+document.addEventListener("click", e => {
+  if (e.target.id !== "dv-kirim" || !validasiKepTerkirim) return;
+  serahkanKembaliKeTI();
+  renderDapemProses(); renderDapemMetrics();
+});
+
+renderKeuangan();
+renderNdKeuangan();
+
+/* ============================================ DATA DAPEM, DOKUMEN SIPP, EXPORT
+   Tiga penutup alur dapem:
+     · Data DAPEM   — seluruh baris yang terbentuk, bisa dilihat & diekspor
+     · Dokumen SIPP — balikan dari luar organisasi, terlacak per putaran
+     · Export Rekap III — hasil akhir yang dipakai Div. Keuangan               */
+
+/* ------------------------------------------------------- pagination bersama
+   Dipakai dua daftar peserta (dapem & non dapem). Bentuk tombolnya mengikuti
+   pager yang sudah ada di modul Pendaftaran dan Request Umum. */
+function pagerPotong(rows, st) {
+  const maxHal = Math.max(1, Math.ceil(rows.length / st.per));
+  if (st.hal > maxHal) st.hal = maxHal;      /* filter menyusut → jangan nyangkut */
+  if (st.hal < 1) st.hal = 1;
+  const mulai = (st.hal - 1) * st.per;
+  return { total: rows.length, maxHal, mulai, hal: rows.slice(mulai, mulai + st.per) };
+}
+
+/* halaman dipangkas dengan elipsis supaya tidak melebar saat datanya banyak */
+function pagerHtml(st, p, attr) {
+  const tbl = (isi, aktif, hal, mati) =>
+    `<button class="btn ${aktif ? "btn-primary" : "btn-ghost"} btn-sm" style="min-width:30px;padding:0"` +
+    `${mati ? " disabled" : ` ${attr}="${hal}"`}>${isi}</button>`;
+  const nomor = [];
+  for (let i = 1; i <= p.maxHal; i++) {
+    if (i === 1 || i === p.maxHal || Math.abs(i - st.hal) <= 1) nomor.push(i);
+    else if (nomor[nomor.length - 1] !== "…") nomor.push("…");
+  }
+  return tbl("‹", false, st.hal - 1, st.hal <= 1)
+       + nomor.map(i => i === "…"
+           ? `<span style="padding:0 3px;color:var(--faint);font-size:11px;align-self:center">…</span>`
+           : tbl(i, i === st.hal, i, false)).join("")
+       + tbl("›", false, st.hal + 1, st.hal >= p.maxHal);
+}
+
+function pagerNote(p, satuan, ekor) {
+  const dari = p.total ? p.mulai + 1 : 0;
+  return `Menampilkan <b>${dari}–${Math.min(p.mulai + p.hal.length, p.total)}</b> dari ${p.total.toLocaleString("id-ID")} ${satuan}. ${ekor}`;
+}
+
+/* satu tempat untuk memasang selektor jumlah baris */
+function pasangPer(id, st, render) {
+  const el = $("#" + id);
+  if (!el) return;
+  el.value = String(st.per);
+  el.onchange = () => { st.per = +el.value; st.hal = 1; render(); };
+}
+
+/* salinan hidup — data.js dibiarkan utuh */
+let sippDok = DAPEM_SIPP_DOK.map(d => ({ ...d }));
+
+/* rumus dapem dipakai satu kali di sini, supaya tidak ada versi kedua */
+function hitungBaris(r) {
+  const sub   = r.pokok + r.istri + r.anak + r.beras + r.lain;
+  const bruto = sub + r.bulat;
+  return { sub, bruto, netto: bruto - r.pot };
+}
+
+/* -------------------------------------------------------------- Data DAPEM */
+let ddPeriode = { periode: DAPEM_PARAM.blnbyr, jenis: DAPEM_PARAM.jenis };
+let ddFilter  = { jiwa: "", bank: "", oten: "", cari: "" };
+let ddPager   = { hal: 1, per: 10 };
+
+function ddOpsi(sel, kosong, nilai) {
+  const el = $(sel);
+  if (!el) return;
+  el.innerHTML = `<option value="">${kosong}</option>` +
+    nilai.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("");
+}
+
+function initDataDapem() {
+  if (!$("#dd-body")) return;
+  const uniq = f => [...new Set(DAPEM_DATA.map(f))].sort();
+  ddOpsi("#dd-f-jiwa",    "Semua kode jiwa",   uniq(r => r.jiwa));
+  ddOpsi("#dd-f-bank",    "Semua kantor bayar", uniq(r => r.bank));
+  ["jiwa", "bank", "oten", "cari"].forEach(k => {
+    const el = $("#dd-f-" + k);
+    if (el) el.addEventListener("input", () => { ddFilter[k] = el.value; ddPager.hal = 1; renderDataDapem(); });
+  });
+  pasangPer("dd-per", ddPager, renderDataDapem);
+  renderDataDapem();
+}
+
+function ddBaris() {
+  const c = ddFilter.cari.trim().toLowerCase();
+  return DAPEM_DATA.filter(r =>
+    r.periode === ddPeriode.periode && r.jenis === ddPeriode.jenis &&
+    (!ddFilter.jiwa    || r.jiwa === ddFilter.jiwa) &&
+    (!ddFilter.bank    || r.bank === ddFilter.bank) &&
+    (!ddFilter.oten    || r.oten === ddFilter.oten) &&
+    (!c || r.nopens.toLowerCase().includes(c) || r.nama.toLowerCase().includes(c)
+        || r.nik.toLowerCase().includes(c)));
+}
+
+function renderDataDapem() {
+  if (!$("#dd-body")) return;
+  const rows = ddBaris();
+  const P = DAPEM_PERIODE.find(d => d.periode === ddPeriode.periode && d.jenis === ddPeriode.jenis)
+            || { nopens: 0, bruto: 0, netto: 0 };
+
+  $("#dd-sub").innerHTML = `Dapem ${esc(ddPeriode.jenis)} · ${esc(ddPeriode.periode)} — ` +
+    `peserta yang terbit pada bulan bayar ini`;
+
+  /* angka ringkasan diambil dari periodenya, BUKAN dijumlah dari baris contoh —
+     kalau dijumlah dari sampel, totalnya akan berbeda dari Daftar Periode */
+  $("#dd-metrics").innerHTML = [
+    { l: "Bulan Bayar",   v: `${ddPeriode.periode} · ${ddPeriode.jenis}`, c: "navy" },
+    { l: "Jumlah Nopens", v: P.nopens ? P.nopens.toLocaleString("id-ID") : "—", c: "" },
+    { l: "Jumlah Bruto",  v: P.bruto ? miliar(P.bruto) : "—",                  c: "" },
+    { l: "Jumlah Netto",  v: P.netto ? miliar(P.netto) : "—",                  c: "ok" }
+  ].map(m => `<div class="metric"><div class="metric-lbl">${esc(m.l)}</div><div class="metric-val ${m.c}">${esc(m.v)}</div></div>`).join("");
+
+  const pg = pagerPotong(rows, ddPager);
+  const n  = v => v.toLocaleString("id-ID");
+  $("#dd-body").innerHTML = pg.hal.length ? pg.hal.map((r, i) => {
+    const h = hitungBaris(r);
+    return `<tr>
+      <td class="stick-l"><b>${esc(r.nopens)}</b></td>
+      <td>${esc(r.nama)}</td><td>${esc(r.jiwa)}</td><td>${esc(r.nik)}</td>
+      <td>${esc(r.mak)}</td><td>${esc(r.bank)}</td><td>${esc(r.cab)}</td>
+      <td style="font-family:ui-monospace,monospace">${esc(r.norek)}</td>
+      <td>${n(r.pokok)}</td><td>${n(r.istri)}</td><td>${n(r.anak)}</td><td>${n(r.beras)}</td>
+      <td>${n(r.lain)}</td><td>${n(r.bulat)}</td>
+      <td><b>${n(h.bruto)}</b></td><td>${n(r.pot)}</td><td><b>${n(h.netto)}</b></td>
+      <td><span class="pill ${r.oten === "00" ? "pill-ok" : "pill-info"}">${esc(r.oten)}</span></td>
+      <td class="stick-r"><button class="btn btn-info btn-sm" data-dd-detail="${pg.mulai + i}">Detail</button></td>
+    </tr>`;
+  }).join("")
+  : `<tr><td colspan="19"><div class="empty"><h4>Tidak ada baris</h4><p>Ubah filter atau kata kunci pencarian. Periode berstatus Draft belum punya baris apa pun.</p></div></td></tr>`;
+
+  $("#dd-note").innerHTML = pagerNote(pg, "peserta",
+    P.nopens ? `Pada data sebenarnya periode ini berisi ${P.nopens.toLocaleString("id-ID")} nopens.` : "");
+  $("#dd-pager").innerHTML = pagerHtml(ddPager, pg, "data-dd-hal");
+}
+
+function ddDetail(i) {
+  const r = ddBaris()[i];
+  const h = hitungBaris(r);
+  const n = v => v.toLocaleString("id-ID");
+  const grup = (judul, isi) => `
+    <div class="subsection-title">${esc(judul)}</div>
+    <div class="tbl-wrap"><table><tbody>${isi.map(([k, v]) => `
+      <tr><td style="width:44%;color:var(--muted)">${esc(k)}</td><td><b>${esc(v)}</b></td></tr>`).join("")}
+    </tbody></table></div>`;
+  $("#modal-title").textContent = `${r.nopens} · ${r.nama}`;
+  $("#modal-sub").textContent   = `Dapem ${r.jenis} · ${r.periode}`;
+  $("#modal-body").innerHTML =
+    grup("IDENTITAS", [["Nomor Pensiun", r.nopens], ["Nama", r.nama],
+                       ["Kode Jiwa", r.jiwa], ["NIK", r.nik]]) +
+    grup("PEMBAYARAN", [["Mata Anggaran", r.mak], ["Kantor Bayar", r.bank],
+                        ["Kode Cabang", r.cab], ["Nomor Rekening", r.norek],
+                        ["Kode Otentikasi", r.oten === "00" ? "00 — dijamin" : "31 — bayar langsung"]]) +
+    grup("PERHITUNGAN", [["Pensiun Pokok", n(r.pokok)], ["Tunjangan Istri", n(r.istri)],
+                         ["Tunjangan Anak", n(r.anak)], ["Tunjangan Beras", n(r.beras)],
+                         ["Tunjangan Lain", n(r.lain)],
+                         ["Subtotal", n(h.sub)], ["Pembulatan", n(r.bulat)],
+                         ["Jumlah Bruto", n(h.bruto)], ["Jumlah Potongan", n(r.pot)],
+                         ["Jumlah Netto", n(h.netto)]]) +
+    `<div class="tbl-note" style="text-align:left">Netto selalu kelipatan 100 — pembulatan dihitung dari selisihnya, bukan diisi manual.</div>`;
+  openModal();
+}
+
+/* ------------------------------------------------- dokumen balikan dari SIPP */
+function kartuSippDok() {
+  const t = dapemTahap.find(x => x.kode === "sipp");
+  const terkunci = t.status === "terkunci";
+  return `
+    <div class="card" style="margin-bottom:18px">
+      <div class="head-row" style="margin-bottom:12px">
+        <h3 class="card-title" style="margin:0">Dokumen Balikan dari SIPP</h3>
+        <div class="head-divider"></div>
+        <span class="pill ${sippDok.length ? "pill-ok" : "pill-info"}">${sippDok.length} dokumen</span>
+      </div>
+      <div class="alert alert-info"><span>ⓘ</span><span>SIPP berada di luar organisasi — berkas ADK dikirim dan hasil validasinya diterima lewat SharePoint Validasi SIPP. Dokumen yang diunggah di sini tercatat per putaran, sehingga tidak lagi hanya tersimpan di folder pribadi.</span></div>
+
+      <div class="dropzone ${sippDok.length ? "has-file" : ""}" id="dp-sipp-drop" ${terkunci ? 'style="opacity:.55;pointer-events:none"' : ""}>
+        <div style="font-size:26px;color:var(--slate);margin-bottom:10px">☁⬆</div>
+        <div style="font-weight:600;margin-bottom:4px">Tarik dokumen balikan SIPP ke sini atau klik untuk memilih</div>
+        <div class="hint" style="margin:0">Format .xlsx, .csv, .pdf, atau .zip — maksimal 25 MB per berkas</div>
+      </div>
+
+      <div class="tbl-wrap" style="margin-top:16px"><table>
+        <thead><tr><th style="width:74px">Putaran</th><th>Jenis Dokumen</th><th>Nama Berkas</th>
+          <th style="width:88px">Ukuran</th><th>Diunggah</th><th>Catatan</th><th style="width:96px">Aksi</th></tr></thead>
+        <tbody>${sippDok.length ? sippDok.map((d, i) => `<tr>
+          <td><b>${d.putaran}</b></td>
+          <td>${esc(d.jenis)}</td>
+          <td style="font-family:ui-monospace,monospace;font-size:11.5px">${esc(d.nama)}</td>
+          <td>${esc(d.ukuran)}</td>
+          <td>${esc(d.tgl)}<div style="color:var(--muted);font-size:11px">${esc(d.oleh)}</div></td>
+          <td style="color:var(--muted)">${esc(d.catatan)}</td>
+          <td><button class="btn btn-danger btn-sm" data-dp-sipp-hapus="${i}">Hapus</button></td>
+        </tr>`).join("")
+        : `<tr><td colspan="7"><div class="empty"><h4>Belum ada dokumen</h4><p>Unggah hasil validasi setelah SIPP mengirim balikannya.</p></div></td></tr>`}
+        </tbody>
+      </table></div>
+      <div class="tbl-note" style="text-align:left">Nama berkas disimpan apa adanya untuk penelusuran, tetapi pada aplikasi sebenarnya berkas fisiknya dinamai ulang dan disimpan di luar webroot.</div>
+    </div>`;
+}
+
+function modalUnggahSipp() {
+  const putaran = (DAPEM_PUTARAN.sipp || []).length || 1;
+  $("#modal-title").textContent = "Unggah Balikan SIPP";
+  $("#modal-sub").textContent   = `Dapem ${dapemAktif.jenis} · ${dapemAktif.periode} — putaran ${putaran}`;
+  $("#modal-body").innerHTML = `
+    <div class="alert alert-info"><span>ⓘ</span><span>Satu dokumen per unggahan. Jenis dokumen dipilih agar balikan bisa dicocokkan dengan berkas ADK yang dikirim.</span></div>
+    <div class="grid2">
+      <div class="field">
+        <label class="fl" for="ds-jenis">Jenis dokumen <span class="req">*</span></label>
+        <select class="inp" id="ds-jenis">${DAPEM_SIPP_JENIS.map(j => `<option>${esc(j)}</option>`).join("")}</select>
+      </div>
+      <div class="field">
+        <label class="fl" for="ds-putaran">Putaran</label>
+        <input class="inp" id="ds-putaran" value="${putaran}" readonly>
+        <div class="hint">Mengikuti putaran validasi SIPP yang sedang berjalan.</div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="fl" for="ds-nama">Nama berkas <span class="req">*</span></label>
+      <input class="inp" id="ds-nama" value="Hasil_Validasi_SIPP_${esc(DAPEM_PARAM.blnbyr)}_p${putaran}.xlsx">
+      <div class="hint">Format .xlsx, .csv, .pdf, atau .zip — maksimal 25 MB.</div>
+    </div>
+    <div class="field">
+      <label class="fl" for="ds-catatan">Catatan</label>
+      <input class="inp" id="ds-catatan" placeholder="Contoh: penspok tidak sama pada 8 nopens">
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="ds-batal">Batal</button>
+      <button class="btn btn-primary" id="ds-ok">⬆ Unggah</button>
+    </div>`;
+  openModal();
+  $("#ds-batal").onclick = closeModal;
+  $("#ds-ok").onclick = () => {
+    const nama = $("#ds-nama").value.trim();
+    if (!nama) { toast("Nama berkas wajib diisi.", "bad"); $("#ds-nama").focus(); return; }
+    if (!/\.(xlsx|csv|pdf|zip)$/i.test(nama)) {
+      toast("Format berkas tidak diizinkan — pakai .xlsx, .csv, .pdf, atau .zip.", "bad"); return;
+    }
+    sippDok.push({
+      putaran, jenis: $("#ds-jenis").value, nama,
+      ukuran: "1,2 MB", oleh: PENGATURAN.namaUser || "Menda",
+      tgl: "26 Jun 2026 09:40",
+      catatan: $("#ds-catatan").value.trim() || "—"
+    });
+    closeModal();
+    if (dapemTab === "sipp") renderDapemTahap();
+    toast(`${nama} diunggah sebagai balikan SIPP putaran ${putaran}.`, "ok");
+  };
+}
+
+/* ------------------------------------------------------------------- export */
+function modalExport(cfg) {
+  $("#modal-title").textContent = cfg.judul;
+  $("#modal-sub").textContent   = cfg.sub;
+  $("#modal-body").innerHTML = `
+    <div class="grid2">
+      <div class="field">
+        <label class="fl" for="ex-format">Format berkas</label>
+        <select class="inp" id="ex-format">
+          <option value="xlsx">Excel (.xlsx)</option>
+          <option value="csv">CSV (.csv)</option>
+          <option value="pdf">PDF (.pdf)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="fl" for="ex-lingkup">Cakupan data</label>
+        <select class="inp" id="ex-lingkup">
+          ${cfg.lingkup.map((l, i) => `<option value="${i}">${esc(l)}</option>`).join("")}
+        </select>
+      </div>
+    </div>
+    <div class="review-card" style="margin-bottom:16px">
+      <div class="review-card-head">Akan diekspor</div>
+      <div class="review-card-body">
+        <div class="grid2">${cfg.ringkas.map(([k, v]) => `
+          <div class="review-row"><div class="fl">${esc(k)}</div><div class="val">${esc(v)}</div></div>`).join("")}
+        </div>
+      </div>
+    </div>
+    <div class="alert alert-info"><span>ⓘ</span><span>Sel yang diawali <b>=</b>, <b>+</b>, <b>-</b>, atau <b>@</b> di-escape lebih dulu, supaya berkas hasil export tidak dieksekusi sebagai formula saat dibuka.</span></div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" id="ex-batal">Batal</button>
+      <button class="btn btn-primary" id="ex-ok">⬇ Export</button>
+    </div>`;
+  openModal();
+  $("#ex-batal").onclick = closeModal;
+  $("#ex-ok").onclick = () => {
+    const fmt = $("#ex-format").value;
+    closeModal();
+    toast(`${cfg.nama}.${fmt} dibentuk dan diunduh.`, "ok");
+  };
+}
+
+function exportRekapIII() {
+  const p = DAPEM_PERIODE[0];
+  const tot = DAPEM_REKAP_MAK.reduce((a, r) => ({ bruto: a.bruto + r.bruto, netto: a.netto + r.netto }),
+                                     { bruto: 0, netto: 0 });
+  modalExport({
+    judul: "Export Rekap III DAPEM",
+    sub:   `Dapem ${p.jenis} · ${p.periode} — hasil akhir pembentukan dapem`,
+    lingkup: ["Rekap per mata anggaran", "Rekap + rincian per nomor pensiun"],
+    ringkas: [["Periode", `${p.periode} · ${p.jenis}`],
+              ["Mata Anggaran", `${DAPEM_REKAP_MAK.length} baris`],
+              ["Total Bruto", miliar(tot.bruto)],
+              ["Total Netto", miliar(tot.netto)]],
+    nama: `Rekap-III-DAPEM-${p.periode}-${p.jenis}`
+  });
+}
+
+function exportDataDapem() {
+  const rows = ddBaris();
+  const tot = rows.reduce((a, r) => a + hitungBaris(r).netto, 0);
+  const P = DAPEM_PERIODE.find(d => d.periode === ddPeriode.periode && d.jenis === ddPeriode.jenis) || {};
+  modalExport({
+    judul: "Export Daftar Peserta DAPEM",
+    sub:   `Dapem ${ddPeriode.jenis} · ${ddPeriode.periode}`,
+    lingkup: ["Baris sesuai filter aktif", "Seluruh peserta pada periode ini"],
+    ringkas: [["Periode", `${ddPeriode.periode} · ${ddPeriode.jenis}`],
+              ["Sesuai Filter", `${rows.length} baris`],
+              ["Seluruh Periode", P.nopens ? `${P.nopens.toLocaleString("id-ID")} nopens` : "—"],
+              ["Kolom", "18 kolom sesuai tampilan"]],
+    nama: `Daftar-Peserta-DAPEM-${ddPeriode.periode}-${ddPeriode.jenis}`
+  });
+}
+
+/* --------------------------------------------------------------- interaksi */
+document.addEventListener("click", e => {
+  const lihat = e.target.closest("[data-dapem-data]");
+  if (lihat) {
+    const [periode, jenis] = lihat.dataset.dapemData.split("|");
+    ddPeriode = { periode, jenis };
+    ddFilter  = { jiwa: "", bank: "", oten: "", cari: "" };
+    ddPager.hal = 1;
+    ["jiwa", "bank", "oten", "cari"].forEach(k => {
+      const el = $("#dd-f-" + k); if (el) el.value = "";
+    });
+    renderDataDapem();
+    go("dapem-data");
+    return;
+  }
+  const det = e.target.closest("[data-dd-detail]");
+  if (det) { ddDetail(+det.dataset.ddDetail); return; }
+
+  if (e.target.id === "dd-reset") {
+    ddFilter = { jiwa: "", bank: "", oten: "", cari: "" };
+    ddPager.hal = 1;
+    ["jiwa", "bank", "oten", "cari"].forEach(k => {
+      const el = $("#dd-f-" + k); if (el) el.value = "";
+    });
+    renderDataDapem();
+    return;
+  }
+  const ddHal = e.target.closest("[data-dd-hal]");
+  if (ddHal) { ddPager.hal = +ddHal.dataset.ddHal; renderDataDapem(); return; }
+  if (e.target.id === "dd-export") { exportDataDapem(); return; }
+  if (e.target.id === "dk-export") { exportRekapIII();  return; }
+  if (e.target.id === "dp-sipp-drop" || e.target.closest("#dp-sipp-drop")) { modalUnggahSipp(); return; }
+
+  const hapus = e.target.closest("[data-dp-sipp-hapus]");
+  if (hapus) {
+    const d = sippDok[+hapus.dataset.dpSippHapus];
+    sippDok.splice(+hapus.dataset.dpSippHapus, 1);
+    if (dapemTab === "sipp") renderDapemTahap();
+    toast(`${d.nama} dihapus.`);
+    return;
+  }
+});
+
+initDataDapem();
+
+/* ================================ DAFTAR PESERTA NON DAPEM
+   Sama seperti dapem, tapi dimensi utamanya jenis bayar (10/11/12) — bukan
+   bulan bayar, karena non dapem hanya punya satu bulan bayar per run.       */
+
+let nnFilter = { jenis: "", bank: "", pph: "", cari: "" };
+let nnPager  = { hal: 1, per: 10 };
+
+/* rumus non dapem — satu tempat, sama dengan SQL-nya */
+function hitungNd(r) {
+  const tunjLain = r.cacat + r.pph + r.irja;
+  const sub      = r.pokok + r.istri + r.anak + r.beras + tunjLain;
+  const potong   = r.potLain + r.pph;
+  const bruto    = sub + r.bulat;
+  return { tunjLain, sub, potong, bruto, netto: bruto - potong };
+}
+
+function initPesertaNd() {
+  if (!$("#nn-body")) return;
+  ddOpsi("#nn-f-bank", "Semua kantor bayar",
+         [...new Set(NONDAPEM_DATA.map(r => r.bank))].sort());
+  ["jenis", "bank", "pph", "cari"].forEach(k => {
+    const el = $("#nn-f-" + k);
+    if (el) el.addEventListener("input", () => { nnFilter[k] = el.value; nnPager.hal = 1; renderPesertaNd(); });
+  });
+  pasangPer("nn-per", nnPager, renderPesertaNd);
+  renderPesertaNd();
+}
+
+function nnBaris() {
+  const c = nnFilter.cari.trim().toLowerCase();
+  return NONDAPEM_DATA.filter(r =>
+    (!nnFilter.jenis || r.jenis === nnFilter.jenis) &&
+    (!nnFilter.bank  || r.bank  === nnFilter.bank) &&
+    (!nnFilter.pph   || (nnFilter.pph === "ada" ? r.pph > 0 : r.pph === 0)) &&
+    (!c || r.nopens.toLowerCase().includes(c) || r.nama.toLowerCase().includes(c)
+        || r.nik.toLowerCase().includes(c)));
+}
+
+function renderPesertaNd() {
+  if (!$("#nn-body")) return;
+  const p = NONDAPEM_PARAM, R = NONDAPEM_RINGKAS;
+  const rows = nnBaris();
+  const pg   = pagerPotong(rows, nnPager);
+  const n    = v => v.toLocaleString("id-ID");
+
+  $("#nn-sub").textContent =
+    `Non Dapem ${p.blnbyr} · jenis bayar ${p.jnsbyr} — peserta yang dibayar di luar dapem`;
+
+  /* angka ringkasan dari run-nya, bukan dijumlah dari baris contoh */
+  $("#nn-metrics").innerHTML = [
+    { l: "Bulan Bayar",   v: p.blnbyr,               c: "navy" },
+    { l: "Jumlah Nopens", v: n(R.nopens),            c: "" },
+    { l: "Jumlah Bruto",  v: miliar(R.bruto),        c: "" },
+    { l: "Jumlah Netto",  v: miliar(R.netto),        c: "ok" }
+  ].map(m => `<div class="metric"><div class="metric-lbl">${esc(m.l)}</div><div class="metric-val ${m.c}">${esc(m.v)}</div></div>`).join("");
+
+  $("#nn-body").innerHTML = pg.hal.length ? pg.hal.map((r, i) => {
+    const h = hitungNd(r);
+    return `<tr>
+      <td class="stick-l"><b>${esc(r.nopens)}</b></td>
+      <td>${esc(r.nama)}</td>
+      <td><span class="pill ${r.jenis === "12" ? "pill-warn" : "pill-info"}">${esc(r.jenis)}</span></td>
+      <td>${esc(r.nik)}</td><td>${esc(r.mak)}</td><td>${esc(r.bank)}</td><td>${esc(r.cab)}</td>
+      <td style="font-family:ui-monospace,monospace">${esc(r.norek)}</td>
+      <td>${n(r.pokok)}</td><td>${n(r.istri)}</td><td>${n(r.anak)}</td><td>${n(r.beras)}</td>
+      <td>${n(h.tunjLain)}</td>
+      <td>${r.pph ? (r.jenis === "12"
+            ? `<b style="color:var(--red)">${n(r.pph)}</b>` : n(r.pph)) : "0"}</td>
+      <td>${n(r.bulat)}</td>
+      <td><b>${n(h.bruto)}</b></td><td>${n(h.potong)}</td><td><b>${n(h.netto)}</b></td>
+      <td class="stick-r"><button class="btn btn-info btn-sm" data-nn-detail="${pg.mulai + i}">Detail</button></td>
+    </tr>`;
+  }).join("")
+  : `<tr><td colspan="19"><div class="empty"><h4>Tidak ada peserta</h4><p>Ubah filter atau kata kunci pencarian.</p></div></td></tr>`;
+
+  $("#nn-note").innerHTML = pagerNote(pg, "peserta",
+    `Pada data sebenarnya run ini berisi ${n(R.nopens)} nopens. PPh merah = uang duka wafat yang masih terkena potongan (temuan N-04).`);
+  $("#nn-pager").innerHTML = pagerHtml(nnPager, pg, "data-nn-hal");
+}
+
+function nnDetail(i) {
+  const r = nnBaris()[i];
+  const h = hitungNd(r);
+  const n = v => v.toLocaleString("id-ID");
+  const grup = (judul, isi) => `
+    <div class="subsection-title">${esc(judul)}</div>
+    <div class="tbl-wrap"><table><tbody>${isi.map(([k, v]) => `
+      <tr><td style="width:44%;color:var(--muted)">${esc(k)}</td><td><b>${esc(v)}</b></td></tr>`).join("")}
+    </tbody></table></div>`;
+  $("#modal-title").textContent = `${r.nopens} · ${r.nama}`;
+  $("#modal-sub").textContent   =
+    `Non Dapem ${NONDAPEM_PARAM.blnbyr} — jenis bayar ${r.jenis} · ${NONDAPEM_JENIS_LABEL[r.jenis]}`;
+  $("#modal-body").innerHTML =
+    (r.jenis === "12" && r.pph
+      ? `<div class="alert alert-bad"><span>⚠</span><span>Uang duka wafat tidak dikenakan PPh 21, tetapi baris ini masih memiliki potongan ${n(r.pph)}. Perbaikannya ada di temuan <b>N-04</b>.</span></div>` : "") +
+    grup("IDENTITAS", [["Nomor Pensiun", r.nopens], ["Nama Penerima", r.nama],
+                       ["Jenis Bayar", `${r.jenis} — ${NONDAPEM_JENIS_LABEL[r.jenis]}`], ["NIK", r.nik]]) +
+    grup("PEMBAYARAN", [["Mata Anggaran", r.mak], ["Kantor Bayar", r.bank],
+                        ["Kode Cabang", r.cab], ["Nomor Rekening", r.norek]]) +
+    grup("PERHITUNGAN", [["Pensiun Pokok", n(r.pokok)], ["Tunjangan Istri", n(r.istri)],
+                         ["Tunjangan Anak", n(r.anak)], ["Tunjangan Beras", n(r.beras)],
+                         ["Tunjangan Cacat", n(r.cacat)], ["Tunjangan IRJA", n(r.irja)],
+                         ["PPh 21", n(r.pph)],
+                         ["Tunjangan Lain (cacat + PPh + IRJA)", n(h.tunjLain)],
+                         ["Subtotal", n(h.sub)], ["Pembulatan", n(r.bulat)],
+                         ["Jumlah Bruto", n(h.bruto)],
+                         ["Potongan Lain", n(r.potLain)],
+                         ["Jumlah Potongan", n(h.potong)], ["Jumlah Netto", n(h.netto)]]) +
+    `<div class="tbl-note" style="text-align:left">Netto selalu kelipatan 100 — pembulatan dihitung dari selisihnya, bukan diisi manual.</div>`;
+  openModal();
+}
+
+function exportPesertaNd() {
+  const rows = nnBaris();
+  modalExport({
+    judul: "Export Daftar Peserta NON DAPEM",
+    sub:   `Non Dapem ${NONDAPEM_PARAM.blnbyr} · jenis bayar ${NONDAPEM_PARAM.jnsbyr}`,
+    lingkup: ["Baris sesuai filter aktif", "Seluruh peserta pada run ini"],
+    ringkas: [["Bulan Bayar", NONDAPEM_PARAM.blnbyr],
+              ["Sesuai Filter", `${rows.length} baris`],
+              ["Seluruh Run", `${NONDAPEM_RINGKAS.nopens.toLocaleString("id-ID")} nopens`],
+              ["Kolom", "18 kolom sesuai tampilan"]],
+    nama: `Daftar-Peserta-NON-DAPEM-${NONDAPEM_PARAM.blnbyr}`
+  });
+}
+
+/* --------------------------------------------------------------- interaksi */
+document.addEventListener("click", e => {
+  const det = e.target.closest("[data-nn-detail]");
+  if (det) { nnDetail(+det.dataset.nnDetail); return; }
+
+  const hal = e.target.closest("[data-nn-hal]");
+  if (hal) { nnPager.hal = +hal.dataset.nnHal; renderPesertaNd(); return; }
+
+  if (e.target.id === "nn-reset") {
+    nnFilter = { jenis: "", bank: "", pph: "", cari: "" };
+    nnPager.hal = 1;
+    ["jenis", "bank", "pph", "cari"].forEach(k => {
+      const el = $("#nn-f-" + k); if (el) el.value = "";
+    });
+    renderPesertaNd();
+    return;
+  }
+  if (e.target.id === "nn-export") { exportPesertaNd(); return; }
+});
+
+initPesertaNd();
