@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flagging Mitra Bayar (Prototype)</title>
+<!-- Tampilan/warna diatur di style.css -->
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app">
+
+  <!-- ============ SIDEBAR ============ -->
+  <nav class="sidebar" id="sidebar" aria-label="Navigasi utama">
+    <div class="nav-group hot">FLAGGING MITRA BAYAR</div>
+
+    <button class="nav-item" data-go="flagging-dashboard">Dashboard</button>
+    <button class="nav-item" data-go="flagging-pensiunan">Pensiunan</button>
+    <button class="nav-item" data-go="flagging-parameter-tarif">Parameter Penetapan Tarif</button>
+
+    <button class="nav-item nav-parent" id="nav-flagging-cb" aria-expanded="true">
+      <span>Check dan Booking <span class="tag">New</span></span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-flagging-cb-children">
+      <button class="nav-item nav-child" data-go="flagging-cb-individu">Individu</button>
+      <button class="nav-item nav-child" data-go="flagging-cb-kolektif">Kolektif</button>
+    </div>
+
+    <button class="nav-item nav-parent" id="nav-flagging-pinjaman" aria-expanded="true">
+      <span>Pinjaman</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-flagging-pinjaman-children">
+      <button class="nav-item nav-child" data-go="flagging-pinjaman-pengajuan">Pengajuan</button>
+      <button class="nav-item nav-child" data-go="flagging-pinjaman-flagging">Flagging</button>
+      <button class="nav-item nav-child" data-go="flagging-pinjaman-takeover">Take Over</button>
+      <button class="nav-item nav-child" data-go="flagging-pinjaman-topup">Top Up</button>
+      <button class="nav-item nav-child" data-go="flagging-pinjaman-penagihan">Penagihan</button>
+    </div>
+
+    <button class="nav-item" data-go="flagging-persetujuan">Persetujuan</button>
+
+    <button class="nav-item nav-parent" id="nav-flagging-laporan" aria-expanded="true">
+      <span>Laporan</span><span class="chevron">⌄</span>
+    </button>
+    <div class="nav-children" id="nav-flagging-laporan-children">
+      <button class="nav-item nav-child" data-go="flagging-laporan-tagihan">Laporan Tagihan</button>
+      <button class="nav-item nav-child" data-go="flagging-laporan-booking">Laporan Booking</button>
+      <button class="nav-item nav-child" data-go="flagging-laporan-periode">Laporan Per Periode</button>
+      <button class="nav-item nav-child" data-go="flagging-laporan-takeover">Laporan Take Over</button>
+    </div>
+
+  </nav>
+
+  <!-- ============ MAIN ============ -->
+  <div class="main">
+    <header class="topbar">
+      <div class="brand">
+        <img class="brand-logo" src="logo-asabri-white.png" alt="Logo ASABRI">
+        <span class="brand-sep"></span>
+        <button class="burger" id="burger" aria-label="Sembunyikan / tampilkan sidebar">☰</button>
+        <div class="brand-txt">FLAGGING <b>MITRA BAYAR</b> ASABRI<small>PENGELOLAAN FLAGGING PINJAMAN MITRA</small></div>
+      </div>
+      <div class="topsearch"><span>⌕</span><span>Cari Peserta / NRP / NIP / No Peserta / NIK</span></div>
+      <div class="topright">
+        <div class="notif-wrap">
+          <button class="topbell" id="top-bell" aria-label="Notifikasi" aria-haspopup="true" aria-expanded="false">
+            🔔<span class="topbell-badge" id="top-bell-count">0</span>
+          </button>
+          <div class="notif-pop" id="top-notif" hidden>
+            <div class="notif-pop-head">
+              <span>Notifikasi</span>
+              <span class="pill pill-info" id="top-notif-count"></span>
+            </div>
+            <div class="notif-pop-list" id="top-notif-list"></div>
+            <button class="notif-pop-foot" id="top-notif-all">Lihat semua di Persetujuan</button>
+          </div>
+        </div>
+        <select class="role-chip" id="top-role" aria-label="Pilih role">
+          <option>Divisi Kepesertaan dan Pengembangan Manfaat</option>
+          <option>Kantor Cabang</option>
+          <option>Bank BRI</option>
+          <option>Bank BNI</option>
+          <option>Bank Mandiri</option>
+          <option>Bank BCA</option>
+        </select>
+        <div class="avatar" id="top-avatar">DK</div>
+      </div>
+    </header>
+
+    <main class="content">
+      <!-- ---------- PENGELOLAAN FLAGGING PINJAMAN MITRA » DASHBOARD ---------- -->
+      <section class="screen" id="s-flagging-dashboard">
+        <div class="crumb"><span>Beranda</span><span>›</span><b>Dashboard</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Dashboard</h1>
+            <div class="page-sub">Ringkasan aktivitas flagging pinjaman mitra dalam bentuk grafik.</div>
+          </div>
+        </div>
+
+        <div class="grid2" style="align-items:start">
+          <div class="card chart-card">
+            <div class="chart-head">
+              <span class="chart-head-ico">👤</span>
+              <span class="chart-head-title">Site Visits</span>
+              <span class="chart-head-sub" id="fdash-mitra"></span>
+            </div>
+            <div id="fdash-site-visits"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-head">
+              <span class="chart-head-ico">▤</span>
+              <span class="chart-head-title">Booking</span>
+              <span class="chart-head-sub fdash-tahun"></span>
+            </div>
+            <div id="fdash-booking"></div>
+          </div>
+        </div>
+
+        <div class="grid2" style="align-items:start">
+          <div class="card chart-card">
+            <div class="chart-head">
+              <span class="chart-head-ico">✓</span>
+              <span class="chart-head-title">Pengajuan</span>
+              <span class="chart-head-sub fdash-tahun"></span>
+            </div>
+            <div id="fdash-pengajuan"></div>
+          </div>
+          <div class="card chart-card">
+            <div class="chart-head">
+              <span class="chart-head-ico">👍</span>
+              <span class="chart-head-title">Persetujuan</span>
+              <span class="chart-head-sub fdash-tahun"></span>
+            </div>
+            <div id="fdash-persetujuan"></div>
+          </div>
+        </div>
+
+        <div class="card chart-card">
+          <div class="chart-head">
+            <span class="chart-head-ico">💵</span>
+            <span class="chart-head-title">Pelunasan</span>
+            <span class="chart-head-sub fdash-tahun"></span>
+          </div>
+          <div id="fdash-pelunasan" style="max-width:640px"></div>
+        </div>
+      </section>
+
+      <!-- ---------- PENGELOLAAN FLAGGING PINJAMAN MITRA » PENSIUNAN ---------- -->
+      <section class="screen" id="s-flagging-pensiunan">
+        <div class="crumb"><span>Beranda</span><span>›</span><b>Pensiunan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Pensiunan</h1>
+            <div class="page-sub">Rekap peserta pensiunan per mitra bayar, dipisah antara yang berstatus flagging dan non flagging.</div>
+          </div>
+        </div>
+        <div class="card">
+          <h3 class="card-title">Search &amp; Filter</h3>
+          <div class="grid3">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fp-f-bulan">Periode Bulan</label>
+              <select class="inp" id="fp-f-bulan"></select>
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fp-f-tahun">Tahun</label>
+              <input class="inp" type="number" id="fp-f-tahun" value="2025">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fp-f-mitra">Mitra Bayar</label>
+              <input class="inp" id="fp-f-mitra" placeholder="Cari mitra...">
+            </div>
+          </div>
+          <div class="grid3" style="margin-top:14px;align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fp-f-cabang">Cabang</label>
+              <input class="inp" id="fp-f-cabang" placeholder="Cabang...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fp-jenis-trigger">Jenis Bayar</label>
+              <div class="multisel" id="fp-f-jenis">
+                <button type="button" class="inp multisel-trigger" id="fp-jenis-trigger" aria-expanded="false" aria-haspopup="true">
+                  <span class="multisel-val" id="fp-jenis-val"></span><span class="multisel-caret">⌄</span>
+                </button>
+                <div class="multisel-pop" id="fp-jenis-pop"></div>
+              </div>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fp-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3 class="card-title" style="margin:0">Daftar Mitra</h3>
+            <div class="tbl-note" id="fp-count" style="margin:0"></div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th style="width:52px">No</th>
+                <th>Mitra Bayar</th>
+                <th class="num">Peserta Flagging</th>
+                <th class="num">Peserta Non Flagging</th>
+                <th class="num">Jumlah Penerima</th>
+                <th class="num">Jumlah Netto</th>
+              </tr></thead>
+              <tbody id="fp-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:flex-end;align-items:center;margin-top:10px">
+            <div id="fp-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- PENGELOLAAN FLAGGING PINJAMAN MITRA » PINJAMAN » PERSETUJUAN ---------- -->
+      <section class="screen" id="s-flagging-persetujuan">
+        <div class="crumb"><span>Beranda</span><span>›</span><b>Persetujuan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Persetujuan</h1>
+            <div class="page-sub">Antrean persetujuan dari Check dan Booking (Individu &amp; Kolektif) dan dari sub modul Pengajuan.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fps-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="fps-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fps-f-status">Status</label>
+              <select class="inp" id="fps-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fps-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>KPA</th>
+                <th>NRP/NIP</th>
+                <th>Mitra</th>
+                <th>NOPENS</th>
+                <th>Nama</th>
+                <th>Tanggal Lahir</th>
+                <th>Aktivitas</th>
+                <th>Status</th>
+                <th>Tanggal Proses</th>
+                <th>Aksi</th>
+              </tr></thead>
+              <tbody id="fps-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fps-count" style="margin:0"></div>
+            <div id="fps-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- PENGELOLAAN FLAGGING PINJAMAN MITRA » LAPORAN ---------- -->
+      <section class="screen" id="s-flagging-laporan-tagihan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Tagihan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Tagihan</h1>
+            <div class="page-sub">Rekap tagihan pinjaman mitra.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-flagging-laporan-booking">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Booking</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Booking</h1>
+            <div class="page-sub">Rekap booking pinjaman mitra.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-flagging-laporan-periode">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Per Periode</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Per Periode</h1>
+            <div class="page-sub">Rekap pinjaman mitra per periode.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+        </div>
+      </section>
+
+      <section class="screen" id="s-flagging-laporan-takeover">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Laporan</span><span>›</span><b>Laporan Take Over</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Laporan Take Over</h1>
+            <div class="page-sub">Rekap take over pinjaman mitra.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+        </div>
+      </section>
+
+      <!-- ---------- PENGELOLAAN FLAGGING PINJAMAN MITRA » PARAMETER PENETAPAN TARIF ---------- -->
+      <section class="screen" id="s-flagging-parameter-tarif">
+        <div class="crumb"><span>Beranda</span><span>›</span><b>Parameter Penetapan Tarif</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Parameter Penetapan Tarif</h1>
+            <div class="page-sub">Parameter tarif/bunga pinjaman mitra.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="alert alert-info"><span>ⓘ</span><span>Halaman ini masih dalam pengembangan. Isinya akan menyusul sesuai referensi FSD.</span></div>
+        </div>
+      </section>
+      <!-- ---------- FLAGGING » CHECK DAN BOOKING » INDIVIDU ---------- -->
+      <section class="screen" id="s-flagging-cb-individu">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Check dan Booking</span><span>›</span><b>Individu</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Check dan Booking — Individu</h1>
+            <div class="page-sub">Pengecekan status flagging dan booking untuk satu peserta</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Pencarian Peserta</h2>
+          <hr class="hr-card">
+          <div class="field" style="max-width:360px">
+            <label class="fl" for="fcbi-kpa">KPA <span class="req">*</span></label>
+            <input class="inp" id="fcbi-kpa" placeholder="Masukkan nomor KPA">
+            <div class="hint">Jenis peserta ditentukan otomatis dari nomor KPA.</div>
+          </div>
+          <div class="form-actions" style="justify-content:flex-start;border-top:0;padding-top:0;margin-top:18px">
+            <button class="btn btn-primary" id="fcbi-search">⌕ Search</button>
+          </div>
+        </div>
+
+        <!-- ===== hasil: Individu Peserta Aktif ===== -->
+        <div class="card" id="fcbi-hasil-aktif" style="display:none;margin-top:16px">
+          <h2 class="card-title">Informasi Peserta <span class="pill pill-info" style="margin-left:6px;vertical-align:middle">Peserta Aktif</span></h2>
+          <hr class="hr-card">
+          <div class="grid3">
+            <div class="field">
+              <label class="fl">Nomor KPA</label>
+              <input class="inp" id="fcbi-a-kpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Nama</label>
+              <input class="inp" id="fcbi-a-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Mitra</label>
+              <input class="inp" id="fcbi-a-mitra" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Gaji</label>
+              <input class="inp" id="fcbi-a-gaji" disabled>
+              <div class="hint" id="fcbi-a-gaji-hint" style="display:none">Parameter tarif belum ditentukan.</div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" id="fcbi-a-booking">Booking</button>
+          </div>
+        </div>
+
+        <!-- ===== hasil: Individu Peserta Pensiun Sendiri ===== -->
+        <div class="card" id="fcbi-hasil-sendiri" style="display:none;margin-top:16px">
+          <h2 class="card-title">Informasi Peserta <span class="pill pill-info" style="margin-left:6px;vertical-align:middle">Pensiun Sendiri</span></h2>
+          <hr class="hr-card">
+          <div class="grid3">
+            <div class="field">
+              <label class="fl">Nomor KPA</label>
+              <input class="inp" id="fcbi-s-kpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Nomor Pensiun</label>
+              <input class="inp" id="fcbi-s-nopensiun" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Nama</label>
+              <input class="inp" id="fcbi-s-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Mitra</label>
+              <input class="inp" id="fcbi-s-mitra" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Gaji</label>
+              <input class="inp" id="fcbi-s-gaji" disabled>
+              <div class="hint" id="fcbi-s-gaji-hint" style="display:none">Parameter tarif belum ditentukan.</div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" id="fcbi-s-booking">Booking</button>
+          </div>
+        </div>
+
+        <!-- ===== hasil: Individu Peserta Pensiun Waris ===== -->
+        <div class="card" id="fcbi-hasil-waris" style="display:none;margin-top:16px">
+          <h2 class="card-title">Informasi Peserta <span class="pill pill-info" style="margin-left:6px;vertical-align:middle">Pensiun Waris</span></h2>
+          <hr class="hr-card">
+          <div class="grid3">
+            <div class="field">
+              <label class="fl">Nomor KPA</label>
+              <input class="inp" id="fcbi-w-kpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">NOPENS</label>
+              <input class="inp" id="fcbi-w-nopens" disabled>
+            </div>
+            <div class="field" style="position:relative">
+              <label class="fl" for="fcbi-w-nopensiun-peminjam">Nomor Pensiun Peminjam <span class="req">*</span></label>
+              <input class="inp" id="fcbi-w-nopensiun-peminjam" placeholder="Cari nomor pensiun peminjam..." autocomplete="off">
+              <div class="autocomplete-list" id="fcbi-w-peminjam-list"></div>
+            </div>
+            <div class="field">
+              <label class="fl">Nama Peminjam</label>
+              <input class="inp" id="fcbi-w-nama-peminjam" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Nama</label>
+              <input class="inp" id="fcbi-w-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Mitra</label>
+              <input class="inp" id="fcbi-w-mitra" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Gaji</label>
+              <input class="inp" id="fcbi-w-gaji" disabled>
+              <div class="hint" id="fcbi-w-gaji-hint" style="display:none">Parameter tarif belum ditentukan.</div>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" id="fcbi-w-booking">Booking</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » CHECK DAN BOOKING » KOLEKTIF ---------- -->
+      <section class="screen" id="s-flagging-cb-kolektif">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Check dan Booking</span><span>›</span><b>Kolektif</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Check dan Booking — Kolektif</h1>
+            <div class="page-sub">Pengecekan status flagging dan booking untuk batch/kolektif peserta</div>
+          </div>
+          <button class="btn btn-primary" data-go="flagging-cb-check">+ Check &amp; Booking Flagging Kolektif</button>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-fcbk-tab="mitra">Mitra</button>
+          <button class="tab" data-fcbk-tab="peserta">Peserta</button>
+        </div>
+
+        <!-- ===== tab Mitra: riwayat batch yang diunggah ===== -->
+        <div id="fcbk-panel-mitra">
+          <div class="card">
+            <div class="toolbar" style="justify-content:flex-end">
+              <div class="tbl-note" id="fcbk-batch-count" style="margin:0"></div>
+            </div>
+            <div class="tbl-wrap">
+              <table>
+                <thead><tr>
+                  <th style="width:52px">F</th><th>Mitra</th><th>Status</th><th>Pengguna</th><th>Tanggal</th>
+                </tr></thead>
+                <tbody id="fcbk-batch-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== tab Peserta: daftar peserta hasil batch ===== -->
+        <div id="fcbk-panel-peserta" style="display:none">
+          <div class="card">
+            <div class="grid3">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fcbk-f-ktpa">No KPA</label>
+                <input class="inp" id="fcbk-f-ktpa" placeholder="No KPA...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fcbk-f-nrp">NRP</label>
+                <input class="inp" id="fcbk-f-nrp" placeholder="NRP...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fcbk-f-nik">NIK</label>
+                <input class="inp" id="fcbk-f-nik" placeholder="NIK...">
+              </div>
+            </div>
+            <div class="grid3" style="margin-top:14px;align-items:end">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fcbk-f-nama">Nama</label>
+                <input class="inp" id="fcbk-f-nama" placeholder="Nama...">
+              </div>
+              <div></div>
+              <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+                <button class="btn btn-primary" id="fcbk-cari">⌕ Cari</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="tbl-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th rowspan="2" style="width:52px">No</th>
+                    <th rowspan="2">KPA</th>
+                    <th rowspan="2">NRP/NIP</th>
+                    <th colspan="3" class="th-group">Peserta</th>
+                    <th colspan="4" class="th-group">Penerima</th>
+                    <th rowspan="2">Booking</th>
+                  </tr>
+                  <tr>
+                    <th>Nomor Pensiun</th><th>Nama</th><th>Tanggal Lahir</th>
+                    <th>Pensiun</th><th>Hidup</th><th>Nopensiun</th><th>Nama</th>
+                  </tr>
+                </thead>
+                <tbody id="fcbk-peserta-body"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="fcbk-peserta-count" style="margin:0"></div>
+              <div id="fcbk-peserta-pager" style="display:flex;gap:4px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » CHECK DAN BOOKING » KOLEKTIF » CHECK & BOOKING ---------- -->
+      <section class="screen" id="s-flagging-cb-check">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Check dan Booking</span><span>›</span><span>Kolektif</span><span>›</span><b>Check &amp; Booking Flagging Kolektif</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-cb-kolektif">← Kembali</button>
+            <div>
+              <h1 class="page-title">Check &amp; Booking Flagging Kolektif</h1>
+              <div class="page-sub">Unggah berkas batch peserta dari mitra, lalu pilih peserta yang akan dibooking.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Unggah Berkas Batch</h2>
+          <hr class="hr-card">
+          <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
+            <div class="field" style="width:360px;max-width:100%;margin-bottom:0;position:relative">
+              <label class="fl" for="fcbk-mitra">Mitra <span class="req">*</span></label>
+              <input class="inp" id="fcbk-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="fcbk-mitra-list"></div>
+            </div>
+            <a class="btn btn-ghost" id="fcbk-template" style="flex-shrink:0"
+               href="Template%20Check%20Booking%20Kolektif.xlsx"
+               download="Template Check Booking Kolektif.xlsx">⤓ Download Template Excel</a>
+          </div>
+
+          <div style="margin-top:18px;border:1.5px dashed var(--line);border-radius:9px;padding:26px;text-align:center;background:var(--field)">
+            <div style="font-size:26px;color:var(--slate);margin-bottom:8px">⬆</div>
+            <div style="font-weight:600;margin-bottom:4px">Unggah file batch peserta</div>
+            <div class="hint" style="margin:0 0 13px">Format .xlsx / .csv sesuai template</div>
+            <button class="btn btn-ghost btn-sm" id="fcbk-pilih-file">Pilih file &amp; unggah</button>
+            <div class="hint ok-txt" id="fcbk-file-nama" style="display:none;margin-top:11px"></div>
+          </div>
+
+          <div class="form-actions" style="justify-content:flex-end">
+            <button class="btn btn-ghost" data-go="flagging-cb-kolektif">Batal</button>
+            <button class="btn btn-primary" id="fcbk-proses">Check &amp; Booking</button>
+          </div>
+        </div>
+
+        <!-- ===== muncul setelah berkas diproses ===== -->
+        <div class="card" id="fcbk-hasil" style="display:none">
+          <div class="toolbar" style="justify-content:space-between">
+            <h3 class="card-title" style="margin:0">Data Diunggah</h3>
+            <div class="tbl-note" id="fcbk-hasil-count" style="margin:0"></div>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:52px">No</th>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th colspan="3" class="th-group">Peserta</th>
+                  <th colspan="4" class="th-group">Penerima</th>
+                  <th rowspan="2">Hasil Validasi</th>
+                  <th rowspan="2">
+                    <label class="chk-head">
+                      <input type="checkbox" id="fcbk-chk-all" aria-label="Pilih semua peserta">Booking
+                    </label>
+                  </th>
+                </tr>
+                <tr>
+                  <th>Nomor Pensiun</th><th>Nama</th><th>Tanggal Lahir</th>
+                  <th>Pensiun</th><th>Hidup</th><th>Nopensiun</th><th>Nama</th>
+                </tr>
+              </thead>
+              <tbody id="fcbk-hasil-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fcbk-hasil-note" style="margin:0"></div>
+            <div id="fcbk-hasil-pager" style="display:flex;gap:4px"></div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-gold" id="fcbk-simpan-booking">Booking</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PENGAJUAN ---------- -->
+      <section class="screen" id="s-flagging-pinjaman-pengajuan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><b>Pengajuan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Pinjaman — Pengajuan</h1>
+            <div class="page-sub">Daftar pengajuan flagging pinjaman yang dikirim mitra.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpg-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="fpg-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fpg-f-status">Status Pinjaman</label>
+              <select class="inp" id="fpg-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fpg-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:flex-end">
+            <button class="btn btn-primary" data-go="flagging-pengajuan-unggah">⬆ Unggah Pengajuan Flagging</button>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th rowspan="2">Mitra</th>
+                  <th rowspan="2">NOPENS</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Tanggal Lahir</th>
+                  <th colspan="2" class="th-group">Status</th>
+                  <th colspan="2" class="th-group">Booking</th>
+                  <th colspan="2" class="th-group">Pengajuan</th>
+                  <th rowspan="2">Catatan</th>
+                  <th rowspan="2">Aksi</th>
+                </tr>
+                <tr>
+                  <th>Pinjaman</th><th>Pensiun</th>
+                  <th>Tanggal</th><th>User</th>
+                  <th>Tanggal</th><th>User</th>
+                </tr>
+              </thead>
+              <tbody id="fpg-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fpg-count" style="margin:0"></div>
+            <div id="fpg-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PENGAJUAN » UNGGAH ---------- -->
+      <section class="screen" id="s-flagging-pengajuan-unggah">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Pengajuan</span><span>›</span><b>Unggah Pengajuan Flagging</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-pengajuan">← Kembali</button>
+            <div>
+              <h1 class="page-title">Unggah Pengajuan Flagging</h1>
+              <div class="page-sub">Unggah berkas pengajuan flagging pinjaman dari mitra.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Berkas Pengajuan</h2>
+          <hr class="hr-card">
+          <div style="display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap">
+            <div class="field" style="width:360px;max-width:100%;margin-bottom:0;position:relative">
+              <label class="fl" for="fpg-mitra">Mitra <span class="req">*</span></label>
+              <input class="inp" id="fpg-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="fpg-mitra-list"></div>
+            </div>
+            <a class="btn btn-ghost" id="fpg-template" style="flex-shrink:0"
+               href="Template%20Pengajuan%20Flagging.xlsx"
+               download="Template Pengajuan Flagging.xlsx">⤓ Download Template Excel</a>
+          </div>
+
+          <div style="margin-top:18px;border:1.5px dashed var(--line);border-radius:9px;padding:26px;text-align:center;background:var(--field)">
+            <div style="font-size:26px;color:var(--slate);margin-bottom:8px">⬆</div>
+            <div style="font-weight:600;margin-bottom:4px">Unggah berkas pengajuan flagging</div>
+            <div class="hint" style="margin:0 0 13px">Format .xlsx / .csv sesuai template</div>
+            <button class="btn btn-ghost btn-sm" id="fpg-pilih-file">Pilih file &amp; unggah</button>
+            <div class="hint ok-txt" id="fpg-file-nama" style="display:none;margin-top:11px"></div>
+          </div>
+
+          <div class="form-actions" style="justify-content:flex-end">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-pengajuan">Batal</button>
+            <button class="btn btn-primary" id="fpg-kirim">Submit</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PENGAJUAN » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-pengajuan-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Pengajuan</span><span>›</span><b>Detail Pengajuan</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-pengajuan">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Pengajuan</h1>
+              <div class="page-sub" id="fpd-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0">Data Pinjaman</h2>
+            <button class="btn btn-ghost" id="fpd-ubah">✎ Ubah</button>
+          </div>
+          <hr class="hr-card">
+
+          <h4 class="section-title">Info Peserta</h4>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="fpd-kpa">KPA</label>
+              <input class="inp" id="fpd-kpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-nrp">NRP/NIP</label>
+              <input class="inp" id="fpd-nrp" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-nama">Nama</label>
+              <input class="inp" id="fpd-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-nopens">NOPENS</label>
+              <input class="inp" id="fpd-nopens" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-tgl-lahir">Tanggal Lahir</label>
+              <input class="inp" type="date" id="fpd-tgl-lahir" disabled>
+              <div class="hint">Mengikuti data kepesertaan, tidak dapat diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-gaji">Gaji Peserta</label>
+              <div class="money"><span>Rp</span><input id="fpd-gaji" disabled></div>
+              <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Info Pinjaman</h4>
+          <div class="grid2">
+            <div class="field">
+              <label class="fl" for="fpd-tgl-permohonan">Tgl Permohonan</label>
+              <input class="inp" type="date" id="fpd-tgl-permohonan" disabled>
+            </div>
+            <div class="field" id="fpd-f-tgl-lahir">
+              <label class="fl" for="fpd-p-tgl-lahir">Tgl Lahir</label>
+              <input class="inp" type="date" id="fpd-p-tgl-lahir" disabled>
+              <div class="err-msg" id="fpd-err-tgl-lahir" style="display:none"></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fpd-p-nopens">NOPENS</label>
+              <input class="inp" id="fpd-p-nopens" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-akhir-kredit">Tanggal Akhir Kredit</label>
+              <input class="inp" type="date" id="fpd-akhir-kredit" disabled>
+            </div>
+
+            <div class="field" id="fpd-f-nama">
+              <label class="fl" for="fpd-p-nama">Nama</label>
+              <input class="inp" id="fpd-p-nama" disabled>
+              <div class="err-msg" id="fpd-err-nama" style="display:none"></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-norek-tab">Nomor Rekening Tabungan</label>
+              <input class="inp" id="fpd-norek-tab" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fpd-awal-kredit">Awal Kredit</label>
+              <input class="inp" id="fpd-awal-kredit" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-no-pk">Nomor Perjanjian Kredit</label>
+              <input class="inp" id="fpd-no-pk" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fpd-plafon">Plafon</label>
+              <div class="money"><span>Rp</span><input id="fpd-plafon" disabled></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-cabang">Cabang Mitra Bayar</label>
+              <input class="inp" id="fpd-cabang" disabled>
+              <div class="hint">Terisi otomatis dari mitra bayar.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fpd-norek-kredit">Nomor Rekening Kredit</label>
+              <input class="inp" id="fpd-norek-kredit" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-angsuran">Besaran Angsuran <span class="req">*</span></label>
+              <div class="money"><span>Rp</span><input id="fpd-angsuran" disabled></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fpd-mitra">Mitra Bayar</label>
+              <input class="inp" id="fpd-mitra" disabled>
+              <div class="hint">Mengikuti mitra pengaju, tidak dapat diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-sub-kredit">Sub Kredit <span class="req">*</span></label>
+              <input class="inp" id="fpd-sub-kredit" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fpd-jns-tab">Jenis Tabungan</label>
+              <input class="inp" id="fpd-jns-tab" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-sp3r">Unggah Lampiran SP3R <span class="req">*</span></label>
+              <input class="inp" type="file" id="fpd-sp3r" disabled>
+              <div class="hint" id="fpd-sp3r-nama"></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="fpd-nik">NIK <span class="req">*</span></label>
+              <div style="display:flex;gap:8px">
+                <input class="inp" id="fpd-nik" disabled>
+                <button class="btn btn-ghost" id="fpd-cek-nik" style="flex-shrink:0" disabled>Cek NIK</button>
+              </div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpd-pernyataan">Unggah Lampiran Surat Pernyataan Kredit Mitra Bayar <span class="req">*</span></label>
+              <input class="inp" type="file" id="fpd-pernyataan" disabled>
+              <div class="hint" id="fpd-pernyataan-nama"></div>
+            </div>
+          </div>
+
+          <div class="alert alert-info" id="fpd-terkunci" style="display:none">
+            <span>ⓘ</span><span id="fpd-terkunci-teks"></span>
+          </div>
+
+          <div class="form-actions" id="fpd-actions" style="display:none">
+            <button class="btn btn-ghost" id="fpd-batal">Batal</button>
+            <button class="btn btn-primary" id="fpd-simpan">Submit Pengajuan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PENGAJUAN » RIWAYAT ---------- -->
+      <section class="screen" id="s-flagging-pengajuan-riwayat">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Pengajuan</span><span>›</span><b>Riwayat Pengajuan</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-pengajuan">← Kembali</button>
+            <div>
+              <h1 class="page-title">Riwayat Pengajuan</h1>
+              <div class="page-sub" id="fpr-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">Tanggal Permohonan</th>
+                  <th colspan="2" class="th-group">Mitra</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NOPENS</th>
+                  <th rowspan="2">NIK</th>
+                  <th rowspan="2">Nomor Pinjaman Kredit</th>
+                  <th colspan="3" class="th-group">Update</th>
+                </tr>
+                <tr>
+                  <th>Nama</th><th>Cabang</th>
+                  <th>Tanggal</th><th>Pemakai</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="fpr-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="fpr-count"></div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PERSETUJUAN » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-persetujuan-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Persetujuan</span><span>›</span><b>Detail Persetujuan</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-persetujuan">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Persetujuan</h1>
+              <div class="page-sub" id="fsd-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Info Peserta</h4>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="fsd-kpa">KPA</label>
+              <input class="inp" id="fsd-kpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fsd-nrp">NRP/NIP</label>
+              <input class="inp" id="fsd-nrp" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fsd-mitra">Mitra</label>
+              <input class="inp" id="fsd-mitra" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fsd-nopens">NOPENS</label>
+              <input class="inp" id="fsd-nopens" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fsd-nama">Nama</label>
+              <input class="inp" id="fsd-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fsd-tgl-lahir">Tanggal Lahir</label>
+              <input class="inp" type="date" id="fsd-tgl-lahir" disabled>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Info Pinjaman</h4>
+          <div class="grid3" id="fsd-pinjaman"></div>
+          <div class="alert alert-info" id="fsd-pinjaman-kosong" style="display:none">
+            <span>ⓘ</span><span>Data pinjaman belum tersedia — pengajuan ini masuk lewat Check dan Booking, berkas pinjaman dari mitra belum diunggah.</span>
+          </div>
+        </div>
+
+        <!-- hanya untuk permintaan yang membawa rincian "dari → ke" -->
+        <div class="card" id="fsd-kartu-perubahan" style="display:none">
+          <h4 class="section-title">Rincian Perubahan</h4>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr><th>Field</th><th>Dari</th><th>Ke</th></tr></thead>
+              <tbody id="fsd-perubahan"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Status Persetujuan</h4>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl">Aktivitas</label>
+              <div id="fsd-aktivitas" style="padding-top:6px"></div>
+            </div>
+            <div class="field">
+              <label class="fl">Status</label>
+              <div id="fsd-status" style="padding-top:6px"></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fsd-tgl-proses">Tanggal Proses</label>
+              <input class="inp" id="fsd-tgl-proses" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="fsd-sumber">Sumber</label>
+              <input class="inp" id="fsd-sumber" disabled>
+            </div>
+          </div>
+
+          <div class="alert alert-info" id="fsd-selesai" style="display:none">
+            <span>ⓘ</span><span id="fsd-selesai-teks"></span>
+          </div>
+
+          <div class="form-actions" id="fsd-actions">
+            <button class="btn btn-danger" id="fsd-tolak">✕ Tolak</button>
+            <button class="btn btn-success" id="fsd-setujui">✓ Setujui</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » FLAGGING ---------- -->
+      <section class="screen" id="s-flagging-pinjaman-flagging">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><b>Flagging</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Pinjaman — Flagging</h1>
+            <div class="page-sub">Pinjaman yang flagging-nya sudah aktif di mitra bayar.</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="ffl-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="ffl-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="ffl-f-status">Status Pinjaman</label>
+              <select class="inp" id="ffl-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="ffl-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:44px">I</th>
+                  <th rowspan="2">Mitra Bayar</th>
+                  <th rowspan="2">No. KTPA</th>
+                  <th rowspan="2">NRP</th>
+                  <th rowspan="2">NIK</th>
+                  <th rowspan="2">Nomor Pensiun</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Tanggal Lahir</th>
+                  <th colspan="7" class="th-group">Info Kredit</th>
+                  <th colspan="2" class="th-group">Status</th>
+                  <th rowspan="2">Kategori</th>
+                  <th rowspan="2">Tanggal Setuju</th>
+                  <th rowspan="2">Pengguna</th>
+                  <th rowspan="2" class="stick-r">Aksi</th>
+                </tr>
+                <tr>
+                  <th>Tgl Pengajuan</th><th>Awal Kredit</th><th>Akhir Kredit</th><th>Plafon</th>
+                  <th>No Rek Tab</th><th>No Rek Kredit</th><th>No PK</th>
+                  <th>Pinjaman</th><th>Tagih</th>
+                </tr>
+              </thead>
+              <tbody id="ffl-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="ffl-count" style="margin:0"></div>
+            <div id="ffl-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » FLAGGING » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-flagging-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Flagging</span><span>›</span><b>Detail Flagging</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-flagging">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Flagging</h1>
+              <div class="page-sub" id="ffd-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="toolbar" style="justify-content:space-between">
+            <h2 class="card-title" style="margin:0">Data Pinjaman</h2>
+            <button class="btn btn-ghost" id="ffd-ubah">✎ Ubah</button>
+          </div>
+          <hr class="hr-card">
+
+          <h4 class="section-title">Info Peserta</h4>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="ffd-ktpa">No. KTPA</label>
+              <input class="inp" id="ffd-ktpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-nrp">NRP/NIP</label>
+              <input class="inp" id="ffd-nrp" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-nama">Nama</label>
+              <input class="inp" id="ffd-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-nopens">Nomor Pensiun</label>
+              <input class="inp" id="ffd-nopens" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-tgl-lahir">Tanggal Lahir</label>
+              <input class="inp" type="date" id="ffd-tgl-lahir" disabled>
+              <div class="hint">Mengikuti data kepesertaan, tidak dapat diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-gaji">Gaji Peserta</label>
+              <div class="money"><span>Rp</span><input id="ffd-gaji" disabled></div>
+              <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Info Pinjaman</h4>
+          <div class="grid2">
+            <div class="field">
+              <label class="fl" for="ffd-tgl-permohonan">Tgl Pengajuan</label>
+              <input class="inp" type="date" id="ffd-tgl-permohonan" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-no-pk">Nomor Perjanjian Kredit</label>
+              <input class="inp" id="ffd-no-pk" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ffd-awal-kredit">Awal Kredit</label>
+              <input class="inp" type="date" id="ffd-awal-kredit" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-norek-tab">Nomor Rekening Tabungan</label>
+              <input class="inp" id="ffd-norek-tab" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ffd-akhir-kredit">Akhir Kredit</label>
+              <input class="inp" type="date" id="ffd-akhir-kredit" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-norek-kredit">Nomor Rekening Kredit</label>
+              <input class="inp" id="ffd-norek-kredit" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ffd-plafon">Plafon</label>
+              <div class="money"><span>Rp</span><input id="ffd-plafon" disabled></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-mitra">Mitra Bayar</label>
+              <input class="inp" id="ffd-mitra" disabled>
+              <div class="hint">Mengikuti mitra pemberi kredit, tidak dapat diubah.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ffd-angsuran">Besaran Angsuran <span class="req">*</span></label>
+              <div class="money"><span>Rp</span><input id="ffd-angsuran" disabled></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-cabang">Cabang Mitra Bayar</label>
+              <input class="inp" id="ffd-cabang" disabled>
+              <div class="hint">Terisi otomatis dari mitra bayar.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ffd-sub-kredit">Sub Kredit <span class="req">*</span></label>
+              <input class="inp" id="ffd-sub-kredit" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ffd-jns-tab">Jenis Tabungan</label>
+              <input class="inp" id="ffd-jns-tab" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ffd-nik">NIK</label>
+              <input class="inp" id="ffd-nik" disabled>
+            </div>
+            <div class="field">
+              <label class="fl">Status Pinjaman</label>
+              <div id="ffd-status" style="padding-top:6px"></div>
+            </div>
+          </div>
+
+          <div class="alert alert-info" id="ffd-terkunci" style="display:none">
+            <span>ⓘ</span><span id="ffd-terkunci-teks"></span>
+          </div>
+
+          <div class="form-actions" id="ffd-actions" style="display:none">
+            <button class="btn btn-ghost" id="ffd-batal">Batal</button>
+            <button class="btn btn-primary" id="ffd-simpan">💾 Simpan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » FLAGGING » RIWAYAT ---------- -->
+      <section class="screen" id="s-flagging-flagging-riwayat">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Flagging</span><span>›</span><b>Riwayat Flagging</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-flagging">← Kembali</button>
+            <div>
+              <h1 class="page-title">Riwayat Flagging</h1>
+              <div class="page-sub" id="ffr-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">Tanggal Permohonan</th>
+                  <th colspan="2" class="th-group">Mitra</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">No KTPA</th>
+                  <th rowspan="2">No Pensiun</th>
+                  <th rowspan="2">NIK</th>
+                  <th rowspan="2">No. PK</th>
+                  <th colspan="3" class="th-group">Update</th>
+                </tr>
+                <tr>
+                  <th>Nama</th><th>Cabang</th>
+                  <th>Tanggal</th><th>Pemakai</th><th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="ffr-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="ffr-count"></div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » FLAGGING » PELUNASAN ---------- -->
+      <section class="screen" id="s-flagging-pelunasan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Flagging</span><span>›</span><b>Pelunasan</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-flagging">← Kembali</button>
+            <div>
+              <h1 class="page-title">Pelunasan</h1>
+              <div class="page-sub" id="fpl-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data Pinjaman</h2>
+          <hr class="hr-card">
+          <h4 class="section-title">Info Peserta</h4>
+          <div class="grid3" id="fpl-peserta"></div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Info Pinjaman</h4>
+          <div class="grid3" id="fpl-pinjaman"></div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Pelunasan</h4>
+          <div class="grid2">
+            <div class="field">
+              <label class="fl" for="fpl-tgl">Tgl Pelunasan <span class="req">*</span></label>
+              <input class="inp" type="date" id="fpl-tgl">
+              <div class="hint">Terisi mengikuti Tanggal Akhir Kredit, masih bisa diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpl-kategori">Kategori Pelunasan <span class="req">*</span></label>
+              <select class="inp" id="fpl-kategori"></select>
+              <div class="hint" id="fpl-kategori-hint"></div>
+            </div>
+            <div class="field span2">
+              <label class="fl" for="fpl-berkas">Unggah Berkas <span class="req">*</span></label>
+              <input class="inp" type="file" id="fpl-berkas" accept=".pdf,.jpg,.jpeg,.png">
+              <div class="hint">Bukti pelunasan — format .pdf / .jpg / .png.</div>
+            </div>
+            <div class="field span2">
+              <label class="fl" for="fpl-ket">Keterangan <span class="req">*</span></label>
+              <textarea class="inp" id="fpl-ket" style="height:88px;padding:9px 10px;resize:vertical"
+                placeholder="Tuliskan keterangan pelunasan..."></textarea>
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-flagging">Batal</button>
+            <button class="btn btn-primary" id="fpl-simpan">💾 Simpan Pelunasan</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » TAKE OVER ---------- -->
+      <section class="screen" id="s-flagging-pinjaman-takeover">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><b>Take Over</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Pinjaman — Take Over</h1>
+            <div class="page-sub">Pengalihan pinjaman peserta dari mitra lama ke mitra baru.</div>
+          </div>
+          <button class="btn btn-primary" data-go="flagging-takeover-tambah">+ Tambahkan Take Over</button>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fto-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="fto-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="fto-f-status">Status</label>
+              <select class="inp" id="fto-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="fto-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NRP/NIP</th>
+                  <th colspan="2" class="th-group">Mitra</th>
+                  <th rowspan="2">NOPENS</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Tanggal Lahir</th>
+                  <th rowspan="2">Status Pensiun</th>
+                  <th rowspan="2">Tanggal Pelunasan</th>
+                  <th colspan="2" class="th-group">Takeover</th>
+                  <th colspan="2" class="th-group">Mitra Takeover</th>
+                  <th colspan="2" class="th-group">ASABRI</th>
+                  <th rowspan="2">Status</th>
+                  <th rowspan="2">Catatan</th>
+                  <th rowspan="2" class="stick-r">Aksi</th>
+                </tr>
+                <tr>
+                  <th>Awal</th><th>Pengajuan</th>
+                  <th>Tanggal</th><th>User</th>
+                  <th>Tanggal</th><th>User</th>
+                  <th>Tanggal</th><th>User</th>
+                </tr>
+              </thead>
+              <tbody id="fto-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="fto-count" style="margin:0"></div>
+            <div id="fto-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » TAKE OVER » TAMBAH ---------- -->
+      <section class="screen" id="s-flagging-takeover-tambah">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Take Over</span><span>›</span><b>Tambahkan Take Over</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-takeover">← Kembali</button>
+            <div>
+              <h1 class="page-title">Tambahkan Take Over</h1>
+              <div class="page-sub">Cari peserta yang pinjamannya akan dialihkan ke mitra lain.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Pencarian Peserta</h2>
+          <hr class="hr-card">
+          <div class="field" style="max-width:360px">
+            <label class="fl" for="ftt-kpa">KPA <span class="req">*</span></label>
+            <input class="inp" id="ftt-kpa" placeholder="Masukkan nomor KPA">
+            <div class="hint">Jenis peserta ditentukan otomatis dari nomor KPA.</div>
+          </div>
+          <div class="form-actions" style="justify-content:flex-start;border-top:0;padding-top:0;margin-top:18px">
+            <button class="btn btn-primary" id="ftt-search">⌕ Search</button>
+          </div>
+        </div>
+
+        <div id="ftt-hasil" style="display:none">
+          <div class="card">
+            <h2 class="card-title">Data Pinjaman</h2>
+            <hr class="hr-card">
+            <h4 class="section-title">Info Peserta</h4>
+            <div class="grid3">
+              <div class="field">
+                <label class="fl" for="ftt-kpa-r">KPA</label>
+                <input class="inp" id="ftt-kpa-r" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-nrp">NRP/NIP</label>
+                <input class="inp" id="ftt-nrp" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-nama">Nama</label>
+                <input class="inp" id="ftt-nama" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-nopens">NOPENS</label>
+                <input class="inp" id="ftt-nopens" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-tgl-lahir">Tanggal Lahir</label>
+                <input class="inp" type="date" id="ftt-tgl-lahir" disabled>
+                <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-gaji">Gaji Peserta</label>
+                <div class="money"><span>Rp</span><input id="ftt-gaji" disabled></div>
+                <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 class="section-title">Info Take Over</h4>
+            <div class="grid2">
+              <div class="field">
+                <label class="fl" for="ftt-tgl-pelunasan">Tgl Pelunasan</label>
+                <input class="inp" type="date" id="ftt-tgl-pelunasan">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-p-tgl-lahir">Tgl Lahir</label>
+                <input class="inp" type="date" id="ftt-p-tgl-lahir" disabled>
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-p-nopens">NOPENS</label>
+                <input class="inp" id="ftt-p-nopens" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-akhir-kredit">Tanggal Akhir Kredit</label>
+                <input class="inp" type="date" id="ftt-akhir-kredit">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-p-nama">Nama</label>
+                <input class="inp" id="ftt-p-nama" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-norek-tab">Nomor Rekening Tabungan</label>
+                <input class="inp" id="ftt-norek-tab">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-awal-kredit">Awal Kredit</label>
+                <input class="inp" type="date" id="ftt-awal-kredit">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-no-pk">Nomor Perjanjian Kredit</label>
+                <input class="inp" id="ftt-no-pk">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-plafon">Plafon</label>
+                <div class="money"><span>Rp</span><input id="ftt-plafon"></div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-cabang">Cabang Mitra Bayar</label>
+                <input class="inp" id="ftt-cabang" disabled>
+                <div class="hint">Terisi otomatis dari mitra bayar.</div>
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-norek-kredit">Nomor Rekening Kredit</label>
+                <input class="inp" id="ftt-norek-kredit">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-angsuran">Besaran Angsuran <span class="req">*</span></label>
+                <div class="money"><span>Rp</span><input id="ftt-angsuran"></div>
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-mitra">Mitra Bayar</label>
+                <input class="inp" id="ftt-mitra" disabled>
+                <div class="hint" id="ftt-mitra-hint">Mitra pengaju take over, tidak dapat diubah.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-sub-kredit">Sub Kredit <span class="req">*</span></label>
+                <input class="inp" id="ftt-sub-kredit">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-jns-tab">Jenis Tabungan</label>
+                <input class="inp" id="ftt-jns-tab">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-sp3r">Unggah Lampiran SP3R <span class="req">*</span></label>
+                <input class="inp" type="file" id="ftt-sp3r">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftt-nik">NIK <span class="req">*</span></label>
+                <input class="inp" id="ftt-nik" disabled>
+                <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftt-pernyataan">Unggah Lampiran Surat Pernyataan Kredit Mitra Bayar <span class="req">*</span></label>
+                <input class="inp" type="file" id="ftt-pernyataan">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-ghost" data-go="flagging-pinjaman-takeover">Batal</button>
+              <button class="btn btn-primary" id="ftt-simpan">Submit Take Over</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » TAKE OVER » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-takeover-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Take Over</span><span>›</span><b>Detail Take Over</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-takeover">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Take Over</h1>
+              <div class="page-sub" id="ftd-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data Pinjaman</h2>
+          <hr class="hr-card">
+          <h4 class="section-title">Info Peserta</h4>
+          <div class="grid3">
+            <div class="field">
+              <label class="fl" for="ftd-kpa">KPA</label>
+              <input class="inp" id="ftd-kpa" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-nrp">NRP/NIP</label>
+              <input class="inp" id="ftd-nrp" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-nama">Nama</label>
+              <input class="inp" id="ftd-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-nopens">NOPENS</label>
+              <input class="inp" id="ftd-nopens" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-tgl-lahir">Tanggal Lahir</label>
+              <input class="inp" type="date" id="ftd-tgl-lahir" disabled>
+              <div class="hint">Mengikuti data kepesertaan, tidak dapat diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-gaji">Gaji Peserta</label>
+              <div class="money"><span>Rp</span><input id="ftd-gaji" disabled></div>
+              <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Info Take Over</h4>
+          <div class="grid2">
+            <div class="field">
+              <label class="fl" for="ftd-tgl-pelunasan">Tgl Pelunasan</label>
+              <input class="inp" type="date" id="ftd-tgl-pelunasan">
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-p-tgl-lahir">Tgl Lahir</label>
+              <input class="inp" type="date" id="ftd-p-tgl-lahir" disabled>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-p-nopens">NOPENS</label>
+              <input class="inp" id="ftd-p-nopens" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-akhir-kredit">Tanggal Akhir Kredit</label>
+              <input class="inp" type="date" id="ftd-akhir-kredit">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-p-nama">Nama</label>
+              <input class="inp" id="ftd-p-nama" disabled>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-norek-tab">Nomor Rekening Tabungan</label>
+              <input class="inp" id="ftd-norek-tab">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-awal-kredit">Awal Kredit</label>
+              <input class="inp" type="date" id="ftd-awal-kredit">
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-no-pk">Nomor Perjanjian Kredit</label>
+              <input class="inp" id="ftd-no-pk">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-plafon">Plafon</label>
+              <div class="money"><span>Rp</span><input id="ftd-plafon"></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-cabang">Cabang Mitra Bayar</label>
+              <input class="inp" id="ftd-cabang" disabled>
+              <div class="hint">Terisi otomatis dari mitra bayar.</div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-norek-kredit">Nomor Rekening Kredit</label>
+              <input class="inp" id="ftd-norek-kredit">
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-angsuran">Besaran Angsuran <span class="req">*</span></label>
+              <div class="money"><span>Rp</span><input id="ftd-angsuran"></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-mitra">Mitra Bayar</label>
+              <input class="inp" id="ftd-mitra" disabled>
+              <div class="hint">Mengikuti mitra pengaju take over, tidak dapat diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-sub-kredit">Sub Kredit <span class="req">*</span></label>
+              <input class="inp" id="ftd-sub-kredit">
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-jns-tab">Jenis Tabungan</label>
+              <input class="inp" id="ftd-jns-tab">
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-sp3r">Unggah Lampiran SP3R <span class="req">*</span></label>
+              <input class="inp" type="file" id="ftd-sp3r">
+              <div class="hint" id="ftd-sp3r-nama"></div>
+            </div>
+
+            <div class="field">
+              <label class="fl" for="ftd-nik">NIK <span class="req">*</span></label>
+              <input class="inp" id="ftd-nik" disabled>
+              <div class="hint">Mengikuti data kepesertaan, tidak dapat diubah.</div>
+            </div>
+            <div class="field">
+              <label class="fl" for="ftd-pernyataan">Unggah Lampiran Surat Pernyataan Kredit Mitra Bayar <span class="req">*</span></label>
+              <input class="inp" type="file" id="ftd-pernyataan">
+              <div class="hint" id="ftd-pernyataan-nama"></div>
+            </div>
+          </div>
+
+          <div class="form-actions" id="ftd-actions-lihat">
+            <button class="btn btn-ghost" id="ftd-ubah">✎ Ubah</button>
+          </div>
+          <div class="form-actions" id="ftd-actions-ubah" style="display:none">
+            <button class="btn btn-ghost" id="ftd-batal">Batal</button>
+            <button class="btn btn-primary" id="ftd-simpan">Simpan Perubahan Take Over</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » TOP UP ---------- -->
+      <section class="screen" id="s-flagging-pinjaman-topup">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><b>Top Up</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Pinjaman — Top Up</h1>
+            <div class="page-sub">Penambahan plafon pada pinjaman yang flagging-nya masih berjalan.</div>
+          </div>
+          <button class="btn btn-primary" data-go="flagging-topup-tambah">+ Tambahkan Top Up</button>
+        </div>
+
+        <div class="card">
+          <div class="grid3" style="align-items:end">
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="ftu-f-cari">KPA/NRP/NIP/Nama</label>
+              <input class="inp" id="ftu-f-cari" placeholder="Masukkan kata kunci pencarian...">
+            </div>
+            <div class="field" style="margin-bottom:0">
+              <label class="fl" for="ftu-f-status">Status</label>
+              <select class="inp" id="ftu-f-status"></select>
+            </div>
+            <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+              <button class="btn btn-primary" id="ftu-cari">⌕ Cari</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:44px">I</th>
+                  <th rowspan="2">Mitra Bayar</th>
+                  <th rowspan="2">KPA</th>
+                  <th rowspan="2">NRP/NIK</th>
+                  <th rowspan="2">NIK</th>
+                  <th rowspan="2">NOPENS</th>
+                  <th rowspan="2">Nama</th>
+                  <th rowspan="2">Tanggal Lahir</th>
+                  <th rowspan="2">Top Up Ke</th>
+                  <th colspan="7" class="th-group">Info Kredit</th>
+                  <th rowspan="2">Status</th>
+                  <th rowspan="2">Kategori</th>
+                  <th rowspan="2">Tanggal Setuju</th>
+                  <th rowspan="2">Pengguna</th>
+                  <th rowspan="2" class="stick-r">Aksi</th>
+                </tr>
+                <tr>
+                  <th>Tgl Pengajuan</th><th>Awal Kredit</th><th>Akhir Kredit</th><th>Plafon</th>
+                  <th>Nomor Rekening Tabungan</th><th>Nomor Rekening Kredit</th><th>Nomor Pinjaman Kredit</th>
+                </tr>
+              </thead>
+              <tbody id="ftu-body"></tbody>
+            </table>
+          </div>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+            <div class="tbl-note" id="ftu-count" style="margin:0"></div>
+            <div id="ftu-pager" style="display:flex;gap:4px"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » TOP UP » TAMBAH ---------- -->
+      <section class="screen" id="s-flagging-topup-tambah">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Top Up</span><span>›</span><b>Tambahkan Top Up</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-topup">← Kembali</button>
+            <div>
+              <h1 class="page-title">Tambahkan Top Up</h1>
+              <div class="page-sub">Cari peserta yang plafon pinjamannya akan ditambah.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Pencarian Peserta</h2>
+          <hr class="hr-card">
+          <div class="field" style="max-width:360px">
+            <label class="fl" for="ftut-kpa">KPA <span class="req">*</span></label>
+            <input class="inp" id="ftut-kpa" placeholder="Masukkan nomor KPA">
+            <div class="hint">Jenis peserta ditentukan otomatis dari nomor KPA.</div>
+          </div>
+          <div class="form-actions" style="justify-content:flex-start;border-top:0;padding-top:0;margin-top:18px">
+            <button class="btn btn-primary" id="ftut-search">⌕ Search</button>
+          </div>
+        </div>
+
+        <div id="ftut-hasil" style="display:none">
+          <div class="card">
+            <h2 class="card-title">Data Top Up</h2>
+            <hr class="hr-card">
+            <h4 class="section-title">Informasi Peserta</h4>
+            <div class="grid3">
+              <div class="field">
+                <label class="fl" for="ftut-kpa-r">KPA</label>
+                <input class="inp" id="ftut-kpa-r" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-nrp">NRP/NIP</label>
+                <input class="inp" id="ftut-nrp" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-nama">Nama</label>
+                <input class="inp" id="ftut-nama" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-nopens">NOPENS</label>
+                <input class="inp" id="ftut-nopens" disabled>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-tgl-lahir">Tanggal Lahir</label>
+                <input class="inp" type="date" id="ftut-tgl-lahir" disabled>
+                <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-gaji">Gaji Peserta</label>
+                <div class="money"><span>Rp</span><input id="ftut-gaji" disabled></div>
+                <div class="hint">Diambil dari data kepesertaan, tidak dapat diubah.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h4 class="section-title">Informasi Top Up</h4>
+            <div class="grid2">
+              <div class="field">
+                <label class="fl" for="ftut-tgl-permohonan">Tgl Permohonan</label>
+                <input class="inp" type="date" id="ftut-tgl-permohonan">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-p-nopens">NOPENS</label>
+                <input class="inp" id="ftut-p-nopens" disabled>
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-p-nama">Nama</label>
+                <input class="inp" id="ftut-p-nama">
+                <div class="hint">Terisi otomatis, masih bisa disunting.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-awal-kredit">Awal Kredit</label>
+                <input class="inp" type="date" id="ftut-awal-kredit">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-plafon">Plafon</label>
+                <div class="money"><span>Rp</span><input id="ftut-plafon"></div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-norek-kredit">Nomor Rekening Kredit</label>
+                <input class="inp" id="ftut-norek-kredit">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-mitra">Mitra Bayar</label>
+                <input class="inp" id="ftut-mitra" disabled>
+                <div class="hint">Top up tetap pada mitra pemberi kredit yang sama.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-jns-tab">Jenis Tabungan</label>
+                <input class="inp" id="ftut-jns-tab">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-nik">NIK <span class="req">*</span></label>
+                <input class="inp" id="ftut-nik">
+                <div class="hint">Terisi otomatis, masih bisa disunting.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-p-tgl-lahir">Tgl Lahir</label>
+                <input class="inp" type="date" id="ftut-p-tgl-lahir">
+                <div class="hint">Terisi otomatis, masih bisa disunting.</div>
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-akhir-kredit">Tanggal Akhir Kredit</label>
+                <input class="inp" type="date" id="ftut-akhir-kredit">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-norek-tab">Nomor Rekening Tabungan</label>
+                <input class="inp" id="ftut-norek-tab">
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-no-pk">Nomor Perjanjian Kredit</label>
+                <input class="inp" id="ftut-no-pk">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-cabang">Cabang Mitra Bayar</label>
+                <input class="inp" id="ftut-cabang" disabled>
+                <div class="hint">Terisi otomatis dari mitra bayar.</div>
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-topup-ke">Top Up Ke</label>
+                <input class="inp" id="ftut-topup-ke" disabled>
+                <div class="hint" id="ftut-topup-ke-hint">Dihitung dari riwayat top up peserta.</div>
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-angsuran">Besaran Angsuran <span class="req">*</span></label>
+                <div class="money"><span>Rp</span><input id="ftut-angsuran"></div>
+              </div>
+
+              <div class="field">
+                <label class="fl" for="ftut-sub-kredit">Sub Kredit <span class="req">*</span></label>
+                <input class="inp" id="ftut-sub-kredit">
+              </div>
+              <div class="field">
+                <label class="fl" for="ftut-sp3r">Unggah Lampiran SP3R <span class="req">*</span></label>
+                <input class="inp" type="file" id="ftut-sp3r">
+              </div>
+
+              <div class="field span2">
+                <label class="fl" for="ftut-pernyataan">Unggah Lampiran Surat Pernyataan Kredit Mitra Bayar <span class="req">*</span></label>
+                <input class="inp" type="file" id="ftut-pernyataan">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn-ghost" data-go="flagging-pinjaman-topup">Batal</button>
+              <button class="btn btn-primary" id="ftut-simpan">Submit Top Up</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » TOP UP » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-topup-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Top Up</span><span>›</span><b>Detail Top Up</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-topup">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Top Up</h1>
+              <div class="page-sub" id="ftud-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Data Top Up</h2>
+          <hr class="hr-card">
+          <h4 class="section-title">Informasi Peserta</h4>
+          <div class="grid3" id="ftud-peserta"></div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Informasi Top Up</h4>
+          <div class="grid2" id="ftud-topup"></div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PENAGIHAN ---------- -->
+      <section class="screen" id="s-flagging-pinjaman-penagihan">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><b>Penagihan</b></div>
+        <div class="page-head">
+          <div>
+            <h1 class="page-title">Pinjaman — Penagihan</h1>
+            <div class="page-sub">Penagihan angsuran pinjaman peserta kepada mitra bayar.</div>
+          </div>
+          <button class="btn btn-primary" data-go="flagging-penagihan-tambah">+ Tambah Penagihan Pinjaman</button>
+        </div>
+
+        <div class="tabs">
+          <button class="tab active" data-fpn-tab="mitra">Mitra</button>
+          <button class="tab" data-fpn-tab="peserta">Peserta</button>
+        </div>
+
+        <!-- ===== tab Mitra: batch penagihan per mitra bayar ===== -->
+        <div id="fpn-panel-mitra">
+          <div class="card">
+            <div class="grid3" style="align-items:end">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fpn-f-mitra">Mitra Bayar</label>
+                <input class="inp" id="fpn-f-mitra" placeholder="Masukkan nama mitra...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fpn-f-status">Status Peserta</label>
+                <select class="inp" id="fpn-f-status"></select>
+              </div>
+              <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+                <button class="btn btn-primary" id="fpn-cari">⌕ Cari</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="tbl-wrap">
+              <table class="wide-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">Mitra</th>
+                    <th rowspan="2">Status</th>
+                    <th colspan="3" class="th-group">Info Tanggal</th>
+                    <th rowspan="2">Catatan</th>
+                    <th colspan="2" class="th-group">Info Pembuatan</th>
+                    <th rowspan="2" class="stick-r">Aksi</th>
+                  </tr>
+                  <tr>
+                    <th>Tagihan</th><th>Awal</th><th>Akhir</th>
+                    <th>User</th><th>Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody id="fpn-body"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="fpn-count" style="margin:0"></div>
+              <div id="fpn-pager" style="display:flex;gap:4px"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== tab Peserta: peserta dari seluruh batch penagihan ===== -->
+        <div id="fpn-panel-peserta" style="display:none">
+          <div class="card">
+            <div class="grid3" style="align-items:end">
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fpp-f-cari">KPA/NRP/NIP/Nama</label>
+                <input class="inp" id="fpp-f-cari" placeholder="Masukkan kata kunci pencarian...">
+              </div>
+              <div class="field" style="margin-bottom:0">
+                <label class="fl" for="fpp-f-status">Status Peserta</label>
+                <select class="inp" id="fpp-f-status"></select>
+              </div>
+              <div class="toolbar" style="justify-content:flex-end;margin-bottom:0">
+                <button class="btn btn-primary" id="fpp-cari">⌕ Cari</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="tbl-wrap">
+              <table class="wide-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">KPA</th>
+                    <th rowspan="2">NRP/NIP</th>
+                    <th rowspan="2">NOPENS</th>
+                    <th rowspan="2">Nama</th>
+                    <th rowspan="2">Tanggal Lahir</th>
+                    <th rowspan="2">Pensiun</th>
+                    <th colspan="3" class="th-group">Info Kredit</th>
+                    <th colspan="3" class="th-group">Info Status</th>
+                  </tr>
+                  <tr>
+                    <th>Awal Kredit</th><th>Akhir Kredit</th><th class="num">Plafon</th>
+                    <th>Status</th><th>User</th><th>Tanggal</th>
+                  </tr>
+                </thead>
+                <tbody id="fpp-body"></tbody>
+              </table>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;flex-wrap:wrap;gap:10px">
+              <div class="tbl-note" id="fpp-count" style="margin:0"></div>
+              <div id="fpp-pager" style="display:flex;gap:4px"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PENAGIHAN » TAMBAH ---------- -->
+      <section class="screen" id="s-flagging-penagihan-tambah">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Penagihan</span><span>›</span><b>Tambah Penagihan Pinjaman</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-penagihan">← Kembali</button>
+            <div>
+              <h1 class="page-title">Tambah Penagihan Pinjaman</h1>
+              <div class="page-sub">Tentukan mitra dan periode angsuran yang akan ditagih.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Kriteria Penagihan</h2>
+          <hr class="hr-card">
+          <div class="grid2">
+            <div class="field">
+              <label class="fl" for="fpt-mitra">Mitra Bayar <span class="req">*</span></label>
+              <input class="inp" id="fpt-mitra" placeholder="Cari nama mitra..." autocomplete="off">
+              <div class="autocomplete-list" id="fpt-mitra-list"></div>
+            </div>
+            <div class="field">
+              <label class="fl" for="fpt-status">Status Peserta <span class="req">*</span></label>
+              <select class="inp" id="fpt-status"></select>
+            </div>
+
+            <div class="field span2">
+              <label class="fl">Tanggal <span class="req">*</span></label>
+              <div class="grid2" style="gap:12px">
+                <input class="inp" type="date" id="fpt-tgl-awal" aria-label="Tanggal awal">
+                <input class="inp" type="date" id="fpt-tgl-akhir" aria-label="Tanggal akhir">
+              </div>
+              <div class="hint">Periode angsuran yang ditagih: tanggal awal sampai tanggal akhir.</div>
+            </div>
+
+            <div class="field span2">
+              <label class="fl" for="fpt-catatan">Catatan</label>
+              <input class="inp" id="fpt-catatan" placeholder="Catatan singkat untuk baris penagihan...">
+            </div>
+
+            <div class="field span2">
+              <label class="fl" for="fpt-keterangan">Keterangan</label>
+              <textarea class="inp" id="fpt-keterangan" rows="3" placeholder="Keterangan tambahan..."></textarea>
+            </div>
+          </div>
+
+          <div class="form-actions" style="justify-content:flex-start;border-top:0;padding-top:0;margin-top:4px">
+            <button class="btn btn-primary" id="fpt-cari-data">⌕ Cari Data</button>
+          </div>
+        </div>
+
+        <div id="fpt-hasil" style="display:none">
+          <div class="card">
+            <h4 class="section-title">Peserta yang Akan Ditagih</h4>
+            <div class="tbl-wrap">
+              <table class="wide-table">
+                <thead>
+                  <tr>
+                    <th colspan="5" class="th-group">Info Peserta</th>
+                    <th colspan="2" class="th-group">Info Peminjam</th>
+                    <th rowspan="2">Pensiun</th>
+                    <th colspan="3" class="th-group">Info Kredit</th>
+                  </tr>
+                  <tr>
+                    <th>KPA</th><th>NRP/NIP</th><th>NOPENS</th><th>Nama</th><th>Tanggal Lahir</th>
+                    <th>NOPENS</th><th>Nama</th>
+                    <th>Awal Kredit</th><th>Akhir Kredit</th><th class="num">Plafon</th>
+                  </tr>
+                </thead>
+                <tbody id="fpt-hasil-body"></tbody>
+              </table>
+            </div>
+            <div class="tbl-note" id="fpt-hasil-note"></div>
+
+            <div class="form-actions">
+              <button class="btn btn-ghost" data-go="flagging-pinjaman-penagihan">Batal</button>
+              <button class="btn btn-primary" id="fpt-simpan">Simpan Penagihan</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- FLAGGING » PINJAMAN » PENAGIHAN » DETAIL ---------- -->
+      <section class="screen" id="s-flagging-penagihan-detail">
+        <div class="crumb"><span>Beranda</span><span>›</span><span>Pinjaman</span><span>›</span><span>Penagihan</span><span>›</span><b>Detail Penagihan</b></div>
+        <div class="page-head">
+          <div style="display:flex;align-items:flex-start;gap:14px">
+            <button class="btn btn-ghost" data-go="flagging-pinjaman-penagihan">← Kembali</button>
+            <div>
+              <h1 class="page-title">Detail Penagihan</h1>
+              <div class="page-sub" id="fpd2-sub"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2 class="card-title">Info Penagihan</h2>
+          <hr class="hr-card">
+          <div class="grid3" id="fpd2-info"></div>
+        </div>
+
+        <div class="card">
+          <h4 class="section-title">Peserta yang Ditagih</h4>
+          <div class="tbl-wrap">
+            <table class="wide-table">
+              <thead>
+                <tr>
+                  <th colspan="5" class="th-group">Info Peserta</th>
+                  <th colspan="2" class="th-group">Info Peminjam</th>
+                  <th rowspan="2">Pensiun</th>
+                  <th colspan="3" class="th-group">Info Kredit</th>
+                </tr>
+                <tr>
+                  <th>KPA</th><th>NRP/NIP</th><th>NOPENS</th><th>Nama</th><th>Tanggal Lahir</th>
+                  <th>NOPENS</th><th>Nama</th>
+                  <th>Awal Kredit</th><th>Akhir Kredit</th><th class="num">Plafon</th>
+                </tr>
+              </thead>
+              <tbody id="fpd2-body"></tbody>
+            </table>
+          </div>
+          <div class="tbl-note" id="fpd2-note"></div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============ MODAL ============ -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-head">
+      <div class="modal-head-l">
+        <div class="modal-ico" id="modal-ico" style="display:none"></div>
+        <div>
+          <div id="modal-title" style="font-size:16px;font-weight:600">Judul</div>
+          <div id="modal-sub" class="page-sub"></div>
+        </div>
+      </div>
+      <button class="modal-x" id="modal-x" aria-label="Tutup">×</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div id="toast" aria-live="polite"></div>
+
+<!-- Data contoh (boleh diedit sendiri) lalu logika aplikasi -->
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

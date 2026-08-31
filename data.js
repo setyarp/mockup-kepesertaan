@@ -180,7 +180,18 @@ const DATA_MASTER_PESERTA = [
   { kpa:"PC990901", nrp:"92078901",           npwp:"69.702.483.4-769.000", nama:"Wahyu Saputro",
     angkatan:"Polri",  uker:"Polres Yogyakarta",         plafonPum:325000000 },
   { kpa:"TC911012", nrp:"165789",             npwp:"70.813.594.5-770.000", nama:"Indra Permana",
-    angkatan:"TNI-AD", uker:"Kodim 0733 Solo",           plafonPum:350000000 }
+    angkatan:"TNI-AD", uker:"Kodim 0733 Solo",           plafonPum:350000000 },
+
+  /* Prajurit dengan Masa Kerja Dinas < 2 Tahun (TMT baru, lihat
+     DATA_RIWAYAT_KEPANGKATAN di bawah) — dipakai untuk simulasi jalur
+     dokumen "Surat Pernyataan Kesanggupan" bagi peserta Polri baru, dan
+     kasus umum peserta TNI dengan masa kerja dinas masih pendek. */
+  { kpa:"AD500992", nrp:"175002",             npwp:"31.560.772.4-992.000", nama:"Dimas Aditya",
+    angkatan:"TNI-AD", uker:"Kodim 0735 Surakarta",      plafonPum:300000000 },
+  { kpa:"AL600992", nrp:"175003",             npwp:"42.671.883.5-992.000", nama:"Reza Firmansyah",
+    angkatan:"TNI-AL", uker:"Lanal Tual",                plafonPum:300000000 },
+  { kpa:"AU700992", nrp:"175004",             npwp:"53.782.994.6-992.000", nama:"Bagas Wicaksono",
+    angkatan:"TNI-AU", uker:"Lanud Roesmin Nurjadin",    plafonPum:300000000 }
 ];
 
 /* Data dummy peserta untuk testing modul Pengelolaan KPR (PUM) - diimpor apa
@@ -532,97 +543,266 @@ const DATA_RIWAYAT_KEPANGKATAN = {
     { pangkat:"Kopral Satu",   nomorSkep:"KEP/118/IV/2013",  tmt:"2013-04-01", tglSkep:"2013-03-18" },
     { pangkat:"Kopral Kepala", nomorSkep:"KEP/206/V/2019",   tmt:"2019-05-01", tglSkep:"2019-04-22" }
   ],
+  CY104869: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/018/II/1998", tmt:"1998-03-01", tglSkep:"1998-02-16" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/095/II/2003", tmt:"2003-03-01", tglSkep:"2003-02-14" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/172/II/2009", tmt:"2009-03-01", tglSkep:"2009-02-12" }
+  ],
+  CE360625: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/026/IV/2000", tmt:"2000-05-01", tglSkep:"2000-04-18" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/101/IV/2005", tmt:"2005-05-01", tglSkep:"2005-04-16" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/178/IV/2011", tmt:"2011-05-01", tglSkep:"2011-04-14" }
+  ],
+  CE358403: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/031/V/1999", tmt:"1999-06-01", tglSkep:"1999-05-20" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/108/V/2004", tmt:"2004-06-01", tglSkep:"2004-05-18" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/185/V/2010", tmt:"2010-06-01", tglSkep:"2010-05-16" }
+  ],
+  CD319552: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/037/VI/2001", tmt:"2001-07-01", tglSkep:"2001-06-19" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/114/VI/2006", tmt:"2006-07-01", tglSkep:"2006-06-17" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/191/VI/2012", tmt:"2012-07-01", tglSkep:"2012-06-15" }
+  ],
+  CC306323: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/042/VII/1997", tmt:"1997-08-01", tglSkep:"1997-07-21" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/119/VII/2002", tmt:"2002-08-01", tglSkep:"2002-07-19" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/196/VII/2008", tmt:"2008-08-01", tglSkep:"2008-07-17" }
+  ],
+  CD400871: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/048/VIII/2003", tmt:"2003-09-01", tglSkep:"2003-08-22" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/125/VIII/2008", tmt:"2008-09-01", tglSkep:"2008-08-20" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/202/VIII/2014", tmt:"2014-09-01", tglSkep:"2014-08-18" }
+  ],
+  EP000112: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/053/IX/2005", tmt:"2005-10-01", tglSkep:"2005-09-23" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/130/IX/2010", tmt:"2010-10-01", tglSkep:"2010-09-21" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/207/IX/2016", tmt:"2016-10-01", tglSkep:"2016-09-19" }
+  ],
   AD500221: [
     { pangkat:"Prajurit Dua",  nomorSkep:"KEP/012/I/1999",   tmt:"1999-04-01", tglSkep:"1999-03-15" },
     { pangkat:"Prajurit Satu", nomorSkep:"KEP/089/VI/2004",  tmt:"2004-06-01", tglSkep:"2004-05-19" },
     { pangkat:"Kopral Dua",    nomorSkep:"KEP/157/II/2011",  tmt:"2011-02-01", tglSkep:"2011-01-20" }
+  ],
+  AL600334: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/059/I/2002", tmt:"2002-02-01", tglSkep:"2002-01-24" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/136/I/2007", tmt:"2007-02-01", tglSkep:"2007-01-22" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/213/I/2013", tmt:"2013-02-01", tglSkep:"2013-01-20" }
+  ],
+  AU700445: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/064/X/1996", tmt:"1996-11-01", tglSkep:"1996-10-25" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/141/X/2001", tmt:"2001-11-01", tglSkep:"2001-10-23" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/218/X/2007", tmt:"2007-11-01", tglSkep:"2007-10-21" }
   ],
   PL800556: [
     { pangkat:"Bhayangkara Dua",   nomorSkep:"KEP/027/VII/2009", tmt:"2009-07-01", tglSkep:"2009-06-22" },
     { pangkat:"Bhayangkara Satu",  nomorSkep:"KEP/095/VIII/2014", tmt:"2014-08-01", tglSkep:"2014-07-25" },
     { pangkat:"Brigadir Polisi Dua", nomorSkep:"KEP/183/IX/2020", tmt:"2020-09-01", tglSkep:"2020-08-24" }
   ],
+  AD500667: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/069/III/2004", tmt:"2004-04-01", tglSkep:"2004-03-26" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/146/III/2009", tmt:"2009-04-01", tglSkep:"2009-03-24" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/223/III/2015", tmt:"2015-04-01", tglSkep:"2015-03-22" }
+  ],
+  AL600778: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/074/XI/2000", tmt:"2000-12-01", tglSkep:"2000-11-27" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/151/XI/2005", tmt:"2005-12-01", tglSkep:"2005-11-25" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/228/XI/2011", tmt:"2011-12-01", tglSkep:"2011-11-23" }
+  ],
+  PL800889: [
+    { pangkat:"Bhayangkara Dua",     nomorSkep:"KEP/079/XII/2002", tmt:"2003-01-01", tglSkep:"2002-12-24" },
+    { pangkat:"Bhayangkara Satu",    nomorSkep:"KEP/156/XII/2007", tmt:"2008-01-01", tglSkep:"2007-12-22" },
+    { pangkat:"Brigadir Polisi Dua", nomorSkep:"KEP/233/XII/2013", tmt:"2014-01-01", tglSkep:"2013-12-20" }
+  ],
+  TA910123: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/084/I/1999", tmt:"1999-02-01", tglSkep:"1999-01-25" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/161/I/2004", tmt:"2004-02-01", tglSkep:"2004-01-23" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/238/I/2010", tmt:"2010-02-01", tglSkep:"2010-01-21" }
+  ],
+  TB920234: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/089/II/2006", tmt:"2006-03-01", tglSkep:"2006-02-21" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/166/II/2011", tmt:"2011-03-01", tglSkep:"2011-02-19" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/243/II/2017", tmt:"2017-03-01", tglSkep:"2017-02-17" }
+  ],
+  LA930345: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/094/III/2001", tmt:"2001-04-01", tglSkep:"2001-03-24" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/171/III/2006", tmt:"2006-04-01", tglSkep:"2006-03-22" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/248/III/2012", tmt:"2012-04-01", tglSkep:"2012-03-20" }
+  ],
+  LB940456: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/099/IV/2010", tmt:"2010-05-01", tglSkep:"2010-04-23" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/176/IV/2015", tmt:"2015-05-01", tglSkep:"2015-04-21" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/253/IV/2021", tmt:"2021-05-01", tglSkep:"2021-04-19" }
+  ],
+  UA950567: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/104/V/1998", tmt:"1998-06-01", tglSkep:"1998-05-22" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/181/V/2003", tmt:"2003-06-01", tglSkep:"2003-05-20" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/258/V/2009", tmt:"2009-06-01", tglSkep:"2009-05-18" }
+  ],
+  UB960678: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/109/VI/2007", tmt:"2007-07-01", tglSkep:"2007-06-23" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/186/VI/2012", tmt:"2012-07-01", tglSkep:"2012-06-21" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/263/VI/2018", tmt:"2018-07-01", tglSkep:"2018-06-19" }
+  ],
+  PA970789: [
+    { pangkat:"Bhayangkara Dua",     nomorSkep:"KEP/114/VII/2005", tmt:"2005-08-01", tglSkep:"2005-07-24" },
+    { pangkat:"Bhayangkara Satu",    nomorSkep:"KEP/191/VII/2010", tmt:"2010-08-01", tglSkep:"2010-07-22" },
+    { pangkat:"Brigadir Polisi Dua", nomorSkep:"KEP/268/VII/2016", tmt:"2016-08-01", tglSkep:"2016-07-20" }
+  ],
+  PB980890: [
+    { pangkat:"Bhayangkara Dua",     nomorSkep:"KEP/119/VIII/2004", tmt:"2004-09-01", tglSkep:"2004-08-24" },
+    { pangkat:"Bhayangkara Satu",    nomorSkep:"KEP/196/VIII/2009", tmt:"2009-09-01", tglSkep:"2009-08-22" },
+    { pangkat:"Brigadir Polisi Dua", nomorSkep:"KEP/273/VIII/2015", tmt:"2015-09-01", tglSkep:"2015-08-20" }
+  ],
+  PC990901: [
+    { pangkat:"Bhayangkara Dua",     nomorSkep:"KEP/124/IX/2002", tmt:"2002-10-01", tglSkep:"2002-09-23" },
+    { pangkat:"Bhayangkara Satu",    nomorSkep:"KEP/201/IX/2007", tmt:"2007-10-01", tglSkep:"2007-09-21" },
+    { pangkat:"Brigadir Polisi Dua", nomorSkep:"KEP/278/IX/2013", tmt:"2013-10-01", tglSkep:"2013-09-19" }
+  ],
+  TC911012: [
+    { pangkat:"Prajurit Dua",  nomorSkep:"KEP/129/XII/1999", tmt:"2000-01-01", tglSkep:"1999-12-24" },
+    { pangkat:"Prajurit Satu", nomorSkep:"KEP/206/XII/2004", tmt:"2005-01-01", tglSkep:"2004-12-22" },
+    { pangkat:"Kopral Dua",    nomorSkep:"KEP/283/XII/2010", tmt:"2011-01-01", tglSkep:"2010-12-20" }
+  ],
   BP000111: [
     { pangkat:"Brigadir Polisi Dua",  nomorSkep:"KEP/033/V/2007",  tmt:"2007-05-01", tglSkep:"2007-04-18" },
     { pangkat:"Brigadir Polisi Satu", nomorSkep:"KEP/104/VI/2012", tmt:"2012-06-01", tglSkep:"2012-05-21" },
     { pangkat:"Brigadir Polisi Kepala", nomorSkep:"KEP/199/X/2018", tmt:"2018-10-01", tglSkep:"2018-09-14" }
+  ],
+
+  /* Masa Kerja Dinas dihitung otomatis dari TMT tertua di sini (lihat
+     pfEarliestTmt() di app.js) — TMT baru supaya ketiganya < 2 Tahun per
+     hari ini (24 Agustus 2026). */
+  AD500992: [
+    { pangkat:"Prajurit Dua", nomorSkep:"KEP/012/VIII/2025", tmt:"2025-09-01", tglSkep:"2025-08-19" }
+  ],
+  AL600992: [
+    { pangkat:"Prajurit Dua", nomorSkep:"KEP/018/XII/2024", tmt:"2025-01-01", tglSkep:"2024-12-18" }
+  ],
+  AU700992: [
+    { pangkat:"Prajurit Dua", nomorSkep:"KEP/024/IX/2024", tmt:"2024-10-01", tglSkep:"2024-09-19" }
   ]
 };
 
-/* Parameter Plafon PUM KPR per Angkatan & Golongan Kepangkatan */
-const ANGKATAN_PLAFON = ["TNI-AD", "TNI-AL", "TNI-AU", "POLRI", "KEMHAN"];
-const GOLONGAN_KEPANGKATAN = [
-  "Tamtama", "Bintara", "Perwira Pertama", "Perwira Menengah", "Perwira Tinggi",
-  "Golongan I/a – I/d", "Golongan II/a – II/d", "Golongan III/a – III/d",
-  "Golongan IV/a – IV/c", "Golongan IV/d – IV/e"
+/* Parameter Plafon PUM KPR — Status Personil → Angkatan → Golongan → Pangkat,
+   dari yang paling luas ke paling spesifik; tiap kombinasi punya Nominal
+   Plafon sendiri. Dipakai di form "Input Plafon" (dropdown berjenjang, lihat
+   plafonPangkatOptions() di app.js) dan tabel Parameter Plafon. */
+const PLAFON_STATUS_PERSONIL = ["Prajurit", "ASN", "PPPK"];
+const PLAFON_ANGKATAN = ["TNI-AD", "TNI-AU", "TNI-AL", "POLRI", "ASN"];
+const PLAFON_KESATUAN = ["Mabes TNI", "Mabes POLRI", "Kementrian Pertahanan"];
+const PLAFON_GOLONGAN = ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI", "GOL. I", "GOL. II", "GOL. III", "GOL. IV"];
+
+/* Pilihan Pangkat mengikuti kombinasi Status Personil|Angkatan|Golongan.
+   PPPK punya daftar Pangkat sendiri (GOL.I–GOL.XVII, lihat
+   PLAFON_PANGKAT_PPPK) yang tidak bergantung pada Angkatan/Golongan yang
+   dipilih — kedua field itu tetap wajib diisi, tapi tidak mengubah pilihan
+   Pangkat untuk Status Personil PPPK. */
+const PLAFON_PANGKAT = {
+  "Prajurit|TNI-AD|TAMTAMA": ["KOPTU", "KOPDA", "PRAKA", "PRATU", "PRADA", "KOPKA"],
+  "Prajurit|TNI-AD|BINTARA": ["SERMA", "SERTU", "PELTU", "PELDA", "SERKA", "SERDA", "CAPA"],
+  "Prajurit|TNI-AD|PAMA":    ["LETDA", "KAPTEN", "LETTU"],
+  "Prajurit|TNI-AD|PAMEN":   ["LETKOL", "MAYOR", "KOLONEL"],
+  "Prajurit|TNI-AD|PATI":    ["BRIGJEN TNI", "MAYJEN TNI", "JENDERAL TNI", "LETJEN TNI"],
+
+  "Prajurit|TNI-AU|TAMTAMA": ["PRAKA", "KOPKA", "PRADA", "KOPTU", "KOPDA", "PRATU"],
+  "Prajurit|TNI-AU|BINTARA": ["PELDA", "CAPA", "SERDA", "SERKA", "SERMA", "PELTU", "SERTU"],
+  "Prajurit|TNI-AU|PAMA":    ["KAPTEN", "LETTU", "LETDA"],
+  "Prajurit|TNI-AU|PAMEN":   ["MAYOR", "LETKOL", "KOLONEL"],
+  "Prajurit|TNI-AU|PATI":    ["MARSDYA TNI", "MARSDA TNI", "MARSEKAL TNI", "MARSMA TNI"],
+
+  "Prajurit|TNI-AL|TAMTAMA": ["KOPTU", "KOPDA", "KELASI KEPALA", "KELASI I", "KOPKA", "KELASI II"],
+  "Prajurit|TNI-AL|BINTARA": ["SERMA", "SERKA", "SERDA", "SERTU", "CAPA", "PELDA", "PELTU"],
+  "Prajurit|TNI-AL|PAMA":    ["LETTU", "KAPTEN", "LETDA"],
+  "Prajurit|TNI-AL|PAMEN":   ["LETKOL", "MAYOR", "KOLONEL"],
+  "Prajurit|TNI-AL|PATI":    ["LAKSMA TNI", "LAKSDYA TNI", "LAKSDA TNI", "LAKSAMANA TNI"],
+
+  "Prajurit|POLRI|TAMTAMA":  ["BHARATU", "ABRIP", "BHARAKA", "ABRIPDA", "ABRIPTU", "BHARADA"],
+  "Prajurit|POLRI|BINTARA":  ["CAPA", "AIPTU", "AIPDA", "BRIPKA", "BRIPTU", "BRIPDA", "BRIGADIR"],
+  "Prajurit|POLRI|PAMA":     ["AKP", "IPDA", "IPTU"],
+  "Prajurit|POLRI|PAMEN":    ["AKBP", "KOMBES POL", "KOMPOL"],
+  "Prajurit|POLRI|PATI":     ["KOMJEN POL", "IRJEN POL", "BRIGJEN POL", "JENDERAL POL"],
+
+  "ASN|ASN|GOL. I":   ["GOL.I/A", "GOL.I/B", "GOL.I/C", "GOL.I/D"],
+  "ASN|ASN|GOL. II":  ["GOL.II/A", "GOL.II/B", "GOL.II/C", "GOL.II/D"],
+  "ASN|ASN|GOL. III": ["GOL.III/A", "GOL.III/B", "GOL.III/C", "GOL.III/D"],
+  "ASN|ASN|GOL. IV":  ["GOL.IV/A", "GOL.IV/B", "GOL.IV/C", "GOL.IV/D", "GOL.IV/E"]
+};
+const PLAFON_PANGKAT_PPPK = [
+  "GOL.I", "GOL.II", "GOL.III", "GOL.IV", "GOL.V", "GOL.VI", "GOL.VII", "GOL.VIII", "GOL.IX",
+  "GOL.X", "GOL.XI", "GOL.XII", "GOL.XIII", "GOL.XIV", "GOL.XV", "GOL.XVI", "GOL.XVII"
 ];
+
 const DATA_PARAMETER_PLAFON = [
-  { angkatan:"TNI-AD", golongan:"Tamtama",          nominal:250000000 },
-  { angkatan:"TNI-AD", golongan:"Bintara",           nominal:300000000 },
-  { angkatan:"TNI-AD", golongan:"Perwira Pertama",   nominal:350000000 },
-  { angkatan:"TNI-AD", golongan:"Perwira Menengah",  nominal:400000000 },
-  { angkatan:"TNI-AD", golongan:"Perwira Tinggi",    nominal:450000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AD", kesatuan:"Mabes TNI",   golongan:"TAMTAMA", pangkat:"PRADA",       nominal:250000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AD", kesatuan:"Mabes TNI",   golongan:"BINTARA", pangkat:"SERDA",       nominal:300000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AD", kesatuan:"Mabes TNI",   golongan:"PAMA",    pangkat:"LETDA",       nominal:350000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AD", kesatuan:"Mabes TNI",   golongan:"PAMEN",   pangkat:"MAYOR",       nominal:400000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AD", kesatuan:"Mabes TNI",   golongan:"PATI",    pangkat:"BRIGJEN TNI", nominal:450000000 },
 
-  { angkatan:"TNI-AL", golongan:"Tamtama",          nominal:260000000 },
-  { angkatan:"TNI-AL", golongan:"Bintara",           nominal:310000000 },
-  { angkatan:"TNI-AL", golongan:"Perwira Pertama",   nominal:360000000 },
-  { angkatan:"TNI-AL", golongan:"Perwira Menengah",  nominal:410000000 },
-  { angkatan:"TNI-AL", golongan:"Perwira Tinggi",    nominal:460000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AL", kesatuan:"Mabes TNI",   golongan:"TAMTAMA", pangkat:"KELASI II",   nominal:260000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AL", kesatuan:"Mabes TNI",   golongan:"BINTARA", pangkat:"SERDA",       nominal:310000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AL", kesatuan:"Mabes TNI",   golongan:"PAMA",    pangkat:"LETDA",       nominal:360000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AL", kesatuan:"Mabes TNI",   golongan:"PAMEN",   pangkat:"MAYOR",       nominal:410000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AL", kesatuan:"Mabes TNI",   golongan:"PATI",    pangkat:"LAKSMA TNI",  nominal:460000000 },
 
-  { angkatan:"TNI-AU", golongan:"Tamtama",          nominal:270000000 },
-  { angkatan:"TNI-AU", golongan:"Bintara",           nominal:320000000 },
-  { angkatan:"TNI-AU", golongan:"Perwira Pertama",   nominal:370000000 },
-  { angkatan:"TNI-AU", golongan:"Perwira Menengah",  nominal:420000000 },
-  { angkatan:"TNI-AU", golongan:"Perwira Tinggi",    nominal:470000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AU", kesatuan:"Mabes TNI",   golongan:"TAMTAMA", pangkat:"PRADA",       nominal:270000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AU", kesatuan:"Mabes TNI",   golongan:"BINTARA", pangkat:"SERDA",       nominal:320000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AU", kesatuan:"Mabes TNI",   golongan:"PAMA",    pangkat:"LETDA",       nominal:370000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AU", kesatuan:"Mabes TNI",   golongan:"PAMEN",   pangkat:"MAYOR",       nominal:420000000 },
+  { statusPersonil:"Prajurit", angkatan:"TNI-AU", kesatuan:"Mabes TNI",   golongan:"PATI",    pangkat:"MARSMA TNI",  nominal:470000000 },
 
-  { angkatan:"POLRI",  golongan:"Tamtama",          nominal:240000000 },
-  { angkatan:"POLRI",  golongan:"Bintara",           nominal:290000000 },
-  { angkatan:"POLRI",  golongan:"Perwira Pertama",   nominal:340000000 },
-  { angkatan:"POLRI",  golongan:"Perwira Menengah",  nominal:390000000 },
-  { angkatan:"POLRI",  golongan:"Perwira Tinggi",    nominal:440000000 },
+  { statusPersonil:"Prajurit", angkatan:"POLRI",  kesatuan:"Mabes POLRI", golongan:"TAMTAMA", pangkat:"BHARADA",     nominal:240000000 },
+  { statusPersonil:"Prajurit", angkatan:"POLRI",  kesatuan:"Mabes POLRI", golongan:"BINTARA", pangkat:"BRIPDA",      nominal:290000000 },
+  { statusPersonil:"Prajurit", angkatan:"POLRI",  kesatuan:"Mabes POLRI", golongan:"PAMA",    pangkat:"IPDA",        nominal:340000000 },
+  { statusPersonil:"Prajurit", angkatan:"POLRI",  kesatuan:"Mabes POLRI", golongan:"PAMEN",   pangkat:"KOMPOL",      nominal:390000000 },
+  { statusPersonil:"Prajurit", angkatan:"POLRI",  kesatuan:"Mabes POLRI", golongan:"PATI",    pangkat:"BRIGJEN POL", nominal:440000000 },
 
-  { angkatan:"KEMHAN", golongan:"Tamtama",          nominal:230000000 },
-  { angkatan:"KEMHAN", golongan:"Bintara",           nominal:280000000 },
-  { angkatan:"KEMHAN", golongan:"Perwira Pertama",   nominal:330000000 },
-  { angkatan:"KEMHAN", golongan:"Perwira Menengah",  nominal:380000000 },
-  { angkatan:"KEMHAN", golongan:"Perwira Tinggi",    nominal:430000000 }
+  { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. I",   pangkat:"GOL.I/A",   nominal:180000000 },
+  { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. II",  pangkat:"GOL.II/A",  nominal:230000000 },
+  { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. III", pangkat:"GOL.III/A", nominal:280000000 },
+  { statusPersonil:"ASN", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. IV",  pangkat:"GOL.IV/A",  nominal:330000000 },
+
+  { statusPersonil:"PPPK", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. I", pangkat:"GOL.I", nominal:200000000 },
+  { statusPersonil:"PPPK", angkatan:"ASN", kesatuan:"Kementrian Pertahanan", golongan:"GOL. V", pangkat:"GOL.V", nominal:250000000 }
 ];
 
-/* Pemetaan Pangkat (opsi dropdown "Pangkat" di Data Peserta PUM KPR) →
-   Golongan Kepangkatan, dipakai untuk mencocokkan Plafon di Detail Pengajuan
-   dengan Parameter Plafon (per Angkatan peserta + Golongan pangkatnya). */
+/* Pemetaan Pangkat (opsi dropdown "Pangkat" di Data Peserta PUM KPR) → nilai
+   Golongan di Parameter Plafon, dipakai untuk mencocokkan Plafon di Detail
+   Pengajuan dengan Parameter Plafon (per Angkatan peserta + Golongan
+   pangkatnya). Nilai target di sini sengaja disamakan dengan PLAFON_GOLONGAN
+   (data.js) walau katalog Pangkat di dua tempat ini tidak identik. */
 const PANGKAT_TO_GOLONGAN = {
   /* PNS */
-  "GOL.I/A":"Golongan I/a – I/d", "GOL.I/B":"Golongan I/a – I/d", "GOL.I/C":"Golongan I/a – I/d", "GOL.I/D":"Golongan I/a – I/d",
-  "GOL.II/A":"Golongan II/a – II/d", "GOL.II/B":"Golongan II/a – II/d", "GOL.II/C":"Golongan II/a – II/d", "GOL.II/D":"Golongan II/a – II/d",
-  "GOL.III/A":"Golongan III/a – III/d", "GOL.III/B":"Golongan III/a – III/d", "GOL.III/C":"Golongan III/a – III/d", "GOL.III/D":"Golongan III/a – III/d",
-  "GOL.IV/A":"Golongan IV/a – IV/c", "GOL.IV/B":"Golongan IV/a – IV/c", "GOL.IV/C":"Golongan IV/a – IV/c",
-  "GOL.IV/D":"Golongan IV/d – IV/e", "GOL.IV/E":"Golongan IV/d – IV/e",
+  "GOL.I/A":"GOL. I", "GOL.I/B":"GOL. I", "GOL.I/C":"GOL. I", "GOL.I/D":"GOL. I",
+  "GOL.II/A":"GOL. II", "GOL.II/B":"GOL. II", "GOL.II/C":"GOL. II", "GOL.II/D":"GOL. II",
+  "GOL.III/A":"GOL. III", "GOL.III/B":"GOL. III", "GOL.III/C":"GOL. III", "GOL.III/D":"GOL. III",
+  "GOL.IV/A":"GOL. IV", "GOL.IV/B":"GOL. IV", "GOL.IV/C":"GOL. IV",
+  "GOL.IV/D":"GOL. IV", "GOL.IV/E":"GOL. IV",
 
   /* TNI-AD / TNI-AU: Tamtama & Bintara */
-  "PRADA":"Tamtama", "PRATU":"Tamtama", "PRAKA":"Tamtama", "KOPDA":"Tamtama", "KOPTU":"Tamtama", "KOPKA":"Tamtama",
-  "SERDA":"Bintara", "SERTU":"Bintara", "SERKA":"Bintara", "SERMA":"Bintara", "PELDA":"Bintara", "PELTU":"Bintara", "CAPA":"Bintara",
+  "PRADA":"TAMTAMA", "PRATU":"TAMTAMA", "PRAKA":"TAMTAMA", "KOPDA":"TAMTAMA", "KOPTU":"TAMTAMA", "KOPKA":"TAMTAMA",
+  "SERDA":"BINTARA", "SERTU":"BINTARA", "SERKA":"BINTARA", "SERMA":"BINTARA", "PELDA":"BINTARA", "PELTU":"BINTARA", "CAPA":"BINTARA",
   /* TNI-AD/AL/AU: Pama & Pamen (nama pangkat sama di ketiga Angkatan) */
-  "LETDA":"Perwira Pertama", "LETTU":"Perwira Pertama", "KAPTEN":"Perwira Pertama",
-  "MAYOR":"Perwira Menengah", "LETKOL":"Perwira Menengah", "KOLONEL":"Perwira Menengah",
+  "LETDA":"PAMA", "LETTU":"PAMA", "KAPTEN":"PAMA",
+  "MAYOR":"PAMEN", "LETKOL":"PAMEN", "KOLONEL":"PAMEN",
   /* TNI-AD Pati */
-  "BRIGJEN TNI":"Perwira Tinggi", "MAYJEN TNI":"Perwira Tinggi", "LETJEN TNI":"Perwira Tinggi", "JENDERAL TNI":"Perwira Tinggi",
+  "BRIGJEN TNI":"PATI", "MAYJEN TNI":"PATI", "LETJEN TNI":"PATI", "JENDERAL TNI":"PATI",
   /* TNI-AL: Tamtama & Pati */
-  "KELASI DUA":"Tamtama", "KELASI SATU":"Tamtama", "KELASI KEPALA":"Tamtama",
-  "LAKSMA TNI":"Perwira Tinggi", "LAKSDA TNI":"Perwira Tinggi", "LAKSDYA TNI":"Perwira Tinggi", "LAKSAMANA TNI":"Perwira Tinggi",
+  "KELASI DUA":"TAMTAMA", "KELASI SATU":"TAMTAMA", "KELASI KEPALA":"TAMTAMA",
+  "LAKSMA TNI":"PATI", "LAKSDA TNI":"PATI", "LAKSDYA TNI":"PATI", "LAKSAMANA TNI":"PATI",
   /* TNI-AU: Pati */
-  "MARSMA TNI":"Perwira Tinggi", "MARSDA TNI":"Perwira Tinggi", "MARSDYA TNI":"Perwira Tinggi", "MARSEKAL TNI":"Perwira Tinggi",
+  "MARSMA TNI":"PATI", "MARSDA TNI":"PATI", "MARSDYA TNI":"PATI", "MARSEKAL TNI":"PATI",
 
   /* POLRI */
-  "BHARADA":"Tamtama", "BHARATU":"Tamtama", "BHARAKA":"Tamtama", "ABRIPDA":"Tamtama", "ABRIPTU":"Tamtama", "ABRIP":"Tamtama",
-  "BRIPDA":"Bintara", "BRIPTU":"Bintara", "BRIPKA":"Bintara", "BRIGADIR":"Bintara", "AIPDA":"Bintara", "AIPTU":"Bintara",
-  "IPDA":"Perwira Pertama", "IPTU":"Perwira Pertama", "AKP":"Perwira Pertama",
-  "KOMPOL":"Perwira Menengah", "AKBP":"Perwira Menengah", "KOMBES POL":"Perwira Menengah",
-  "BRIGJEN POL":"Perwira Tinggi", "IRJEN POL":"Perwira Tinggi", "KOMJEN POL":"Perwira Tinggi", "JENDERAL POL":"Perwira Tinggi"
+  "BHARADA":"TAMTAMA", "BHARATU":"TAMTAMA", "BHARAKA":"TAMTAMA", "ABRIPDA":"TAMTAMA", "ABRIPTU":"TAMTAMA", "ABRIP":"TAMTAMA",
+  "BRIPDA":"BINTARA", "BRIPTU":"BINTARA", "BRIPKA":"BINTARA", "BRIGADIR":"BINTARA", "AIPDA":"BINTARA", "AIPTU":"BINTARA",
+  "IPDA":"PAMA", "IPTU":"PAMA", "AKP":"PAMA",
+  "KOMPOL":"PAMEN", "AKBP":"PAMEN", "KOMBES POL":"PAMEN",
+  "BRIGJEN POL":"PATI", "IRJEN POL":"PATI", "KOMJEN POL":"PATI", "JENDERAL POL":"PATI"
 
   /* PPPK (GOL.I–GOL.XVII) sengaja tidak dipetakan — sistem golongannya
-     berbeda dari 10 Golongan Kepangkatan di Parameter Plafon, jadi Plafon
-     untuk Pangkat PPPK jatuh kembali ke plafon bawaan peserta. */
+     berbeda dari Golongan di Parameter Plafon, jadi Plafon untuk Pangkat
+     PPPK jatuh kembali ke plafon bawaan peserta. */
 };
 
 /* Pilihan "Nama Instansi / Kesatuan Pengirim" pada form Pendaftaran Peserta Baru */
@@ -737,7 +917,7 @@ const DATA_DOKUMEN_PERSYARATAN = {
     { label:"Fotocopy Kartu Keluarga (KK)" },
     { label:"Fotocopy KTP" },
     { label:"Fotocopy Buku Nikah", kondisional:true },
-    { label:"Fotocopy Surat Kesepakatan Jual Beli", kondisional:true }
+    { label:"Fotocopy Surat Kesepakatan Jual Beli" }
   ],
 
   "Membangun Rumah": [
@@ -747,7 +927,7 @@ const DATA_DOKUMEN_PERSYARATAN = {
     { label:"Fotocopy Kartu Keluarga (KK)" },
     { label:"Fotocopy KTP" },
     { label:"Fotocopy Buku Nikah", kondisional:true },
-    { label:"Fotocopy bukti kepemilikan hak atas tanah" }
+    { label:"Fotocopy Bukti Kepemilikan Hak Atas Tanah" }
   ]
 };
 /* "Surat Pernyataan Kesanggupan" tidak ada di daftar statis di atas — field
@@ -758,7 +938,10 @@ const DATA_DOKUMEN_PERSYARATAN = {
 /* ---------------------------------------------------------------------------
    5. DAFTAR PENGAJUAN KPR (PUM)
    Satu baris = satu peserta yang mengajukan ambil PUM.
-   status: "Draft" (belum dikirim, masih bisa Ubah/Hapus) | "Submitted" (sudah dikirim)
+   status: "Draft" (belum dikirim, masih bisa Ubah/Hapus) | "Submitted" (tampil
+   sebagai "Pending" — sudah dikirim, menunggu Approval) | "Disetujui" |
+   "Ditolak" | "Revisi" (dikembalikan dari Approval lewat tombol "Revisi",
+   perlu diubah & disubmit ulang oleh PIC UNOR/Kesatuan)
    --------------------------------------------------------------------------- */
 const DATA_PUM = [
   { kpa:"CD317049", nrp:"119596",             npwp:"73.104.502.7-009.000", nama:"Intan M. Sari",
@@ -778,31 +961,72 @@ const DATA_PUM = [
     status:"Submitted", jumlah:25000000 },
   { kpa:"CC306323", nrp:"14621/P",            npwp:"08.544.963.5-603.000", nama:"Heriyanto, S.KM",
     angkatan:"TNI-AL", tglAmbil:"Sen, 22 Mei 2023", tipePum:"Kredit Rumah", tipeRumah:"36/96",
-    status:"Submitted", jumlah:35000000 }
+    status:"Submitted", jumlah:35000000 },
+  { kpa:"TA910123", nrp:"178432",             npwp:"81.924.605.6-881.000", nama:"Slamet Riyadi",
+    angkatan:"TNI-AD", tglAmbil:"Rab, 19 Agu 2026", tipePum:"Kredit Rumah", tipeRumah:"36/90",
+    status:"Revisi", jumlah:28000000,
+    catatanApproval:"Nomor Akad Kredit belum sesuai dengan dokumen Fotocopy Akad Kredit yang diunggah — mohon periksa dan unggah ulang." }
 ];
 
 
 /* ---------------------------------------------------------------------------
    6. PELUNASAN KPR (PUM)
-   status: "Menunggu approval" | "Disetujui" | "Ditolak"
+   Satu baris = satu peserta yang KPR (PUM)-nya sudah jatuh tempo. Kolom
+   peserta mengikuti Daftar Pengajuan KPR (PUM); sisanya dipakai di halaman
+   Detail Pelunasan KPR (PUM) per peserta.
+   status: "Pending" | "Disetujui" | "Ditolak"
    --------------------------------------------------------------------------- */
-const DATA_PELUNASAN_PERIODE = [
-  { id:"2026-07", periode:"Juli 2026", rangeText:"01–31 Juli 2026",
-    peserta:42, total:1260000000, status:"Menunggu approval" },
-  { id:"2026-06", periode:"Juni 2026", rangeText:"01–30 Juni 2026",
-    peserta:38, total:980000000,  status:"Disetujui" },
-  { id:"2026-05", periode:"Mei 2026",  rangeText:"01–31 Mei 2026",
-    peserta:45, total:1410000000, status:"Disetujui" }
-];
+const DATA_PELUNASAN = [
+  { kpa:"CD317049", nrp:"119596",             npwp:"73.104.502.7-009.000", nama:"Intan M. Sari",
+    angkatan:"TNI-AL", uker:"Lanal Surabaya",      cabang:"KC Surabaya",
+    tglAmbil:"Sel, 23 Mei 2023", tipePum:"Kredit Rumah", tipeRumah:"36/90", jumlah:25000000,
+    tglAkhirKredit:"Kam, 23 Mei 2024", periode:"Mei 2024", tglPelunasan:"Kam, 23 Mei 2024",
+    sisaPiutang:25000000, jumlahDilunasi:25000000, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Pending", catatan:"" },
+  { kpa:"CY104869", nrp:"197804081998032003", npwp:"89.231.218.2-603.000", nama:"Made Wardani",
+    angkatan:"TNI-AL", uker:"Lanal Banyuwangi",    cabang:"KC Denpasar",
+    tglAmbil:"Sel, 23 Mei 2023", tipePum:"Kredit Rumah", tipeRumah:"45/111", jumlah:30000000,
+    tglAkhirKredit:"Kam, 23 Mei 2024", periode:"Mei 2024", tglPelunasan:"Kam, 23 Mei 2024",
+    sisaPiutang:30000000, jumlahDilunasi:30000000, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Pending", catatan:"" },
+  { kpa:"CE360625", nrp:"132170",             npwp:"85.465.740.0-514.000", nama:"Kenedi",
+    angkatan:"TNI-AL", uker:"Lanal Batam",         cabang:"KC Batam",
+    tglAmbil:"Sel, 23 Mei 2023", tipePum:"Kredit Rumah", tipeRumah:"36/72", jumlah:20000000,
+    tglAkhirKredit:"Kam, 23 Mei 2024", periode:"Mei 2024", tglPelunasan:"Kam, 23 Mei 2024",
+    sisaPiutang:20000000, jumlahDilunasi:20000000, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Pending", catatan:"" },
+  { kpa:"CD319552", nrp:"126284",             npwp:"92.704.589.8-126.000", nama:"Aprildo Anang Riyadi",
+    angkatan:"TNI-AL", uker:"Lanal Ambon",         cabang:"KC Ambon",
+    tglAmbil:"Sen, 22 Mei 2023", tipePum:"Kredit Rumah", tipeRumah:"36/96", jumlah:25000000,
+    tglAkhirKredit:"Rab, 22 Mei 2024", periode:"Mei 2024", tglPelunasan:"Rab, 22 Mei 2024",
+    sisaPiutang:25000000, jumlahDilunasi:25000000, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Pending", catatan:"" },
+  { kpa:"CC306323", nrp:"14621/P",            npwp:"08.544.963.5-603.000", nama:"Heriyanto, S.KM",
+    angkatan:"TNI-AL", uker:"Lanal Jakarta",       cabang:"KC Jakarta Utama",
+    tglAmbil:"Sen, 22 Mei 2023", tipePum:"Kredit Rumah", tipeRumah:"36/96", jumlah:35000000,
+    tglAkhirKredit:"Rab, 22 Mei 2024", periode:"Mei 2024", tglPelunasan:"Rab, 22 Mei 2024",
+    sisaPiutang:35000000, jumlahDilunasi:35000000, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Pending", catatan:"" },
 
-/* Rincian peserta yang tampil di halaman detail approval */
-const DATA_PELUNASAN_PESERTA = [
-  { ktpa:"CD317049", nama:"Intan M. Sari",        unor:"TNI-AL", sisa:25000000, lunas:25000000 },
-  { ktpa:"CY104869", nama:"Made Wardani",         unor:"TNI-AL", sisa:30000000, lunas:30000000 },
-  { ktpa:"CE360625", nama:"Kenedi",               unor:"TNI-AL", sisa:20000000, lunas:20000000 },
-  { ktpa:"CE358403", nama:"Firman Dewantoro",     unor:"TNI-AD", sisa:20000000, lunas:20000000 },
-  { ktpa:"CD319552", nama:"Aprildo Anang Riyadi", unor:"Polri",  sisa:25000000, lunas:25000000 },
-  { ktpa:"CC306323", nama:"Heriyanto, S.KM",      unor:"Polri",  sisa:35000000, lunas:35000000 }
+  /* Sudah diputus — dipakai untuk mencoba filter Disetujui / Ditolak */
+  { kpa:"CE358403", nrp:"127485",             npwp:"95.023.091.2-643.000", nama:"Firman Dewantoro",
+    angkatan:"TNI-AD", uker:"Kodim 0733 Semarang", cabang:"KC Semarang",
+    tglAmbil:"Sen, 22 Mei 2023", tipePum:"Membangun Rumah", tipeRumah:"36/94", jumlah:20000000,
+    tglAkhirKredit:"Sen, 22 Apr 2024", periode:"April 2024", tglPelunasan:"Sen, 22 Apr 2024",
+    sisaPiutang:20000000, jumlahDilunasi:20000000, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Disetujui", catatan:"Data terkirim ke Dynamics 365, Berita Acara Rekon Piutang ter-generate." },
+  { kpa:"TB920234", nrp:"19900820002",        npwp:"77.310.884.1-421.000", nama:"Wati Handayani",
+    angkatan:"Polri",  uker:"Polres Bekasi",       cabang:"KC Bekasi",
+    tglAmbil:"Jum, 14 Apr 2023", tipePum:"Pembelian Rumah Secara Mandiri", tipeRumah:"45/120", jumlah:30000000,
+    tglAkhirKredit:"Ming, 14 Apr 2024", periode:"April 2024", tglPelunasan:"Ming, 14 Apr 2024",
+    sisaPiutang:30000000, jumlahDilunasi:30000000, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Disetujui", catatan:"Data terkirim ke Dynamics 365, Berita Acara Rekon Piutang ter-generate." },
+  { kpa:"UA950567", nrp:"19921215005",        npwp:"61.902.775.3-118.000", nama:"Yuni Kartika",
+    angkatan:"TNI-AU", uker:"Lanud Iswahjudi",     cabang:"KC Madiun",
+    tglAmbil:"Sel, 07 Mar 2023", tipePum:"Kredit Rumah", tipeRumah:"36/84", jumlah:22000000,
+    tglAkhirKredit:"Kam, 07 Mar 2024", periode:"Maret 2024", tglPelunasan:"—",
+    sisaPiutang:22000000, jumlahDilunasi:0, caraPelunasan:"Otomatis — jatuh tempo",
+    status:"Ditolak", catatan:"Sisa piutang belum cocok dengan data Dynamics 365 — perlu verifikasi ulang." }
 ];
 
 
@@ -874,35 +1098,6 @@ const DATA_DASHBOARD = [
 
 
 /* ---------------------------------------------------------------------------
-   11. FLAGGING — CHECK DAN BOOKING INDIVIDU
-   Data dummy yang tampil begitu tombol "Search" ditekan, dibedakan menurut
-   Jenis Individu yang dipilih (Peserta Aktif / Peserta Pensiun).
-   --------------------------------------------------------------------------- */
-const DATA_FLAGGING_AKTIF = [
-  { kpa:"CD400871", nama:"Yusuf Pratama" },
-  { kpa:"CD317049", nama:"Intan M. Sari" }
-];
-const DATA_FLAGGING_PENSIUN = [
-  { kpa:"CY104869", nomorPensiun:"PS-2019-004821", namaPeminjam:"Made Wardani", nama:"Made Wardani" }
-];
-
-/* ---------------------------------------------------------------------------
-   12. FLAGGING — CHECK DAN BOOKING KOLEKTIF
-   Data dummy yang tampil begitu tombol "Upload" ditekan, dibedakan menurut
-   Jenis Kolektif yang dipilih (Peserta Aktif / Peserta Pensiun).
-   --------------------------------------------------------------------------- */
-const DATA_FLAGGING_KOLEKTIF_AKTIF = [
-  { kpa:"CD400871", nrp:"148820",             nama:"Yusuf Pratama",     tglLahir:"12 Mei 1985" },
-  { kpa:"BP000111", nrp:"84071073",           nama:"Andi Saputra",      tglLahir:"03 Januari 1990" },
-  { kpa:"EP000112", nrp:"199801152020121003", nama:"Eko Prasetyo",      tglLahir:"22 Agustus 1988" }
-];
-const DATA_FLAGGING_KOLEKTIF_PENSIUN = [
-  { kpa:"CY104869", nrp:"197804081998032003", nomorPensiun:"PS-2019-004821", namaPeserta:"Made Wardani",     tglLahir:"08 April 1978", hidup:true,  nomorPensiunPenerima:"PS-2019-004821-P", namaPenerima:"Made Wardani" },
-  { kpa:"CE360625", nrp:"132170",             nomorPensiun:"PS-2015-002214", namaPeserta:"Kenedi",           tglLahir:"15 Maret 1970", hidup:false, nomorPensiunPenerima:"PS-2015-002214-P", namaPenerima:"Sri Kenedi (Istri)" },
-  { kpa:"CE358403", nrp:"127485",             nomorPensiun:"PS-2012-001190", namaPeserta:"Firman Dewantoro", tglLahir:"27 Juni 1968",  hidup:true,  nomorPensiunPenerima:"PS-2012-001190-P", namaPenerima:"Firman Dewantoro" }
-];
-
-/* ---------------------------------------------------------------------------
    13. PEREMAJAAN DATA — PEMUTAKHIRAN DATA
    Kolom tabel & baris contoh hasil validasi, dibedakan menurut Jenis
    Pemutakhiran yang dipilih di step "Unggah Berkas".
@@ -952,9 +1147,6 @@ const DATA_PEREMAJAAN = {
   }
 };
 
-/* Kode prefiks nomor batch per Jenis Pemutakhiran Data (mis. PMK-KLG-...) */
-const PEREMAJAAN_PREFIX = { pokok:"POK", pangkat:"PKT", keluarga:"KLG" };
-
 /* ---------------------------------------------------------------------------
    14. PEREMAJAAN DATA — APPROVAL PEMUTAKHIRAN DATA
    Daftar batch yang sudah diunggah & disubmit dari "Pemutakhiran Data",
@@ -962,10 +1154,10 @@ const PEREMAJAAN_PREFIX = { pokok:"POK", pangkat:"PKT", keluarga:"KLG" };
    otomatis begitu "Submit Data Batch" ditekan di modul Pemutakhiran Data.
    --------------------------------------------------------------------------- */
 const DATA_PEMUTAKHIRAN_BATCH = [
-  { noBatch:"PMK-KLG-20260725-225149-h7du", jenis:"keluarga", waktu:"26 Jul 2026, 05:51", jumlahBaris:1, status:"Pending",
+  { noBatch:"TNI-AD/07/2026/0001", jenis:"keluarga", waktu:"26 Jul 2026, 05:51", userUpload:"Adm. Wirata Atmaja", unor:"TNI-AD", jumlahBaris:1, status:"Pending",
     kolom: ["NRP/NIP", "NIK Anggota", "Nama Anggota", "Hubungan Keluarga", "Tanggal Lahir"],
     rows: [ { nilai:["148820", "3271011203800001", "Siti Aminah", "ISTRI", "12 Maret 1988"], status:"valid" } ] },
-  { noBatch:"PMK-KLG-20260725-225021-rika", jenis:"keluarga", waktu:"26 Jul 2026, 05:50", jumlahBaris:1, status:"Pending",
+  { noBatch:"POLRI/07/2026/0001", jenis:"keluarga", waktu:"26 Jul 2026, 05:50", userUpload:"Adm. Rika Pratiwi", unor:"POLRI", jumlahBaris:1, status:"Pending",
     kolom: ["NRP/NIP", "NIK Anggota", "Nama Anggota", "Hubungan Keluarga", "Tanggal Lahir"],
     rows: [ { nilai:["84071073", "3273011501920001", "Rina Saputri", "ANAK", "15 Januari 1992"], status:"valid" } ] }
 ];
@@ -1204,9 +1396,19 @@ const DATA_IURAN_PREMI_PESERTA = [
 /* ---------------------------------------------------------------------------
    17. HOME — Notifikasi & Pengumuman di halaman portal (Dashboard)
    Notifikasi.tingkat: "Kritis" | "High" | "Sedang"
+   Notifikasi.untuk  : role yang boleh melihat entri ini. Kalau tidak diisi,
+                       entri tampil untuk semua role kecuali Divisi Layanan
+                       (role itu hanya menerima yang ditujukan kepadanya).
    Pengumuman.tag: [{label, jenis:"kebijakan"|"baru"|"info"}]
    --------------------------------------------------------------------------- */
 const DATA_HOME_NOTIFIKASI = [
+  /* Satu pengajuan yang sama, dibaca dua divisi dengan konteks berbeda. */
+  { judul:"Pengajuan Request Umum Kantor Cabang", untuk:"Divisi Kepesertaan dan Pengembangan Manfaat",
+    detail:"Pengajuan Request Umum terkait dengan Peremajaan Data dengan KPA Peserta KPA-10023 a.n. Budi Santoso dari Kantor Cabang Asabri Jakarta, tenggat waktu Pengajuan tersisa 3 hari kerja tenggat waktu penyelesaian 02-09-2026.",
+    tanggal:"29/08/2026", tingkat:"Kritis", go:"request-umum", ruKpa:"KPA-10023" },
+  { judul:"Pengajuan Request Umum Kantor Cabang", untuk:"Divisi Layanan",
+    detail:"Pengajuan Request Umum terkait dengan Klaim Online dengan KPA Peserta KPA-10023 a.n. Budi Santoso dari Kantor Cabang Asabri Jakarta, tenggat waktu Pengajuan tersisa 3 hari kerja tenggat waktu penyelesaian 02-09-2026.",
+    tanggal:"29/08/2026", tingkat:"Kritis", go:"request-umum", ruKpa:"KPA-10023" },
   { judul:"Persetujuan Klaim JKK",           id:"FLKK-2025-00871",  lokasi:"KC Bandung",       modul:"Modul Klaim JKK",                    tanggal:"23/06/2026", tingkat:"Kritis" },
   { judul:"Verifikasi e-SPTB Peserta",       id:"SPTB-2025-04412",  lokasi:"KC Jakarta Pusat", modul:"Modul e-SPTB",                       tanggal:"22/06/2026", tingkat:"Kritis" },
   { judul:"Input LKPP Cabang",               id:"LKPP-2025-KC03",   lokasi:"KC Surabaya",      modul:"Modul LKPP Cabang",                  tanggal:"21/06/2026", tingkat:"High" },
@@ -1215,6 +1417,10 @@ const DATA_HOME_NOTIFIKASI = [
   { judul:"Approval Pengajuan KPR (PUM)",    id:"PUM-2026-00231",   lokasi:"KC Semarang",      modul:"Modul KPR (PUM)",                    tanggal:"18/06/2026", tingkat:"Sedang" },
   { judul:"Verifikasi Upload Pendaftaran Peserta Baru", id:"BATCH-2026-0087", lokasi:"KC Yogyakarta", modul:"Modul Pendaftaran Peserta Baru", tanggal:"17/06/2026", tingkat:"Sedang" }
 ];
+
+/* Notifikasi khusus role PIC UNOR/Kesatuan dibangun otomatis dari pengajuan
+   KPR (PUM) berstatus Revisi — lihat notifRevisiPicUnor() di app.js, bukan
+   data statis di sini, supaya selalu sesuai kondisi pengajuan sebenarnya. */
 
 const DATA_HOME_PENGUMUMAN = [
   { tag:[{label:"KEBIJAKAN BARU", jenis:"kebijakan"}, {label:"BARU", jenis:"baru"}], dot:"kebijakan",
@@ -1277,8 +1483,12 @@ const DATA_EDOSIR_CABANG = [
 
 /* ---------------------------------------------------------------------------
    19. MONITORING SPTB — Pengelolaan Surat Pernyataan Tanda Bukti Diri
-   status: "Sudah SPTB" | "Belum SPTB"
-   sptbTerakhir: null jika peserta belum pernah SPTB (kolom tampil "—")
+   status          (Status SPTB)      : "Sudah SPTB" | "Belum SPTB"
+   statusPengajuan (Status Pengajuan) : "Pengajuan" | "Belum Pengajuan"
+   statusApproval  (Status Approval)  : "Disetujui" | "Ditolak" | "Tertunda"
+                                        null jika peserta belum mengajukan
+   sptbTerakhir / tglPengajuan / tglApproval: null jika belum ada
+   (semua kolom tanggal tampil "—" saat kosong)
    --------------------------------------------------------------------------- */
 const SPTB_CABANG = ["KC Jakarta Pusat","KC Jakarta Selatan","KC Bandung","KC Surabaya","KC Medan",
   "KC Makassar","KC Yogyakarta","KC Denpasar","KC Semarang","KC Palembang","KC Balikpapan","KC Manado","KC Padang","KC Pekanbaru"];
@@ -1286,21 +1496,21 @@ const SPTB_MITRA = ["BRI","BNI","Mandiri","BTN"];
 const SPTB_JENIS_PENSIUN = ["Pensiun Sendiri","Pensiun Waris","Tunjangan Orang Tua","Tunjangan Yatim Piatu"];
 
 const DATA_SPTB = [
-  { cabang:"KC Jakarta Pusat",   nopens:"0501234567", nrpNip:"NRP-19830011", nama:"Budi Santoso",       tglLahir:"1958-03-12", mitra:"BRI",     jenisPensiun:"Pensiun Sendiri",       unor:"KODAM JAYA",         sptbTerakhir:"2024-01-15", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Jakarta Pusat",   nopens:"0501234568", nrpNip:"NRP-19840022", nama:"Siti Rahayu",        tglLahir:"1960-07-05", mitra:"BNI",     jenisPensiun:"Pensiun Waris",         unor:"POLDA METRO",        sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB" },
-  { cabang:"KC Bandung",         nopens:"0501234569", nrpNip:"NIP-19620811", nama:"Ahmad Hidayat",      tglLahir:"1962-08-18", mitra:"Mandiri", jenisPensiun:"Pensiun Sendiri",       unor:"KODIKLAT AD",        sptbTerakhir:"2023-12-20", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Surabaya",        nopens:"0501234570", nrpNip:"NRP-19810033", nama:"Suprianto",          tglLahir:"1957-11-22", mitra:"BRI",     jenisPensiun:"Pensiun Sendiri",       unor:"LANTAMAL V",         sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB" },
-  { cabang:"KC Medan",           nopens:"0501234571", nrpNip:"NRP-19800044", nama:"Hotman Sihombing",   tglLahir:"1959-10-03", mitra:"BTN",     jenisPensiun:"Tunjangan Orang Tua",   unor:"KODAM I/BB",         sptbTerakhir:"2024-02-10", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Makassar",        nopens:"0501234572", nrpNip:"NRP-19650422", nama:"Andi Mappanyukki",   tglLahir:"1965-04-14", mitra:"BRI",     jenisPensiun:"Pensiun Waris",         unor:"POLDA SULSEL",       sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB" },
-  { cabang:"KC Yogyakarta",      nopens:"0501234573", nrpNip:"NRP-19820055", nama:"Sri Wahyuni",        tglLahir:"1961-12-29", mitra:"BNI",     jenisPensiun:"Tunjangan Yatim Piatu", unor:"LANUD ADISUTJIPTO",  sptbTerakhir:"2024-03-05", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Jakarta Selatan", nopens:"0501234574", nrpNip:"NRP-19781234", nama:"Wahyu Setiawan",     tglLahir:"1963-05-09", mitra:"Mandiri", jenisPensiun:"Pensiun Sendiri",       unor:"MABES TNI",          sptbTerakhir:"2024-04-11", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Denpasar",        nopens:"0501234575", nrpNip:"NRP-19701122", nama:"Made Wirawan",       tglLahir:"1966-02-17", mitra:"BTN",     jenisPensiun:"Pensiun Sendiri",       unor:"POLDA BALI",         sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB" },
-  { cabang:"KC Semarang",        nopens:"0501234576", nrpNip:"NIP-19590733", nama:"Endang Kartini",     tglLahir:"1964-09-25", mitra:"BRI",     jenisPensiun:"Pensiun Waris",         unor:"KODIM 0733",         sptbTerakhir:"2024-01-30", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Palembang",       nopens:"0501234577", nrpNip:"NRP-19881245", nama:"Rudi Alamsyah",      tglLahir:"1968-06-01", mitra:"BNI",     jenisPensiun:"Pensiun Sendiri",       unor:"POLDA SUMSEL",       sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB" },
-  { cabang:"KC Balikpapan",      nopens:"0501234578", nrpNip:"NRP-19770812", nama:"Muhammad Yusuf",     tglLahir:"1969-03-19", mitra:"Mandiri", jenisPensiun:"Tunjangan Orang Tua",   unor:"LANUD BALIKPAPAN",   sptbTerakhir:"2024-05-08", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Manado",          nopens:"0501234579", nrpNip:"NRP-19631204", nama:"Christine Rumondor", tglLahir:"1970-08-14", mitra:"BTN",     jenisPensiun:"Pensiun Waris",         unor:"KODAM XIII/MDK",     sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB" },
-  { cabang:"KC Padang",          nopens:"0501234580", nrpNip:"NIP-19551109", nama:"Zainal Abidin",      tglLahir:"1955-11-09", mitra:"BRI",     jenisPensiun:"Pensiun Sendiri",       unor:"KODIM 0312",         sptbTerakhir:"2023-11-19", payTerakhir:"2026-06-01", status:"Sudah SPTB" },
-  { cabang:"KC Pekanbaru",       nopens:"0501234581", nrpNip:"NRP-19850317", nama:"Rina Marlina",       tglLahir:"1972-01-28", mitra:"BNI",     jenisPensiun:"Tunjangan Yatim Piatu", unor:"POLDA RIAU",         sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB" }
+  { cabang:"KC Jakarta Pusat",   nopens:"0501234567", nrpNip:"NRP-19830011", nama:"Budi Santoso",       tglLahir:"1958-03-12", mitra:"BRI",     jenisPensiun:"Pensiun Sendiri",       unor:"KODAM JAYA",         sptbTerakhir:"2024-01-15", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2024-01-10", statusPengajuan:"Pengajuan",       tglApproval:"2024-01-15", statusApproval:"Disetujui" },
+  { cabang:"KC Jakarta Pusat",   nopens:"0501234568", nrpNip:"NRP-19840022", nama:"Siti Rahayu",        tglLahir:"1960-07-05", mitra:"BNI",     jenisPensiun:"Pensiun Waris",         unor:"POLDA METRO",        sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB", tglPengajuan:"2026-05-12", statusPengajuan:"Pengajuan",       tglApproval:null,         statusApproval:"Tertunda"  },
+  { cabang:"KC Bandung",         nopens:"0501234569", nrpNip:"NIP-19620811", nama:"Ahmad Hidayat",      tglLahir:"1962-08-18", mitra:"Mandiri", jenisPensiun:"Pensiun Sendiri",       unor:"KODIKLAT AD",        sptbTerakhir:"2023-12-20", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2023-12-14", statusPengajuan:"Pengajuan",       tglApproval:"2023-12-20", statusApproval:"Disetujui" },
+  { cabang:"KC Surabaya",        nopens:"0501234570", nrpNip:"NRP-19810033", nama:"Suprianto",          tglLahir:"1957-11-22", mitra:"BRI",     jenisPensiun:"Pensiun Sendiri",       unor:"LANTAMAL V",         sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB", tglPengajuan:null,         statusPengajuan:"Belum Pengajuan", tglApproval:null,         statusApproval:null        },
+  { cabang:"KC Medan",           nopens:"0501234571", nrpNip:"NRP-19800044", nama:"Hotman Sihombing",   tglLahir:"1959-10-03", mitra:"BTN",     jenisPensiun:"Tunjangan Orang Tua",   unor:"KODAM I/BB",         sptbTerakhir:"2024-02-10", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2024-02-05", statusPengajuan:"Pengajuan",       tglApproval:"2024-02-10", statusApproval:"Disetujui" },
+  { cabang:"KC Makassar",        nopens:"0501234572", nrpNip:"NRP-19650422", nama:"Andi Mappanyukki",   tglLahir:"1965-04-14", mitra:"BRI",     jenisPensiun:"Pensiun Waris",         unor:"POLDA SULSEL",       sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB", tglPengajuan:"2026-04-22", statusPengajuan:"Pengajuan",       tglApproval:"2026-04-28", statusApproval:"Ditolak"   },
+  { cabang:"KC Yogyakarta",      nopens:"0501234573", nrpNip:"NRP-19820055", nama:"Sri Wahyuni",        tglLahir:"1961-12-29", mitra:"BNI",     jenisPensiun:"Tunjangan Yatim Piatu", unor:"LANUD ADISUTJIPTO",  sptbTerakhir:"2024-03-05", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2024-02-28", statusPengajuan:"Pengajuan",       tglApproval:"2024-03-05", statusApproval:"Disetujui" },
+  { cabang:"KC Jakarta Selatan", nopens:"0501234574", nrpNip:"NRP-19781234", nama:"Wahyu Setiawan",     tglLahir:"1963-05-09", mitra:"Mandiri", jenisPensiun:"Pensiun Sendiri",       unor:"MABES TNI",          sptbTerakhir:"2024-04-11", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2024-04-03", statusPengajuan:"Pengajuan",       tglApproval:"2024-04-11", statusApproval:"Disetujui" },
+  { cabang:"KC Denpasar",        nopens:"0501234575", nrpNip:"NRP-19701122", nama:"Made Wirawan",       tglLahir:"1966-02-17", mitra:"BTN",     jenisPensiun:"Pensiun Sendiri",       unor:"POLDA BALI",         sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB", tglPengajuan:null,         statusPengajuan:"Belum Pengajuan", tglApproval:null,         statusApproval:null        },
+  { cabang:"KC Semarang",        nopens:"0501234576", nrpNip:"NIP-19590733", nama:"Endang Kartini",     tglLahir:"1964-09-25", mitra:"BRI",     jenisPensiun:"Pensiun Waris",         unor:"KODIM 0733",         sptbTerakhir:"2024-01-30", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2024-01-24", statusPengajuan:"Pengajuan",       tglApproval:"2024-01-30", statusApproval:"Disetujui" },
+  { cabang:"KC Palembang",       nopens:"0501234577", nrpNip:"NRP-19881245", nama:"Rudi Alamsyah",      tglLahir:"1968-06-01", mitra:"BNI",     jenisPensiun:"Pensiun Sendiri",       unor:"POLDA SUMSEL",       sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB", tglPengajuan:"2026-06-03", statusPengajuan:"Pengajuan",       tglApproval:null,         statusApproval:"Tertunda"  },
+  { cabang:"KC Balikpapan",      nopens:"0501234578", nrpNip:"NRP-19770812", nama:"Muhammad Yusuf",     tglLahir:"1969-03-19", mitra:"Mandiri", jenisPensiun:"Tunjangan Orang Tua",   unor:"LANUD BALIKPAPAN",   sptbTerakhir:"2024-05-08", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2024-05-02", statusPengajuan:"Pengajuan",       tglApproval:"2024-05-08", statusApproval:"Disetujui" },
+  { cabang:"KC Manado",          nopens:"0501234579", nrpNip:"NRP-19631204", nama:"Christine Rumondor", tglLahir:"1970-08-14", mitra:"BTN",     jenisPensiun:"Pensiun Waris",         unor:"KODAM XIII/MDK",     sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB", tglPengajuan:"2026-03-18", statusPengajuan:"Pengajuan",       tglApproval:"2026-03-25", statusApproval:"Ditolak"   },
+  { cabang:"KC Padang",          nopens:"0501234580", nrpNip:"NIP-19551109", nama:"Zainal Abidin",      tglLahir:"1955-11-09", mitra:"BRI",     jenisPensiun:"Pensiun Sendiri",       unor:"KODIM 0312",         sptbTerakhir:"2023-11-19", payTerakhir:"2026-06-01", status:"Sudah SPTB", tglPengajuan:"2023-11-12", statusPengajuan:"Pengajuan",       tglApproval:"2023-11-19", statusApproval:"Disetujui" },
+  { cabang:"KC Pekanbaru",       nopens:"0501234581", nrpNip:"NRP-19850317", nama:"Rina Marlina",       tglLahir:"1972-01-28", mitra:"BNI",     jenisPensiun:"Tunjangan Yatim Piatu", unor:"POLDA RIAU",         sptbTerakhir:null,         payTerakhir:"2026-06-01", status:"Belum SPTB", tglPengajuan:null,         statusPengajuan:"Belum Pengajuan", tglApproval:null,         statusApproval:null        }
 ];
 
 /* ---------------------------------------------------------------------------
@@ -2128,4 +2338,1450 @@ const NONDAPEM_DATA = [
   { nopens:"2003120884", nama:"DEWI ANGGRAINI", jenis:"12", nik:"3193****0295", mak:"51411",
     bank:"BRI KK ASABRI Jakarta", cab:"2000", norek:"1448****0502", pokok:21450000, istri:0, anak:0, beras:0,
     cacat:0, irja:0, pph:0, potLain:0, bulat:0 }
+];
+
+/* ---------------------------------------------------------------------------
+   20. PENGELOLAAN ALIH STATUS PESERTA — Daftar Pengajuan Alih Status
+   Satu baris tabel = satu PENGAJUAN, bukan satu peserta. Pengajuan mekanisme
+   Perorangan selalu berisi tepat satu peserta; mekanisme Kolektif berisi
+   sebanyak baris yang diunggah lewat template Excel. Kolom "Jumlah Berkas"
+   pada tabel diturunkan dari panjang `peserta`, jadi tidak pernah bisa beda.
+
+   Struktur satu pengajuan:
+     { tglPengajuan, mekanisme, tipePeserta, tipe, peserta:[ …data peserta… ] }
+     mekanisme : "Perorangan" | "Kolektif"
+     tipe      : "Masuk" | "Batal" | "Kembali"
+
+   Data peserta memakai 19 kolom yang sama dengan Template Alih Status
+   Kolektif, ditambah `buktiBayar` yang hanya terisi lewat form Perorangan.
+   `nrpLama` boleh null kalau peserta belum pernah punya NRP/NIP sebelumnya —
+   di tabel nilainya ditampilkan sebagai "—". Semua tanggal disimpan format ISO
+   (yyyy-mm-dd) dan diformat ke dd-mm-yyyy oleh asFmtTgl() di app.js.
+
+   Tiga pengajuan pertama adalah contoh nyata dari FSD; sisanya dibuat massal
+   lewat buatPengajuanAlihStatus() supaya paginasi & pencarian bisa didemokan
+   dengan data yang banyak — ubah angka jumlahnya kalau mau daftar lebih pendek.
+   --------------------------------------------------------------------------- */
+const ALIH_STATUS_GOL = [
+  "GOL.I/A","GOL.I/B","GOL.I/C","GOL.I/D",
+  "GOL.II/A","GOL.II/B","GOL.II/C","GOL.II/D",
+  "GOL.III/A","GOL.III/B","GOL.III/C","GOL.III/D",
+  "GOL.IV/A","GOL.IV/B","GOL.IV/C","GOL.IV/D","GOL.IV/E"
+];
+
+/* Pilihan-pilihan dropdown pada filter dan Form Alih Status Peserta. Daftar
+   yang sama dipakai generator di bawah supaya data contoh selalu cocok. */
+const ALIH_STATUS_MEKANISME    = ["Perorangan", "Kolektif"];
+const ALIH_STATUS_TIPE_PESERTA = ["Peserta Baru", "Peserta Lama"];
+const ALIH_STATUS_TIPE         = ["Masuk", "Batal", "Kembali"];
+const ALIH_STATUS_ANGKATAN     = ["TNI AD", "TNI AL", "TNI AU", "Polri", "PNS Kemhan"];
+const ALIH_STATUS_UNOR         = ["Mabes TNI", "Mabes TNI AD", "Mabes TNI AL", "Mabes TNI AU",
+                                  "Mabes Polri", "Kementerian Pertahanan"];
+const ALIH_STATUS_PERSONIL     = ["Prajurit", "PNS", "Purnawirawan", "Pensiunan"];
+const ALIH_STATUS_MENIKAH      = ["Belum Menikah", "Menikah", "Duda", "Janda"];
+const ALIH_STATUS_SATKER       = ["KOREM 084/BJ", "KODIM 0827", "KODIM 0830", "LANTAMAL V",
+                                  "LANUD ISWAHJUDI", "POLDA JATIM", "SETJEN KEMHAN", "RSPAD GATOT SOEBROTO"];
+
+/* Kolom detail peserta — dipakai bersama oleh tabel detail pengajuan Kolektif
+   dan ringkasan detail pengajuan Perorangan di app.js. */
+const ALIH_STATUS_KOLOM_PESERTA = [
+  { key:"nrpBaru",         label:"NRP/NIP Baru" },
+  { key:"nrpLama",         label:"NRP/NIP Lama" },
+  { key:"nama",            label:"Nama Peserta" },
+  { key:"tglLahir",        label:"Tanggal Lahir",       tipe:"tanggal" },
+  { key:"angkatan",        label:"Angkatan" },
+  { key:"unor",            label:"Unor" },
+  { key:"statusPersonil",  label:"Status Personil" },
+  { key:"gol",             label:"Pangkat/Gol" },
+  { key:"tmtPangkat",      label:"TMT Pengangkatan",    tipe:"tanggal" },
+  { key:"gajiPokok",       label:"Gaji Pokok",          tipe:"rupiah" },
+  { key:"statusMenikah",   label:"Status Menikah" },
+  { key:"satkerLama",      label:"Satker Lama" },
+  { key:"satkerBaru",      label:"Satker Baru" },
+  { key:"tglPindah",       label:"Tanggal Pindah",      tipe:"tanggal" },
+  { key:"noSkep",          label:"No Skep" },
+  { key:"tglSkep",         label:"Tanggal Skep",        tipe:"tanggal" },
+  { key:"jumlahDiizinkan", label:"Jumlah Yang Diizinkan" },
+  { key:"tglBayar",        label:"Tanggal Pembayaran",  tipe:"tanggal" },
+  { key:"noDpb",           label:"Nomor DPB" }
+];
+
+const ALIH_STATUS_NAMA_DEPAN = [
+  "SUPRIYADI","ENDANG","HARTONO","SRI WAHYUNI","AGUS SALIM","NURHAYATI","JOKO SUSILO",
+  "RETNO PALUPI","DIDIK PURNOMO","LILIS SURYANI","BAMBANG IRAWAN","TITIK HANDAYANI",
+  "SUGENG RIYADI","MARYATI","HERI SETIAWAN","DWI ASTUTI","SLAMET RIYANTO","SITI AMINAH",
+  "PURWANTO","YULI KRISTANTI","IMAM SYAFI'I","ERNAWATI","MUJIONO","RATNA JUWITA",
+  "DARMAWAN","SUPARMI","WAHYU HIDAYAT","INDRAWATI","SUTRISNO","KARTINI"
+];
+
+const asPutar = (arr, n) => arr[n % arr.length];
+const asTgl   = (thn, m, d) => `${thn}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+
+function buatPesertaAlihStatus(n) {
+  const thnLahir = 1962 + (n % 22);
+  const thnCpns  = thnLahir + 22 + (n % 5);
+  return {
+    nrpBaru:  `${thnLahir}${String((n % 12) + 1).padStart(2, "0")}${String((n % 28) + 1).padStart(2, "0")}${thnCpns}${String((n % 12) + 1).padStart(2, "0")}${n % 2 === 0 ? "1" : "2"}${String((n % 900) + 1).padStart(3, "0")}`,
+    nrpLama:  n % 3 === 0 ? `${8600000 + n * 7}` : null,
+    nama:     asPutar(ALIH_STATUS_NAMA_DEPAN, n),
+    tglLahir: asTgl(thnLahir, (n % 12) + 1, (n % 28) + 1),
+    angkatan: asPutar(ALIH_STATUS_ANGKATAN, n),
+    unor:     asPutar(ALIH_STATUS_UNOR, n),
+    statusPersonil: asPutar(ALIH_STATUS_PERSONIL, n),
+    gol:      asPutar(ALIH_STATUS_GOL, n),
+    tmtPangkat: asTgl(thnCpns + (n % 12), (n % 12) + 1, 1),
+    gajiPokok:  3200000 + (n % 40) * 125000,
+    statusMenikah: asPutar(ALIH_STATUS_MENIKAH, n),
+    satkerLama: asPutar(ALIH_STATUS_SATKER, n),
+    satkerBaru: asPutar(ALIH_STATUS_SATKER, n + 3),
+    tglPindah:  asTgl(1999 + (n % 22), (n % 11) + 1, (n % 26) + 2),
+    noSkep:     `SKEP/${1200 + n}/${asPutar(["III","VI","IX","XII"], n)}/${1999 + (n % 22)}`,
+    tglSkep:    asTgl(1999 + (n % 22), (n % 11) + 1, (n % 25) + 1),
+    jumlahDiizinkan: 1 + (n % 4),
+    tglBayar:   asTgl(2000 + (n % 22), (n % 12) + 1, (n % 26) + 2),
+    noDpb:      `DPB-${String(4100 + n).padStart(6, "0")}`,
+    buktiBayar: null
+  };
+}
+
+/* Tanggal pengajuan mundur satu per satu dari tanggal terbaru, jadi daftar
+   selalu tampil urut dari pengajuan paling baru. */
+function buatPengajuanAlihStatus(jumlah, mulai) {
+  const terbaru = new Date(2026, 7, 24);   /* 24 Agustus 2026 */
+  const baris = [];
+  for (let i = 0; i < jumlah; i++) {
+    const n = mulai + i;
+    const kolektif = n % 3 === 0;
+    const tgl = new Date(terbaru);
+    tgl.setDate(terbaru.getDate() - i * 2);
+    baris.push({
+      tglPengajuan: asTgl(tgl.getFullYear(), tgl.getMonth() + 1, tgl.getDate()),
+      mekanisme:    kolektif ? "Kolektif" : "Perorangan",
+      tipePeserta:  asPutar(ALIH_STATUS_TIPE_PESERTA, n),
+      tipe:         asPutar(ALIH_STATUS_TIPE, n),
+      peserta: kolektif
+        ? Array.from({ length: 3 + (n % 9) }, (_, k) => buatPesertaAlihStatus(n * 13 + k))
+        : [buatPesertaAlihStatus(n)]
+    });
+  }
+  return baris;
+}
+
+const DATA_ALIH_STATUS_PENGAJUAN = [
+  { tglPengajuan:"2026-08-27", mekanisme:"Perorangan", tipePeserta:"Peserta Baru", tipe:"Masuk",
+    peserta:[
+      { nrpBaru:"196805091987031001", nrpLama:null, nama:"MULYONO", tglLahir:"1968-05-09",
+        angkatan:"PNS Kemhan", unor:"Kementerian Pertahanan", statusPersonil:"PNS", gol:"GOL.III/C",
+        tmtPangkat:"2011-04-01", gajiPokok:4350000, statusMenikah:"Menikah",
+        satkerLama:"KODIM 0827", satkerBaru:"KOREM 084/BJ", tglPindah:"2000-05-31",
+        noSkep:"SKEP/1187/V/2000", tglSkep:"2000-05-02", jumlahDiizinkan:1,
+        tglBayar:"2013-02-11", noDpb:"DPB-004133", buktiBayar:"bukti-bayar-004133.pdf" }
+    ] },
+
+  { tglPengajuan:"2026-08-26", mekanisme:"Kolektif", tipePeserta:"Peserta Baru", tipe:"Masuk",
+    peserta:[
+      { nrpBaru:"196804081991032001", nrpLama:null, nama:"ASIH SURANI", tglLahir:"1968-04-08",
+        angkatan:"PNS Kemhan", unor:"Kementerian Pertahanan", statusPersonil:"PNS", gol:"GOL.IV/A",
+        tmtPangkat:"2002-04-01", gajiPokok:4875000, statusMenikah:"Menikah",
+        satkerLama:"LANTAMAL V", satkerBaru:"KOREM 084/BJ", tglPindah:"2000-05-31",
+        noSkep:"SKEP/1188/V/2000", tglSkep:"2000-05-02", jumlahDiizinkan:2,
+        tglBayar:"2002-10-14", noDpb:"DPB-004132", buktiBayar:null },
+      { nrpBaru:"196804181994031004", nrpLama:null, nama:"SAMIN", tglLahir:"1968-04-18",
+        angkatan:"TNI AD", unor:"Mabes TNI AD", statusPersonil:"Prajurit", gol:"GOL.III/C",
+        tmtPangkat:"2018-10-01", gajiPokok:4120000, statusMenikah:"Menikah",
+        satkerLama:"KODIM 0830", satkerBaru:"KOREM 084/BJ", tglPindah:"2000-05-31",
+        noSkep:"SKEP/1189/V/2000", tglSkep:"2000-05-02", jumlahDiizinkan:1,
+        tglBayar:"2022-10-05", noDpb:"DPB-004131", buktiBayar:null },
+      { nrpBaru:"196630519920132003", nrpLama:null, nama:"DRG. RIA BRILLIANTARI", tglLahir:"1966-03-05",
+        angkatan:"PNS Kemhan", unor:"Kementerian Pertahanan", statusPersonil:"PNS", gol:"GOL.IV/D",
+        tmtPangkat:"2007-04-01", gajiPokok:5460000, statusMenikah:"Menikah",
+        satkerLama:"RSPAD GATOT SOEBROTO", satkerBaru:"KOREM 084/BJ", tglPindah:"2006-06-30",
+        noSkep:"SKEP/1190/VI/2006", tglSkep:"2006-06-05", jumlahDiizinkan:3,
+        tglBayar:"2007-12-03", noDpb:"DPB-004130", buktiBayar:null }
+    ] },
+
+  { tglPengajuan:"2026-08-25", mekanisme:"Perorangan", tipePeserta:"Peserta Lama", tipe:"Kembali",
+    peserta:[
+      { nrpBaru:"197001121990031002", nrpLama:"8801120", nama:"BAMBANG SUTRISNO", tglLahir:"1970-01-12",
+        angkatan:"Polri", unor:"Mabes Polri", statusPersonil:"Prajurit", gol:"GOL.III/B",
+        tmtPangkat:"2016-10-01", gajiPokok:3980000, statusMenikah:"Duda",
+        satkerLama:"POLDA JATIM", satkerBaru:"KOREM 084/BJ", tglPindah:"2005-04-01",
+        noSkep:"SKEP/1191/III/2005", tglSkep:"2005-03-14", jumlahDiizinkan:2,
+        tglBayar:"2018-04-02", noDpb:"DPB-004129", buktiBayar:"bukti-bayar-004129.pdf" }
+    ] },
+
+  ...buatPengajuanAlihStatus(61, 1)
+];
+
+/* ---------------------------------------------------------------------------
+   21. ALIH STATUS PESERTA — UNGGAH BERKAS KOLEKTIF
+   Isi berkas contoh yang "terbaca" ketika mekanisme Kolektif dipilih, dipakai
+   untuk mensimulasikan langkah Validasi dan Submit. Bentuknya sengaja sama
+   dengan DATA_PEREMAJAAN supaya tabel hasil validasi bisa memakai pola render
+   yang sama.
+   status: "valid" | "tanpa-perubahan" | "ditolak" (yang ditolak wajib `alasan`)
+   --------------------------------------------------------------------------- */
+const DATA_ALIH_STATUS_KOLEKTIF = {
+  templateNama: "Template Alih Status Kolektif",
+  templateFile: "Template Alih Status Kolektif.xlsx",
+  namaBerkas:   "alih_status_kolektif_koreem084.xlsx",
+  kolomError:   ["NRP/NIP Baru", "Nama Peserta", "Satker Baru", "Tanggal Pindah"],
+  rows: [
+    { nilai:["196805091987031001", "MULYONO",              "KOREM 084/BJ", "2000-05-31"], status:"valid" },
+    { nilai:["196804081991032001", "ASIH SURANI",          "KOREM 084/BJ", "2000-05-31"], status:"valid" },
+    { nilai:["197001121990031002", "BAMBANG SUTRISNO",     "KOREM 084/BJ", "2005-04-01"], status:"valid" },
+    { nilai:["196804181994031004", "SAMIN",                "KODIM 0827",   "2000-05-31"], status:"valid" },
+    { nilai:["196630519920132003", "DRG. RIA BRILLIANTARI","KOREM 084/BJ", "2006-06-30"], status:"tanpa-perubahan" },
+    { nilai:["198711052010121004", "HERI SETIAWAN",        "LANUD ISWAHJUDI", "2026-13-02"],
+      status:"ditolak", alasan:["Tanggal Pindah bukan tanggal yang sah"] },
+    { nilai:["XD222424",           "NAMA TIDAK DIKENAL",   "-",            "2024-02-01"],
+      status:"ditolak", alasan:["NRP/NIP Baru tidak ditemukan di data peserta", "Satker Baru wajib diisi"] }
+  ]
+};
+
+/* ---------------------------------------------------------------------------
+   22. PENGELOLAAN DATA PESERTA — daftar induk peserta untuk pencarian
+   Dipakai layar "Pengelolaan Data Peserta". Semua kolom yang bisa dipilih di
+   dropdown "Tipe Pencarian" tersimpan di setiap baris, walau tidak semuanya
+   ditampilkan di tabel hasil (sebagian hanya muncul di modal Detail).
+   Tanggal disimpan sebagai teks "dd-mm-yyyy" supaya bisa langsung ditampilkan;
+   pembanding bertipe TANGGAL di app.js yang mengubahnya jadi urutan sortir.
+   Kolom kosong ditulis "-" supaya tabel tidak pernah menampilkan sel hampa.
+   --------------------------------------------------------------------------- */
+const DATA_PESERTA_KELOLA = [
+  { migrasiId:"MG-0000114069", nrp:"196105061981011001", nopens:"BZ131770111046", ktpa:"BZ111369", nama:"SURIPTO",
+    tempatLahir:"MAGELANG", tglLahir:"06-05-1961", tmt:"01-01-1981",
+    noSkep:"SKEP/613/II/V/1981", tglSkep:"01-01-1981", noSkepPensiun:"KEP/331/V/2019", tglSkepPensiun:"01-06-2019",
+    pangkatAwal:"GOL.I/B", pangkatAkhir:"GOL.II/D", kesatuan:"ZIDAM IV/DIP", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000027118", nrp:"271807", nopens:"-", ktpa:"BC147967", nama:"SOETARTO",
+    tempatLahir:"SEMARANG", tglLahir:"16-10-1927", tmt:"01-01-1969",
+    noSkep:"-", tglSkep:"01-01-1969", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"LETDA", pangkatAkhir:"KAPTEN", kesatuan:"KOREM 074/WT", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"-", statusValid:"Tidak Valid" },
+  { migrasiId:"MG-0000105460", nrp:"196807191990031001", nopens:"AY105460111121", ktpa:"AY105460", nama:"JUWANDI",
+    tempatLahir:"KEBUMEN", tglLahir:"19-07-1968", tmt:"01-03-1990",
+    noSkep:"-", tglSkep:"01-03-1990", noSkepPensiun:"KEP/1180/VII/2026", tglSkepPensiun:"01-08-2026",
+    pangkatAwal:"GOL.II/A", pangkatAkhir:"GOL.III/B", kesatuan:"DITJEN STRAHAN KEMHAN", angkatan:"KEMHAN",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"Asabri - Taspen (Keluar)", statusValid:"Valid" },
+  { migrasiId:"MG-0000101086", nrp:"196807291992031002", nopens:"EY101086111002", ktpa:"EY101086", nama:"WARDI",
+    tempatLahir:"PURWOKERTO", tglLahir:"29-07-1968", tmt:"01-03-1992",
+    noSkep:"-", tglSkep:"01-03-1992", noSkepPensiun:"KEP/0904/VI/2026", tglSkepPensiun:"01-08-2026",
+    pangkatAwal:"GOL.II/A", pangkatAkhir:"GOL.III/A", kesatuan:"RUMKIT BHAYANGKARA PUSAT PUSDOKKES POLRI", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000010741", nrp:"10741", nopens:"-", ktpa:"BB146468", nama:"SOERJO SOELARTO",
+    tempatLahir:"SURAKARTA", tglLahir:"16-01-1924", tmt:"01-01-1967",
+    noSkep:"-", tglSkep:"01-01-1967", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"LETDA", pangkatAkhir:"MAYOR", kesatuan:"SKODAM VII/DIP", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"MENINGGAL AKTIF", alihStatus:"-", statusValid:"Tidak Valid" },
+  { migrasiId:"MG-0000001073", nrp:"198411012025212012", nopens:"-", ktpa:"EP001073", nama:"ASTUTI",
+    tempatLahir:"PALANGKARAYA", tglLahir:"01-11-1984", tmt:"01-10-2025",
+    noSkep:"KEP/1453/IX/2025", tglSkep:"25-09-2025", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.V", pangkatAkhir:"GOL.V", kesatuan:"POLRES PALANGKARAYA", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"Taspen - Asabri (Masuk)", statusValid:"Valid" },
+  { migrasiId:"MG-0000000737", nrp:"197801042025211005", nopens:"-", ktpa:"EP000737", nama:"HERMAN",
+    tempatLahir:"KUALA KAPUAS", tglLahir:"04-01-1978", tmt:"01-10-2025",
+    noSkep:"KEP/1453/IX/2025", tglSkep:"25-09-2025", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.V", pangkatAkhir:"GOL.V", kesatuan:"POLRES KAPUAS", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"Taspen - Asabri (Masuk)", statusValid:"Valid" },
+  { migrasiId:"MG-0000000614", nrp:"198510052025212013", nopens:"-", ktpa:"EP000614", nama:"HIPDAWATI",
+    tempatLahir:"KUALA KAPUAS", tglLahir:"05-10-1985", tmt:"01-10-2025",
+    noSkep:"KEP/1453/IX/2025", tglSkep:"25-09-2025", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.V", pangkatAkhir:"GOL.V", kesatuan:"POLRES KAPUAS", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"Taspen - Asabri (Masuk)", statusValid:"Valid" },
+  { migrasiId:"MG-0000001300", nrp:"198409302025211006", nopens:"-", ktpa:"EP001300", nama:"SUJARTO",
+    tempatLahir:"BANJARMASIN", tglLahir:"30-09-1984", tmt:"01-10-2025",
+    noSkep:"KEP/1453/IX/2025", tglSkep:"25-09-2025", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.V", pangkatAkhir:"GOL.V", kesatuan:"POLRES KAPUAS", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"Taspen - Asabri (Masuk)", statusValid:"Valid" },
+  { migrasiId:"MG-0000001247", nrp:"198010252025211003", nopens:"-", ktpa:"EP001247", nama:"YONO",
+    tempatLahir:"KUALA KAPUAS", tglLahir:"25-10-1980", tmt:"01-10-2025",
+    noSkep:"KEP/1453/IX/2025", tglSkep:"25-09-2025", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.V", pangkatAkhir:"GOL.V", kesatuan:"POLRES KAPUAS", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"Taspen - Asabri (Masuk)", statusValid:"Valid" },
+
+  { migrasiId:"MG-0000131772", nrp:"196805091987031001", nopens:"BZ131772111048", ktpa:"BZ111371", nama:"MULYONO",
+    tempatLahir:"MADIUN", tglLahir:"09-05-1968", tmt:"01-03-1987",
+    noSkep:"SKEP/1191/III/2005", tglSkep:"14-03-2005", noSkepPensiun:"KEP/0771/IV/2026", tglSkepPensiun:"01-06-2026",
+    pangkatAwal:"PRADA", pangkatAkhir:"SERKA", kesatuan:"KOREM 084/BJ", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000131804", nrp:"196804081991032001", nopens:"BZ131804111070", ktpa:"BZ111403", nama:"ASIH SURANI",
+    tempatLahir:"SURABAYA", tglLahir:"08-04-1968", tmt:"01-03-1991",
+    noSkep:"SKEP/0844/II/2004", tglSkep:"11-02-2004", noSkepPensiun:"KEP/0712/IV/2026", tglSkepPensiun:"01-05-2026",
+    pangkatAwal:"GOL.II/A", pangkatAkhir:"GOL.III/C", kesatuan:"KOREM 084/BJ", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"Asabri - Taspen (Keluar)", statusValid:"Valid" },
+  { migrasiId:"MG-0000142983", nrp:"197001121990031002", nopens:"CY142983111206", ktpa:"CY142983", nama:"BAMBANG SUTRISNO",
+    tempatLahir:"MALANG", tglLahir:"12-01-1970", tmt:"01-03-1990",
+    noSkep:"SKEP/0918/III/2006", tglSkep:"22-03-2006", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"PRADA", pangkatAkhir:"PELTU", kesatuan:"KODIM 0827 SUMENEP", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000156234", nrp:"156234", nopens:"-", ktpa:"AU700445", nama:"RUDI HARTONO",
+    tempatLahir:"JAKARTA", tglLahir:"17-08-1987", tmt:"01-04-2009",
+    noSkep:"KEP/0442/III/2009", tglSkep:"18-03-2009", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"PRADA", pangkatAkhir:"SERMA", kesatuan:"LANUD HALIM PERDANAKUSUMA", angkatan:"TNI-AU",
+    vip:"YA", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000163890", nrp:"163890", nopens:"CB163890111318", ktpa:"CB163890", nama:"MARIA CHRISTINA",
+    tempatLahir:"BANYUWANGI", tglLahir:"05-12-1963", tmt:"01-02-1988",
+    noSkep:"SKEP/0233/I/2001", tglSkep:"29-01-2001", noSkepPensiun:"KEP/0155/I/2019", tglSkepPensiun:"01-03-2019",
+    pangkatAwal:"GOL.II/A", pangkatAkhir:"GOL.III/A", kesatuan:"LANAL BANYUWANGI", angkatan:"TNI-AL",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000178432", nrp:"178432", nopens:"-", ktpa:"TA910123", nama:"SLAMET RIYADI",
+    tempatLahir:"CIMAHI", tglLahir:"10-11-1986", tmt:"01-05-2014",
+    noSkep:"KEP/0781/IV/2014", tglSkep:"20-04-2014", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"PRADA", pangkatAkhir:"SERTU", kesatuan:"KODIM 0609 CIMAHI", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"DESERSI", alihStatus:"-", statusValid:"Tidak Valid" },
+  { migrasiId:"MG-0000185673", nrp:"185673", nopens:"-", ktpa:"LA930345", nama:"HENDRA GUNAWAN",
+    tempatLahir:"BATAM", tglLahir:"02-07-1988", tmt:"01-06-2017",
+    noSkep:"KEP/1102/V/2017", tglSkep:"26-05-2017", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"PRADA", pangkatAkhir:"KOPKA", kesatuan:"LANAL BATAM", angkatan:"TNI-AL",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000192784", nrp:"192784", nopens:"-", ktpa:"UA950567", nama:"YAYAN KUSUMA",
+    tempatLahir:"MADIUN", tglLahir:"28-03-1989", tmt:"01-07-2019",
+    noSkep:"KEP/1533/VI/2019", tglSkep:"14-06-2019", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"PRADA", pangkatAkhir:"SERDA", kesatuan:"LANUD ISWAHJUDI", angkatan:"TNI-AU",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000114621", nrp:"14621/P", nopens:"AC114621110982", ktpa:"CC306323", nama:"HERIYANTO, S.KM",
+    tempatLahir:"BOGOR", tglLahir:"25-05-1958", tmt:"01-01-1979",
+    noSkep:"SKEP/0107/I/1998", tglSkep:"08-01-1998", noSkepPensiun:"KEP/0421/II/2014", tglSkepPensiun:"01-06-2014",
+    pangkatAwal:"BRIPDA", pangkatAkhir:"AIPTU", kesatuan:"POLRES BOGOR", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000088056", nrp:"88056789", nopens:"CP088056111442", ktpa:"PA970789", nama:"FAJAR NUGROHO",
+    tempatLahir:"MALANG", tglLahir:"01-09-1966", tmt:"01-04-1996",
+    noSkep:"SKEP/0655/III/2003", tglSkep:"17-03-2003", noSkepPensiun:"KEP/0980/V/2022", tglSkepPensiun:"01-10-2022",
+    pangkatAwal:"BRIPDA", pangkatAkhir:"BRIPKA", kesatuan:"POLDA JAWA TIMUR", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"PENSIUN", alihStatus:"Asabri - Taspen (Keluar)", statusValid:"Valid" },
+  { migrasiId:"MG-0000092078", nrp:"92078901", nopens:"-", ktpa:"PC990901", nama:"WAHYU SAPUTRO",
+    tempatLahir:"YOGYAKARTA", tglLahir:"12-03-1992", tmt:"01-08-2022",
+    noSkep:"KEP/1877/VII/2022", tglSkep:"21-07-2022", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"BRIPDA", pangkatAkhir:"BRIPTU", kesatuan:"POLDA DI YOGYAKARTA", angkatan:"POLRI",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000165789", nrp:"165789", nopens:"-", ktpa:"TC911012", nama:"INDRA PERMANA",
+    tempatLahir:"SURAKARTA", tglLahir:"24-07-1994", tmt:"01-09-2023",
+    noSkep:"KEP/2041/VIII/2023", tglSkep:"30-08-2023", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"PRADA", pangkatAkhir:"PRATU", kesatuan:"KODIM 0735 SURAKARTA", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000199003", nrp:"199003152015031002", nopens:"-", ktpa:"AD500667", nama:"JOKO WIDIYANTO",
+    tempatLahir:"SUMEDANG", tglLahir:"15-03-1990", tmt:"01-03-2015",
+    noSkep:"KEP/0512/II/2015", tglSkep:"27-02-2015", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.III/A", pangkatAkhir:"GOL.III/B", kesatuan:"KODIM 0610 SUMEDANG", angkatan:"TNI-AD",
+    vip:"TIDAK", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" },
+  { migrasiId:"MG-0000198502", nrp:"198502102010121004", nopens:"-", ktpa:"AL600334", nama:"DEWI ANGGRAINI",
+    tempatLahir:"SURABAYA", tglLahir:"10-02-1985", tmt:"01-12-2010",
+    noSkep:"KEP/2233/XI/2010", tglSkep:"19-11-2010", noSkepPensiun:"-", tglSkepPensiun:"-",
+    pangkatAwal:"GOL.II/C", pangkatAkhir:"GOL.III/A", kesatuan:"LANAL SURABAYA", angkatan:"TNI-AL",
+    vip:"YA", statusPeserta:"AKTIF", alihStatus:"-", statusValid:"Valid" }
+];
+
+/* Isi dropdown "Tipe Pencarian". `key` = nama field di DATA_PESERTA_KELOLA. */
+const PESERTA_KELOLA_TIPE_CARI = [
+  { key:"nama",           label:"NAMA" },
+  { key:"migrasiId",      label:"MIGRASI ID" },
+  { key:"nrp",            label:"NRP" },
+  { key:"nopens",         label:"NOPENS" },
+  { key:"ktpa",           label:"KTPA" },
+  { key:"angkatan",       label:"ANGKATAN" },
+  { key:"tglSkep",        label:"TANGGAL SKEP PENGANGKATAN" },
+  { key:"noSkep",         label:"NOMOR SKEP PENGANGKATAN" },
+  { key:"tglSkepPensiun", label:"TANGGAL SKEP PENSIUN" },
+  { key:"noSkepPensiun",  label:"NOMOR SKEP PENSIUN" },
+  { key:"tempatLahir",    label:"TEMPAT LAHIR" },
+  { key:"tglLahir",       label:"TANGGAL LAHIR" },
+  { key:"pangkatAwal",    label:"PANGKAT AWAL" },
+  { key:"pangkatAkhir",   label:"PANGKAT AKHIR" },
+  { key:"kesatuan",       label:"KESATUAN" },
+  { key:"tmt",            label:"TMT PENGANGKATAN" },
+  { key:"vip",            label:"VIP" }
+];
+
+/* Isi dropdown "Tipe" — operator pembanding tiap baris kriteria.
+   `op` menentukan cara membandingkan, `tanggal:true` berarti kedua sisi
+   dibaca sebagai tanggal "dd-mm-yyyy" lebih dulu, bukan sebagai teks. */
+const PESERTA_KELOLA_OPERATOR = [
+  { op:"serupa", label:"SERUPA" },
+  { op:"eq",     label:"SAMA DENGAN" },
+  { op:"eq",     label:"SAMA DENGAN TANGGAL",             tanggal:true },
+  { op:"gt",     label:"LEBIH BESAR DARI" },
+  { op:"lt",     label:"LEBIH KECIL DARI" },
+  { op:"gte",    label:"LEBIH BESAR SAMA DENGAN" },
+  { op:"lte",    label:"LEBIH KECIL SAMA DENGAN" },
+  { op:"gt",     label:"LEBIH BESAR DARI TANGGAL",        tanggal:true },
+  { op:"lt",     label:"LEBIH KECIL DARI TANGGAL",        tanggal:true },
+  { op:"gte",    label:"LEBIH BESAR SAMA DENGAN TANGGAL", tanggal:true },
+  { op:"lte",    label:"LEBIH KECIL SAMA DENGAN TANGGAL", tanggal:true }
+];
+
+const PESERTA_KELOLA_ALIH_STATUS = ["Semua", "Asabri - Taspen (Keluar)", "Taspen - Asabri (Masuk)"];
+const PESERTA_KELOLA_STATUS      = ["SEMUA DATA", "AKTIF", "PENSIUN", "DESERSI", "MENINGGAL AKTIF"];
+const PESERTA_KELOLA_VALID       = ["semua", "Valid", "Tidak Valid"];
+
+/* ---------------------------------------------------------------------------
+   22b. PENGELOLAAN DATA PESERTA — rincian tab "Profil" di layar Detail Peserta
+   Enam section di tab Profil butuh ~40 kolom tambahan per peserta. Daripada
+   menuliskannya satu per satu di 24 baris DATA_PESERTA_KELOLA, rinciannya
+   dibangkitkan berurutan dari indeks baris — pola yang sama dengan
+   buatAlihStatus() di blok 20. Tidak memakai Math.random supaya isinya persis
+   sama setiap prototipe dibuka, dan tetap konsisten dengan kolom yang sudah
+   ada di baris induknya (tanggal lahir, TMT, skep, status peserta).
+   Hasilnya menempel sebagai `p.profil` supaya kolom tabel hasil pencarian
+   tidak tercampur dengan kolom yang hanya dipakai di layar detail.
+   --------------------------------------------------------------------------- */
+
+/* Dipakai hanya untuk menentukan Jenis Kelamin — didaftar eksplisit karena
+   menebaknya dari nama tidak pernah bisa diandalkan. */
+const PROFIL_PEREMPUAN = ["ASTUTI", "HIPDAWATI", "ASIH SURANI", "MARIA CHRISTINA", "DEWI ANGGRAINI"];
+
+/* kode = 6 digit awal NIK (kode provinsi/kota/kecamatan). */
+const PROFIL_WILAYAH = [
+  { kode:"330871", desa:"POTRORONO",   kecamatan:"BANYUURIP",   kota:"MAGELANG",     provinsi:"JAWA TENGAH",     pos:"56115", telp:"0293" },
+  { kode:"337411", desa:"SAMBIROTO",   kecamatan:"TEMBALANG",   kota:"SEMARANG",     provinsi:"JAWA TENGAH",     pos:"50276", telp:"024"  },
+  { kode:"327312", desa:"CIPADUNG",    kecamatan:"CIBIRU",      kota:"BANDUNG",      provinsi:"JAWA BARAT",      pos:"40614", telp:"022"  },
+  { kode:"357814", desa:"KETINTANG",   kecamatan:"GAYUNGAN",    kota:"SURABAYA",     provinsi:"JAWA TIMUR",      pos:"60231", telp:"031"  },
+  { kode:"317109", desa:"CIPINANG",    kecamatan:"PULOGADUNG",  kota:"JAKARTA TIMUR",provinsi:"DKI JAKARTA",     pos:"13240", telp:"021"  },
+  { kode:"620711", desa:"PANARUNG",    kecamatan:"PAHANDUT",    kota:"PALANGKARAYA", provinsi:"KALIMANTAN TENGAH", pos:"73111", telp:"0536" },
+  { kode:"337201", desa:"JEBRES",      kecamatan:"JEBRES",      kota:"SURAKARTA",    provinsi:"JAWA TENGAH",     pos:"57126", telp:"0271" },
+  { kode:"347101", desa:"CATURTUNGGAL",kecamatan:"DEPOK",       kota:"YOGYAKARTA",   provinsi:"DI YOGYAKARTA",   pos:"55281", telp:"0274" }
+];
+
+const PROFIL_JALAN = [
+  "JL. DIPONEGORO", "JL. AHMAD YANI", "JL. GAJAH MADA", "JL. SUDIRMAN",
+  "JL. VETERAN", "JL. KARTINI", "JL. MERDEKA", "JL. HASANUDDIN"
+];
+
+const PROFIL_IBU = [
+  "SUKARTI", "MARIYEM", "SITI ROHMAH", "NGATINEM", "SUMIYATI", "ROHANI",
+  "SUPARTI", "TUMINAH", "KHOIRIYAH", "SUYATMI", "PAINEM", "LASMINI"
+];
+
+const PROFIL_BINTANG_JASA = [
+  "-", "Satyalancana Kesetiaan VIII Tahun", "Satyalancana Kesetiaan XVI Tahun",
+  "Satyalancana Dharma Nusa", "Satyalancana Kesetiaan XXIV Tahun"
+];
+
+/* PDW = pendidikan dasar/umum terakhir yang tercatat di data dinas. */
+const PROFIL_PDW = ["SMA/SEDERAJAT", "D-III", "S-1", "SMP/SEDERAJAT", "SMA/SEDERAJAT", "S-2"];
+
+const PROFIL_UNOR = {
+  "TNI-AD": "MABES TNI AD",
+  "TNI-AL": "MABES TNI AL",
+  "TNI-AU": "MABES TNI AU",
+  "POLRI":  "MABES POLRI",
+  "KEMHAN": "KEMENTERIAN PERTAHANAN"
+};
+
+const PROFIL_KANCAB = [
+  "KANCAB MAGELANG", "KANCAB SEMARANG", "KANCAB BANDUNG", "KANCAB SURABAYA",
+  "KANCAB JAKARTA TIMUR", "KANCAB PALANGKARAYA", "KANCAB SURAKARTA", "KANCAB YOGYAKARTA"
+];
+
+function lengkapiProfilPeserta(p, n) {
+  const putar = (arr, i) => arr[i % arr.length];
+  const pad   = (v, l) => String(v).padStart(l, "0");
+  const tgl   = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
+  /* Ambil bagian tanggal "dd-mm-yyyy"; kolom kosong ("-") jadi null. */
+  const bagian = t => /^(\d{2})-(\d{2})-(\d{4})$/.exec(t || "");
+
+  const wil       = putar(PROFIL_WILAYAH, n);
+  const perempuan = PROFIL_PEREMPUAN.includes(p.nama);
+  const pensiun   = p.statusPeserta === "PENSIUN";
+  const meninggal = p.statusPeserta === "MENINGGAL AKTIF";
+  const desersi   = p.statusPeserta === "DESERSI";
+
+  const lahir     = bagian(p.tglLahir);
+  const thnMasuk  = +(bagian(p.tmt) || [])[3] || 1990;
+  const skepPens  = bagian(p.tglSkepPensiun);
+  const thnAkhir  = skepPens ? +skepPens[3] : 2026;
+  const mkd       = Math.max(1, thnAkhir - thnMasuk);
+  const gapok     = 2400000 + (n % 18) * 185000;
+
+  /* NIK: kode wilayah (6) + tanggal lahir ddmmyy (6, tanggal +40 untuk
+     perempuan sesuai kaidah NIK) + nomor urut (4). */
+  const nik = lahir
+    ? `${wil.kode}${pad(+lahir[1] + (perempuan ? 40 : 0), 2)}${lahir[2]}${lahir[3].slice(2)}${pad(1001 + n, 4)}`
+    : "-";
+
+  return {
+    /* 1. Data Administrasi Pengajuan */
+    nomorBatch:  `BTH/${thnAkhir}/${pad(1140 + n * 3, 6)}`,
+    nomorAgenda: `AGD/${thnAkhir}/${pad(4512 + n * 7, 6)}`,
+    unor:        PROFIL_UNOR[p.angkatan] || "MABES TNI",
+    kancab:      putar(PROFIL_KANCAB, n),
+
+    /* 2. Data Kepangkatan / Riwayat Dinas */
+    bintangJasa:   putar(PROFIL_BINTANG_JASA, n),
+    kesatuanAwal:  putar(PROFIL_KANCAB, n + 2).replace("KANCAB", "DODIKLAT"),
+    kesatuanAkhir: p.kesatuan,
+    unorAkhir:     PROFIL_UNOR[p.angkatan] || "MABES TNI",
+    pdw:           putar(PROFIL_PDW, n),
+    perkiraanMkd:  `${mkd} Tahun ${(n % 12)} Bulan`,
+    masaKerjaGaji: `${Math.max(1, mkd - 2)} Tahun ${(n % 11)} Bulan`,
+
+    /* 3. Data Identitas Peserta */
+    jenisKelamin:   perempuan ? "PEREMPUAN" : "LAKI-LAKI",
+    statusKawin:    putar(["KAWIN", "KAWIN", "BELUM KAWIN", perempuan ? "JANDA" : "DUDA"], n),
+    nomorIdentitas: nik,
+    npwp:           `${pad(20 + n, 2)}.${pad((123 + n * 7) % 1000, 3)}.${pad((456 + n * 11) % 1000, 3)}.${n % 10}-${pad(100 + n, 3)}.000`,
+    namaIbu:        putar(PROFIL_IBU, n),
+    alamat:         `${putar(PROFIL_JALAN, n)} NO. ${12 + (n % 88)}`,
+    rt:             pad((n % 20) + 1, 3),
+    rw:             pad((n % 9) + 1, 3),
+    kodePos:        wil.pos,
+    desa:           wil.desa,
+    kecamatan:      wil.kecamatan,
+    kota:           wil.kota,
+    provinsi:       wil.provinsi,
+    telepon:        `(${wil.telp}) ${pad(320471 + n * 13, 6)}`,
+    handphone:      `08${pad(12 + (n % 8), 2)}${pad(3204710 + n * 137, 8)}`.slice(0, 13),
+
+    /* 4. Data Status & Monitoring Kepesertaan */
+    tglSptbTerakhir: pensiun ? tgl((n % 27) + 1, (n % 12) + 1, 2025) : "-",
+    tglHilangTmt:    desersi ? tgl((n % 26) + 2, (n % 11) + 1, 2021)  : "-",
+    tglDitemukan:    "-",
+    tglMeninggal:    meninggal ? tgl((n % 25) + 3, (n % 12) + 1, 2019) : "-",
+
+    /* 5. Data Pensiun */
+    gajiPokokTerakhir: gapok,
+    penspok:           pensiun ? Math.round(gapok * 0.75 / 1000) * 1000 : 0,
+    batasHak:          pensiun ? tgl(1, (n % 12) + 1, thnAkhir + 20) : "-",
+    tunjanganCacat:    n % 11 === 0 ? 450000 : 0,
+    tmtSkpp:           pensiun ? tgl(1, (n % 12) + 1, thnAkhir) : "-",
+
+    /* 6. Data DAPEM */
+    tglDapemTerakhir:     pensiun ? tgl(1, 8, 2026) : "-",
+    tglAmbilUangTerakhir: pensiun ? tgl(4 + (n % 12), 8, 2026) : "-"
+  };
+}
+
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.profil = lengkapiProfilPeserta(p, i); });
+
+/* ---------------------------------------------------------------------------
+   22c. PENGELOLAAN DATA PESERTA — isi tab "SPTB" dan "Riwayat Perubahan Data"
+   Keduanya bercerita tentang kejadian yang sama: satu SPTB yang diajukan
+   peserta, lalu disetujui petugas dan mengubah satu kolom data. Karena itu
+   dibangkitkan sekaligus oleh satu fungsi supaya baris di kedua tab selalu
+   cocok — tanggal approval selalu sesudah tanggal SPTB, dan tipe perubahannya
+   sama. Sama seperti blok 22b: berurutan dari indeks baris, tanpa Math.random.
+   Baris paling atas = paling baru.
+   --------------------------------------------------------------------------- */
+const SPTB_TIPE_PERUBAHAN = ["Pangkat", "Keluarga", "Peserta"];
+const SPTB_SUMBER         = ["Asabri Mobile", "Sistem YANDU via Klaim"];
+
+const SPTB_NAMA_PETUGAS = [
+  "SUPRAPTO", "RINI ASTUTI", "HARYONO", "DEWI LESTARI", "AGUS PRIYONO",
+  "NOVITA SARI", "BAMBANG WIJAYA", "LILIS HERAWATI"
+];
+
+/* Unit yang menyetujui SPTB dari Sistem YANDU via Klaim. SPTB yang masuk
+   lewat Asabri Mobile tidak memakai daftar ini — approval-nya selalu dari
+   kantor cabang tempat peserta terdaftar. */
+const SPTB_UNIT_PUSAT = ["DIVISI KEPESERTAAN", "DIVISI PELAYANAN"];
+
+const SPTB_UBAH_PANGKAT = [
+  "Kenaikan pangkat reguler",
+  "Penyesuaian pangkat mengikuti SKEP terbaru",
+  "Perbaikan pangkat yang salah rekam"
+];
+
+const SPTB_UBAH_KELUARGA = [
+  { ket:"Penambahan data anak",            lama:"2 anak terdaftar", baru:"3 anak terdaftar" },
+  { ket:"Perubahan status kawin",          lama:"BELUM KAWIN",      baru:"KAWIN" },
+  { ket:"Perbaikan ejaan nama istri/suami",lama:"SITI ROHMA",       baru:"SITI ROHMAH" },
+  { ket:"Penghapusan anak yang sudah mandiri", lama:"3 anak terdaftar", baru:"2 anak terdaftar" }
+];
+
+const SPTB_UBAH_PESERTA = [
+  { ket:"Perubahan alamat domisili",  lama:"JL. VETERAN NO. 12",  baru:"JL. MERDEKA NO. 45" },
+  { ket:"Perubahan nomor handphone",  lama:"081234567890",        baru:"081298765432" },
+  { ket:"Perbaikan penulisan nama",   lama:"SUPRIATNO",           baru:"SUPRIYATNO" },
+  { ket:"Perubahan nomor rekening penerima", lama:"BRI 0021-01-004512", baru:"BRI 0021-01-118093" }
+];
+
+function buatRiwayatSptbPeserta(p, n) {
+  const putar = (arr, i) => arr[i % arr.length];
+  const pad   = (v, l) => String(v).padStart(l, "0");
+  const tgl   = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
+
+  const jumlah    = 2 + (n % 3);
+  const sptb      = [];
+  const perubahan = [];
+
+  for (let i = 0; i < jumlah; i++) {
+    const k    = n + i * 5;
+    const tipe = putar(SPTB_TIPE_PERUBAHAN, k);
+    const hari = (k % 26) + 1;
+    const blan = (k % 12) + 1;
+    const thn  = 2026 - i * 2;
+
+    let ket, lama, baru;
+    if (tipe === "Pangkat") {
+      ket  = putar(SPTB_UBAH_PANGKAT, k);
+      lama = p.pangkatAwal;
+      baru = p.pangkatAkhir;
+    } else if (tipe === "Keluarga") {
+      ({ ket, lama, baru } = putar(SPTB_UBAH_KELUARGA, k));
+    } else {
+      ({ ket, lama, baru } = putar(SPTB_UBAH_PESERTA, k));
+    }
+
+    /* SPTB dari Asabri Mobile diverifikasi dan disetujui petugas kantor
+       cabang tempat peserta terdaftar; yang lewat Sistem YANDU via Klaim
+       disetujui unit di kantor pusat. */
+    const sumber = putar(SPTB_SUMBER, k);
+    const unit   = sumber === "Asabri Mobile" ? p.profil.kancab : putar(SPTB_UNIT_PUSAT, k);
+
+    sptb.push({ tglSptb: tgl(hari, blan, thn), tipe, keterangan: ket });
+    perubahan.push({
+      tglApproval: tgl(Math.min(hari + 3, 28), blan, thn),
+      userApproval: `${putar(SPTB_NAMA_PETUGAS, k)} / ${unit}`,
+      sumber,
+      tipe, lama, baru
+    });
+  }
+  return { sptb, perubahan };
+}
+
+DATA_PESERTA_KELOLA.forEach((p, i) => {
+  const r = buatRiwayatSptbPeserta(p, i);
+  p.sptb      = r.sptb;
+  p.perubahan = r.perubahan;
+});
+
+/* ---------------------------------------------------------------------------
+   22d. PENGELOLAAN DATA PESERTA — isi tab "Keluarga"
+   Anggota keluarga dibangkitkan mengikuti data peserta induknya supaya masuk
+   akal: peserta berstatus BELUM KAWIN tidak punya baris sama sekali (sekalian
+   memperlihatkan keadaan "Data Keluarga Kosong"), pasangan JANDA/DUDA punya
+   tanggal meninggal, dan anak yang usianya sudah lewat batas tunjangan punya
+   Tgl Berhenti di Tunjang. Sama seperti blok 22b dan 22c: berurutan dari
+   indeks baris, tanpa Math.random.
+   --------------------------------------------------------------------------- */
+const KELUARGA_NAMA_ISTRI = [
+  "SRI WAHYUNI", "ENDANG SUPRIATI", "TITIK HANDAYANI", "MARYATI",
+  "NUR HAYATI", "LILIS SURYANI", "RETNO PALUPI", "DWI ASTUTI"
+];
+const KELUARGA_NAMA_SUAMI = [
+  "SUGENG RIYADI", "DIDIK PURNOMO", "HERI SETIAWAN", "PURWANTO",
+  "MUJIONO", "DARMAWAN", "IMAM SYAFI'I", "WAHYU HIDAYAT"
+];
+const KELUARGA_NAMA_ANAK = [
+  "RIZKY PRATAMA", "DIAN PERMATA SARI", "BAGUS SETIAWAN", "AYU LESTARI",
+  "FAJAR RAMADHAN", "INTAN NURAINI", "DIMAS ARYA PUTRA", "SALSABILA AZZAHRA",
+  "RENDI SAPUTRA", "MEGA PUSPITA"
+];
+const KELUARGA_PEKERJAAN_ANAK = ["PELAJAR", "MAHASISWA", "KARYAWAN SWASTA", "WIRASWASTA", "PNS"];
+
+/* Isi dropdown "Hubungan Keluarga" di form Edit Keluarga. Ditulis persis
+   seperti pilihan yang berlaku di sistem, termasuk keterangan dalam kurung. */
+const KELUARGA_HUBUNGAN = [
+  "ISTRI",
+  "ANAK",
+  "AYAH",
+  "IBU",
+  "AHLI WARIS -(khusus hak/manfaat)",
+  "SENDIRI -(khusus hak/manfaat)",
+  "WALI",
+  "YANG BERSANGKUTAN",
+  "KAKAK/ADIK",
+  "ANAK ANGKAT",
+  "ANAK TIRI"
+];
+
+/* Isi dropdown di form Profil Anggota Keluarga. */
+const KELUARGA_JENIS_KELAMIN   = ["PRIA", "WANITA"];
+const KELUARGA_STATUS_KAWIN    = [
+  "Belum menikah", "Menikah", "Janda/Duda Cerai", "Janda/Duda Meninggal"
+];
+const KELUARGA_PEKERJAAN       = [
+  "ASN", "Pegawai swasta", "Pegawai BUMN", "Mahasiswa", "Pelajar",
+  "Ibu Rumah Tangga", "Tidak Bekerja", "Lainnya", "TNI/POLRI"
+];
+const KELUARGA_TIPE_DOKUMEN    = ["Dokumen Baru", "Dokumen Yang Sudah Ada"];
+
+/* Pilihan "File Identitas" ketika Tipe Dokumen Identitas = "Dokumen Yang
+   Sudah Ada" — dokumen peserta yang sudah tersimpan di E-Dosir. */
+const KELUARGA_DOKUMEN_TERSEDIA = [
+  "KTP",
+  "Kartu Keluarga",
+  "Akta Nikah",
+  "Akta Kelahiran",
+  "Paspor"
+];
+
+/* Jenis kelamin yang otomatis terisi mengikuti Hubungan Keluarga yang
+   dipilih; hubungan yang tidak ada di sini dibiarkan kosong. */
+const KELUARGA_KELAMIN_BAWAAN = {
+  "ISTRI": "WANITA",
+  "IBU":   "WANITA",
+  "AYAH":  "PRIA"
+};
+
+/* Field opsional yang tampil per Hubungan Keluarga di form Profil Anggota
+   Keluarga. Field pokok (Nama, Tempat Lahir, Tanggal Lahir, Jenis Kelamin,
+   Status Perkawinan, NIK, Pekerjaan, Tanggal Meninggal, Tanggal Berhenti Di
+   Tunjang, Tanggal Di Tunjang Kembali) selalu tampil dan tidak didaftar di
+   sini. Hubungan yang belum punya entri memakai KELUARGA_FIELD_BAWAAN. */
+const KELUARGA_FIELD_TAMPIL = {
+  "ISTRI":       ["mulaiKerja", "berhentiKerja"],
+  "IBU":         ["akta"],
+  "AYAH":        ["akta"],
+  "AHLI WARIS -(khusus hak/manfaat)": ["akta"],
+  "SENDIRI -(khusus hak/manfaat)":    ["akta"],
+  "WALI":              ["akta"],
+  "YANG BERSANGKUTAN": ["akta"],
+  "KAKAK/ADIK":        ["akta"],
+  /* Hanya ANAK yang punya field Orang Tua; anak angkat dan anak tiri tidak. */
+  "ANAK":        ["orangTua", "akta", "mulaiKerja", "mulaiKuliah", "selesaiKuliah"],
+  "ANAK ANGKAT": ["akta", "mulaiKerja", "mulaiKuliah", "selesaiKuliah"],
+  "ANAK TIRI":   ["akta", "mulaiKerja", "mulaiKuliah", "selesaiKuliah"]
+};
+const KELUARGA_FIELD_BAWAAN = ["mulaiKerja", "berhentiKerja"];
+const KELUARGA_CABANG_MITRA = [
+  "KCP SURABAYA DARMO", "KCP BANDUNG ASIA AFRIKA", "KCP SEMARANG PANDANARAN",
+  "KCP JAKARTA CIPINANG", "KCP PALANGKARAYA AHMAD YANI", "KCP SURAKARTA SLAMET RIYADI",
+  "KCP YOGYAKARTA MALIOBORO", "KCP MAGELANG PEMUDA"
+];
+
+function buatKeluargaPeserta(p, n) {
+  const putar = (arr, i) => arr[i % arr.length];
+  const pad   = (v, l) => String(v).padStart(l, "0");
+  const tgl   = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
+  const kosong = {
+    nopens:"-", tempatLahir:"-", tglLahir:"-", tglMenikah:"-", tglMeninggal:"-",
+    tglMulaiKuliah:"-", tglSelesaiKuliah:"-", tglMulaiKerja:"-", tglSelesaiKerja:"-",
+    pekerjaan:"-", tglBerhentiTunjang:"-", tglTunjangKembali:"-",
+    namaRekening:"-", nomorRekening:"-", mitraBayar:"-", cabangMitraBayar:"-"
+  };
+
+  const pr = p.profil;
+  if (pr.statusKawin === "BELUM KAWIN") return [];
+
+  const perempuan  = pr.jenisKelamin === "PEREMPUAN";
+  const wafat      = pr.statusKawin === "JANDA" || pr.statusKawin === "DUDA";
+  const thnPeserta = +String(p.tglLahir).slice(-4);
+  const thnNikah   = thnPeserta + 25 + (n % 4);
+  const thnEntry   = Math.min(2026, thnNikah + 1);
+  const nikPrefix  = String(pr.nomorIdentitas).slice(0, 6);
+  const nik = (hari, blan, thn, urut, wanita) =>
+    `${nikPrefix}${pad(hari + (wanita ? 40 : 0), 2)}${pad(blan, 2)}${String(thn).slice(2)}${pad(urut, 4)}`;
+
+  const rows = [];
+
+  /* ---- Pasangan ---- */
+  const thnPasangan = thnPeserta + (perempuan ? -2 : 3);
+  rows.push({
+    ...kosong,
+    tglEntry:     tgl((n % 26) + 1, (n % 12) + 1, thnEntry),
+    nopens:       p.statusPeserta === "PENSIUN" && p.nopens !== "-" ? `${p.nopens}W` : "-",
+    nama:         perempuan ? putar(KELUARGA_NAMA_SUAMI, n) : putar(KELUARGA_NAMA_ISTRI, n),
+    hubungan:     perempuan ? "SUAMI" : "ISTRI",
+    tempatLahir:  pr.kota,
+    tglLahir:     tgl((n % 27) + 1, (n % 12) + 1, thnPasangan),
+    tglMenikah:   tgl((n % 25) + 2, (n % 11) + 1, thnNikah),
+    tglMeninggal: wafat ? tgl((n % 24) + 3, (n % 10) + 1, 2021 + (n % 4)) : "-",
+    pekerjaan:    perempuan ? "KARYAWAN SWASTA" : "IBU RUMAH TANGGA",
+    namaRekening: perempuan ? putar(KELUARGA_NAMA_SUAMI, n) : putar(KELUARGA_NAMA_ISTRI, n),
+    nomorRekening: `${pad(21 + (n % 60), 4)}-01-${pad(100000 + n * 137, 6)}`,
+    mitraBayar:      putar(DATA_MITRA_BAYAR, n),
+    cabangMitraBayar: putar(KELUARGA_CABANG_MITRA, n),
+    nomorIdentitas:  nik((n % 27) + 1, (n % 12) + 1, thnPasangan, 2001 + n, !perempuan),
+    /* Riwayat rekening: rekening lama (kalau pernah ganti mitra) diikuti
+       rekening yang berlaku sekarang. Kolom namaRekening/nomorRekening/…
+       di atas selalu memuat entri terakhir dari daftar ini. */
+    rekening: (n % 3 === 0 ? [{
+      nama:   perempuan ? putar(KELUARGA_NAMA_SUAMI, n) : putar(KELUARGA_NAMA_ISTRI, n),
+      nomor:  `${pad(51 + (n % 40), 4)}-01-${pad(700000 + n * 91, 6)}`,
+      mitra:  putar(DATA_MITRA_BAYAR, n + 4),
+      cabang: putar(KELUARGA_CABANG_MITRA, n + 3)
+    }] : []).concat([{
+      nama:   perempuan ? putar(KELUARGA_NAMA_SUAMI, n) : putar(KELUARGA_NAMA_ISTRI, n),
+      nomor:  `${pad(21 + (n % 60), 4)}-01-${pad(100000 + n * 137, 6)}`,
+      mitra:  putar(DATA_MITRA_BAYAR, n),
+      cabang: putar(KELUARGA_CABANG_MITRA, n)
+    }])
+  });
+
+  /* ---- Anak ---- */
+  const jumlahAnak = (n % 4);
+  for (let i = 0; i < jumlahAnak; i++) {
+    const k        = n + i * 3;
+    const thnAnak  = thnNikah + 2 + i * 3;
+    const usia     = 2026 - thnAnak;
+    const kuliah   = usia >= 18 && usia <= 25;
+    const bekerja  = usia > 23;
+    const lewatHak = usia > 25;                 /* batas usia anak ditunjang */
+    const anakWanita = i % 2 === 1;
+    rows.push({
+      ...kosong,
+      tglEntry:    tgl((k % 26) + 1, (k % 12) + 1, Math.min(2026, thnAnak + 1)),
+      nama:        putar(KELUARGA_NAMA_ANAK, k),
+      hubungan:    `ANAK KE-${i + 1}`,
+      tempatLahir: pr.kota,
+      tglLahir:    tgl((k % 27) + 1, (k % 12) + 1, thnAnak),
+      tglMulaiKuliah:   kuliah || lewatHak ? tgl(1, 9, thnAnak + 18) : "-",
+      tglSelesaiKuliah: lewatHak           ? tgl(30, 8, thnAnak + 22) : "-",
+      tglMulaiKerja:    bekerja            ? tgl(1, 3, thnAnak + 23)  : "-",
+      tglSelesaiKerja:  "-",
+      pekerjaan:   usia < 18 ? "PELAJAR" : (kuliah ? "MAHASISWA" : putar(KELUARGA_PEKERJAAN_ANAK, k)),
+      tglBerhentiTunjang: lewatHak ? tgl(1, (k % 12) + 1, thnAnak + 25) : "-",
+      /* Sebagian anak yang tunjangannya sempat berhenti ditunjang kembali
+         setelah bukti lanjut kuliah diterima — supaya kolomnya ada isinya. */
+      tglTunjangKembali:  lewatHak && k % 3 === 0 ? tgl(1, (k % 10) + 2, thnAnak + 26) : "-",
+      nomorIdentitas: nik((k % 27) + 1, (k % 12) + 1, thnAnak, 3001 + k, anakWanita),
+      rekening: []   /* rekening penerima manfaat baru dibuka saat hak beralih */
+    });
+  }
+  return rows;
+}
+
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.keluarga = buatKeluargaPeserta(p, i); });
+
+/* ---------------------------------------------------------------------------
+   22e. PENGELOLAAN DATA PESERTA — isi tab "Hutang"
+   Dua daftar terpisah: hutang peserta kepada ASABRI (`p.hutang`) dan hutang
+   pada bank/mitra penyalur (`p.hutangMitra`). Sebagian peserta sengaja
+   dibiarkan tanpa baris supaya keadaan kosong ikut terlihat saat didemokan.
+   Sama seperti blok 22b–22d: berurutan dari indeks baris, tanpa Math.random.
+   --------------------------------------------------------------------------- */
+const HUTANG_JENIS = [
+  "PUM KPR", "BUM KPR", "Piutang Premi", "Kelebihan Bayar Pensiun", "Piutang Santunan"
+];
+/* Nilai yang mungkin muncul di kolom Status hutang mitra. Isinya tidak
+   diundi — ditentukan dari Akhir Kredit di baris yang sama, lihat
+   buatHutangPeserta() di bawah. */
+const HUTANG_MITRA_STATUS = ["Aktif", "Lunas", "Take Over"];
+
+function buatHutangPeserta(p, n) {
+  const putar = (arr, i) => arr[i % arr.length];
+  const pad   = (v, l) => String(v).padStart(l, "0");
+  const tgl   = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
+
+  /* ---- Hutang kepada ASABRI ---- */
+  const hutang = [];
+  const jmlHutang = n % 4 === 0 ? 0 : 1 + (n % 2);
+  for (let i = 0; i < jmlHutang; i++) {
+    const k       = n + i * 4;
+    const thn     = 2014 + (k % 11);
+    const jumlah  = 25000000 + (k % 20) * 7500000;
+    /* Makin lama TMT-nya, makin besar porsi yang sudah dibayar. */
+    const porsi   = Math.min(0.95, 0.15 + (2026 - thn) * 0.07);
+    const dibayar = Math.round(jumlah * porsi / 100000) * 100000;
+    hutang.push({
+      tmt:        tgl(1, (k % 12) + 1, thn),
+      noPiutang:  `PTG/${thn}/${pad(1180 + k * 7, 6)}`,
+      jenis:      putar(HUTANG_JENIS, k),
+      jumlah,
+      sudahBayar: dibayar,
+      sisa:       jumlah - dibayar
+    });
+  }
+
+  /* ---- Hutang pada mitra bayar ---- */
+  const hutangMitra = [];
+  const jmlMitra = n % 3 === 0 ? 0 : 1 + (n % 2);
+  for (let i = 0; i < jmlMitra; i++) {
+    const k     = n + i * 6;
+    const thn   = 2016 + (k % 9);
+    const tenor = 5 + (k % 11);
+    /* Status mengikuti Akhir Kredit di baris yang sama: kredit yang masa
+       angsurannya sudah lewat berstatus Lunas, sisanya Aktif — kecuali
+       sebagian kecil yang diambil alih mitra lain (Take Over). */
+    const status = thn + tenor <= 2026 ? "Lunas"
+                 : (n + i) % 7 === 0   ? "Take Over"
+                 : "Aktif";
+    hutangMitra.push({
+      mitraBayar:    putar(DATA_MITRA_BAYAR, k),
+      tglPengajuan:  tgl((k % 26) + 1, (k % 12) + 1, thn),
+      awalKredit:    tgl(1, (k % 12) + 1, thn),
+      akhirKredit:   tgl(1, (k % 12) + 1, thn + tenor),
+      plafon:        50000000 + (k % 24) * 12500000,
+      noRekTab:      `${pad(21 + (k % 60), 4)}-01-${pad(200000 + k * 173, 6)}`,
+      noRekKredit:   `${pad(31 + (k % 60), 4)}-02-${pad(300000 + k * 211, 6)}`,
+      noPinjaman:    `PK-${thn}-${pad(4400 + k * 13, 6)}`,
+      status,
+      tarif:         `${9 + (k % 6)},${k % 10}%`
+    });
+  }
+
+  return { hutang, hutangMitra };
+}
+
+DATA_PESERTA_KELOLA.forEach((p, i) => {
+  const h = buatHutangPeserta(p, i);
+  p.hutang      = h.hutang;
+  p.hutangMitra = h.hutangMitra;
+});
+
+/* ---------------------------------------------------------------------------
+   22f. PENGELOLAAN DATA PESERTA — isi tab "Hak/Produk"
+   Transaksi pembayaran hak/produk peserta beserta jejak pembukuannya di
+   Axapta. Penerimanya menyesuaikan produk: manfaat yang dibayarkan semasa
+   hidup jatuh ke peserta sendiri, santunan kematian ke pasangannya. Sama
+   seperti blok 22b–22e: berurutan dari indeks baris, tanpa Math.random.
+   --------------------------------------------------------------------------- */
+const HAK_PRODUK = [
+  { nama:"THT — Tabungan Hari Tua",        waris:false },
+  { nama:"Nilai Tunai Tabungan Asuransi",  waris:false },
+  { nama:"JKK — Jaminan Kecelakaan Kerja", waris:false },
+  { nama:"JKm — Jaminan Kematian",         waris:true  },
+  { nama:"Santunan Risiko Kematian Khusus",waris:true  },
+  { nama:"Biaya Pemakaman",                waris:true  }
+];
+const HAK_STATUS_AXAPTA = ["Posted", "Journalized", "Draft"];
+const HAK_USER_AXAPTA   = [
+  "yandu.batch", "sri.mulyani", "bagus.pratama", "endah.wulandari", "yandu.sync"
+];
+
+function buatHakProdukPeserta(p, n) {
+  const putar = (arr, i) => arr[i % arr.length];
+  const pad   = (v, l) => String(v).padStart(l, "0");
+  const tgl   = (d, m, y) => `${pad(d, 2)}-${pad(m, 2)}-${y}`;
+
+  /* Penerima santunan kematian = pasangan yang terdaftar di tabel Keluarga. */
+  const pasangan = (p.keluarga || []).find(k => k.hubungan === "ISTRI" || k.hubungan === "SUAMI");
+  const rekening = pasangan && pasangan.rekening && pasangan.rekening.length
+    ? pasangan.rekening[pasangan.rekening.length - 1]
+    : null;
+
+  const rows = [];
+  const jumlah = n % 5 === 0 ? 0 : 1 + (n % 3);
+  for (let i = 0; i < jumlah; i++) {
+    const k       = n + i * 7;
+    const produk  = putar(HAK_PRODUK, k);
+    const thn     = 2019 + (k % 8);
+    const hari    = (k % 26) + 1;
+    const blan    = (k % 12) + 1;
+    const bruto   = 18000000 + (k % 26) * 3500000;
+    const potong  = k % 3 === 0 ? Math.round(bruto * 0.12 / 100000) * 100000 : 0;
+    const pajak   = Math.round((bruto - potong) * 0.05 / 1000) * 1000;
+    const keWaris = produk.waris && pasangan;
+
+    rows.push({
+      namaPenerima: keWaris ? pasangan.nama : p.nama,
+      hubungan:     keWaris ? pasangan.hubungan : "SENDIRI",
+      produk:       produk.nama,
+      tglKejadian:  tgl(hari, blan, thn),
+      bruto,
+      potongan:     potong,
+      potonganPajak: pajak,
+      netto:        bruto - potong - pajak,
+      cabangMitra:  keWaris && rekening ? rekening.cabang : putar(KELUARGA_CABANG_MITRA, k),
+      mitraBayar:   keWaris && rekening ? rekening.mitra  : putar(DATA_MITRA_BAYAR, k),
+      nomorSP:      `SP/${thn}/${pad(1200 + k * 9, 6)}`,
+      kodeBayar:    `KB-${pad(45 + (k % 50), 2)}-${pad(700 + k * 3, 4)}`,
+      nomorDPS:     `DPS/${thn}/${pad(3300 + k * 11, 6)}`,
+      tglDPS:       tgl(Math.min(hari + 5, 28), blan, thn),
+      statusAxapta: putar(HAK_STATUS_AXAPTA, k),
+      tglAxapta:    tgl(Math.min(hari + 8, 28), blan, thn),
+      idAxapta:     `AX-${thn}-${pad(88000 + k * 137, 6)}`,
+      userAxapta:   putar(HAK_USER_AXAPTA, k)
+    });
+  }
+  return rows;
+}
+
+DATA_PESERTA_KELOLA.forEach((p, i) => { p.hakProduk = buatHakProdukPeserta(p, i); });
+
+/* Sub-tab di layar Detail Peserta. Baru "Profil" yang sudah berisi data;
+   tab lain menampilkan keadaan kosong sampai rincian FSD-nya tersedia.
+   `sub` dipakai sebagai kalimat penjelas di keadaan kosong tersebut. */
+const PESERTA_KELOLA_TAB = [
+  { key:"profil",     label:"Profil",                 sub:"Data pokok, kedinasan, dan status kepesertaan." },
+  { key:"keluarga",   label:"Keluarga",               sub:"Daftar istri/suami dan anak yang terdaftar sebagai ahli waris." },
+  { key:"hutang",     label:"Hutang",                 sub:"Hutang peserta kepada ASABRI dan pada bank/mitra penyalur." },
+  { key:"hak",        label:"Hak/Produk",             sub:"Hak manfaat dan produk yang melekat pada peserta." },
+  { key:"dapem",      label:"Dapem",                  sub:"Riwayat daftar pembayaran pensiun peserta." },
+  { key:"pangkat",    label:"Pangkat",                sub:"Riwayat kepangkatan dari pangkat awal sampai pangkat akhir." },
+  { key:"cacat",      label:"Peserta Cacat",          sub:"Penetapan tingkat cacat dan manfaat yang menyertainya." },
+  { key:"premi",      label:"Premi",                  sub:"Rekapitulasi iuran premi THT, JKK, dan JKm." },
+  { key:"polis",      label:"Polis",                  sub:"Data polis dan nomor pertanggungan peserta." },
+  { key:"dokumen",    label:"Riwayat Dokumen",        sub:"Dokumen yang pernah diunggah atau diterbitkan." },
+  { key:"kunjungan",  label:"Riwayat Kunjungan",      sub:"Catatan kunjungan peserta ke kantor cabang." },
+  { key:"edosir",     label:"E-DOSIR",                sub:"Berkas peserta yang sudah didigitalisasi di E-Dosir." },
+  { key:"sptb",       label:"SPTB",                   sub:"Surat Pernyataan Tanda Bukti Diri yang pernah diajukan." },
+  { key:"pajak",      label:"Pajak",                  sub:"Potongan dan bukti potong pajak atas manfaat peserta." },
+  { key:"alihstatus", label:"Riwayat Alih Status",    sub:"Perpindahan peserta antara ASABRI dan TASPEN." },
+  { key:"rekening",   label:"Daftar Rekening",        sub:"Rekening bank untuk penyaluran manfaat." },
+  { key:"callcenter", label:"Call Center",            sub:"Riwayat interaksi peserta dengan call center." },
+  { key:"perubahan",  label:"Riwayat Perubahan Data", sub:"Jejak pemutakhiran data peserta beserta pengusulnya." },
+  { key:"sp3r",       label:"SP3R",                   sub:"Surat Perintah Pembayaran Pengembalian Refund." },
+  { key:"log",        label:"Log",                    sub:"Log akses dan aktivitas sistem atas data peserta." }
+];
+
+/* ---------------------------------------------------------------------------
+   23. KODE ACUAN REFERENSI KEPESERTAAN
+   Kode acuan yang dipakai untuk pengisian, validasi, dan penyajian data
+   kepesertaan (satker, UNOR, pangkat, KPPN, batas usia pensiun, gaji, wilayah,
+   kode personil). `induk` = kode/nama tingkat di atasnya. Kombinasi jenis +
+   kode harus unik.
+   Layar "Daftar Kode Referensi" sudah tidak ada; daftar ini masih dibaca layar
+   lain (mis. SPP Data Peserta) untuk mengisi pilihan Pangkat dan Kesatuan.
+   `DATA_REFERENSI_USULAN` dan `DATA_REFERENSI_BULK` disimpan sebagai bahan bila
+   layar pemeliharaannya dihidupkan kembali.
+   status: "Aktif" | "Nonaktif"
+   --------------------------------------------------------------------------- */
+const REFERENSI_JENIS = [
+  "Satker/Kesatuan", "UNOR", "Pangkat", "KPPN",
+  "Batas Usia Pensiun", "Gaji Pokok", "Wilayah/Alamat", "Kode Personil"
+];
+
+const DATA_REFERENSI = [
+  { jenis:"Satker/Kesatuan", kode:"0401", uraian:"KOREM 084/BHASKARA JAYA", induk:"KODAM V/BRAWIJAYA",
+    berlaku:"01/01/2020", status:"Aktif",    diperbarui:"12/06/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Satker/Kesatuan", kode:"0412", uraian:"KODIM 0827/SUMENEP", induk:"KOREM 084/BHASKARA JAYA",
+    berlaku:"01/01/2020", status:"Aktif",    diperbarui:"12/06/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Satker/Kesatuan", kode:"0733", uraian:"KODIM 0733/SURAKARTA", induk:"KOREM 074/WARASTRATAMA",
+    berlaku:"01/01/2020", status:"Aktif",    diperbarui:"04/03/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"Satker/Kesatuan", kode:"0918", uraian:"LANUD ISWAHJUDI", induk:"KOOPSUD II",
+    berlaku:"01/07/2022", status:"Aktif",    diperbarui:"18/05/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Satker/Kesatuan", kode:"0655", uraian:"POLRES SIDOARJO", induk:"POLDA JAWA TIMUR",
+    berlaku:"01/01/2020", status:"Aktif",    diperbarui:"22/04/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"Satker/Kesatuan", kode:"0409", uraian:"KODIM 0810/NGANJUK (LAMA)", induk:"KOREM 081/DHIROTSAHA JAYA",
+    berlaku:"01/01/2015", status:"Nonaktif", diperbarui:"09/02/2026", oleh:"Lojita — R. Prasetyo" },
+
+  { jenis:"UNOR", kode:"AD",  uraian:"TNI ANGKATAN DARAT",         induk:"TNI",    berlaku:"01/01/2015", status:"Aktif", diperbarui:"15/01/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"UNOR", kode:"AL",  uraian:"TNI ANGKATAN LAUT",          induk:"TNI",    berlaku:"01/01/2015", status:"Aktif", diperbarui:"15/01/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"UNOR", kode:"AU",  uraian:"TNI ANGKATAN UDARA",         induk:"TNI",    berlaku:"01/01/2015", status:"Aktif", diperbarui:"15/01/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"UNOR", kode:"POL", uraian:"KEPOLISIAN NEGARA RI",       induk:"POLRI",  berlaku:"01/01/2015", status:"Aktif", diperbarui:"15/01/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"UNOR", kode:"KMH", uraian:"ASN KEMENTERIAN PERTAHANAN", induk:"KEMHAN", berlaku:"01/01/2015", status:"Aktif", diperbarui:"15/01/2026", oleh:"Lojita — S. Wijayanti" },
+
+  { jenis:"Pangkat", kode:"21",    uraian:"SERSAN MAYOR",           induk:"Bintara — TNI AD", berlaku:"01/01/2019", status:"Aktif", diperbarui:"11/03/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Pangkat", kode:"22",    uraian:"SERSAN KEPALA",          induk:"Bintara — TNI AD", berlaku:"01/01/2019", status:"Aktif", diperbarui:"11/03/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Pangkat", kode:"31",    uraian:"LETNAN DUA",             induk:"Perwira — TNI AD", berlaku:"01/01/2019", status:"Aktif", diperbarui:"11/03/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Pangkat", kode:"41",    uraian:"AJUN KOMISARIS POLISI",  induk:"Perwira — POLRI",  berlaku:"01/01/2019", status:"Aktif", diperbarui:"11/03/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Pangkat", kode:"III/A", uraian:"PENATA MUDA",            induk:"Golongan — ASN",   berlaku:"01/01/2019", status:"Aktif", diperbarui:"11/03/2026", oleh:"Lojita — R. Prasetyo" },
+
+  { jenis:"KPPN", kode:"084", uraian:"KPPN SURABAYA II", induk:"Kanwil DJPb Jawa Timur",  berlaku:"01/01/2021", status:"Aktif", diperbarui:"07/05/2026", oleh:"Lojita — A. Nurcahyo" },
+  { jenis:"KPPN", kode:"019", uraian:"KPPN JAKARTA I",   induk:"Kanwil DJPb DKI Jakarta", berlaku:"01/01/2021", status:"Aktif", diperbarui:"07/05/2026", oleh:"Lojita — A. Nurcahyo" },
+  { jenis:"KPPN", kode:"137", uraian:"KPPN BANDUNG I",   induk:"Kanwil DJPb Jawa Barat",  berlaku:"01/01/2021", status:"Aktif", diperbarui:"07/05/2026", oleh:"Lojita — A. Nurcahyo" },
+
+  { jenis:"Batas Usia Pensiun", kode:"BUP-TAM-AD", uraian:"BUP Tamtama & Bintara TNI — 53 tahun",  induk:"UU No. 34/2004", berlaku:"01/01/2024", status:"Aktif", diperbarui:"02/06/2026", oleh:"Lojita — A. Nurcahyo" },
+  { jenis:"Batas Usia Pensiun", kode:"BUP-PA-AD",  uraian:"BUP Perwira TNI — 58 tahun",            induk:"UU No. 34/2004", berlaku:"01/01/2024", status:"Aktif", diperbarui:"02/06/2026", oleh:"Lojita — A. Nurcahyo" },
+  { jenis:"Batas Usia Pensiun", kode:"BUP-POLRI",  uraian:"BUP Anggota POLRI — 58 tahun",          induk:"UU No. 2/2002",  berlaku:"01/01/2024", status:"Aktif", diperbarui:"02/06/2026", oleh:"Lojita — A. Nurcahyo" },
+  { jenis:"Batas Usia Pensiun", kode:"BUP-ASN-JF", uraian:"BUP ASN Jabatan Fungsional — 60 tahun", induk:"UU No. 20/2023", berlaku:"01/01/2026", status:"Aktif", diperbarui:"14/06/2026", oleh:"Lojita — A. Nurcahyo" },
+
+  { jenis:"Gaji Pokok", kode:"GP-2026-BA21", uraian:"Gaji Pokok Sersan Mayor MKG 12 — Rp 3.847.500", induk:"PP No. 5/2026",  berlaku:"01/01/2026", status:"Aktif",    diperbarui:"20/01/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"Gaji Pokok", kode:"GP-2026-PA31", uraian:"Gaji Pokok Letnan Dua MKG 0 — Rp 3.311.000",    induk:"PP No. 5/2026",  berlaku:"01/01/2026", status:"Aktif",    diperbarui:"20/01/2026", oleh:"Lojita — S. Wijayanti" },
+  { jenis:"Gaji Pokok", kode:"GP-2025-BA21", uraian:"Gaji Pokok Sersan Mayor MKG 12 — Rp 3.665.200", induk:"PP No. 15/2024", berlaku:"01/01/2025", status:"Nonaktif", diperbarui:"20/01/2026", oleh:"Lojita — S. Wijayanti" },
+
+  { jenis:"Wilayah/Alamat", kode:"35.78",    uraian:"KOTA SURABAYA",      induk:"PROVINSI JAWA TIMUR", berlaku:"01/01/2020", status:"Aktif", diperbarui:"28/05/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Wilayah/Alamat", kode:"35.78.09", uraian:"KEC. SUKOMANUNGGAL", induk:"KOTA SURABAYA",       berlaku:"01/01/2020", status:"Aktif", diperbarui:"28/05/2026", oleh:"Lojita — R. Prasetyo" },
+  { jenis:"Wilayah/Alamat", kode:"32.73.27", uraian:"KEC. GEDEBAGE",      induk:"KOTA BANDUNG",        berlaku:"01/04/2026", status:"Aktif", diperbarui:"03/06/2026", oleh:"Lojita — R. Prasetyo" },
+
+  { jenis:"Kode Personil", kode:"01", uraian:"MILITER SUKARELA",      induk:"Status Personel", berlaku:"01/01/2018", status:"Aktif", diperbarui:"16/02/2026", oleh:"Lojita — A. Nurcahyo" },
+  { jenis:"Kode Personil", kode:"02", uraian:"PNS KEMHAN/TNI/POLRI",  induk:"Status Personel", berlaku:"01/01/2018", status:"Aktif", diperbarui:"16/02/2026", oleh:"Lojita — A. Nurcahyo" },
+  { jenis:"Kode Personil", kode:"03", uraian:"PPPK KEMHAN/TNI/POLRI", induk:"Status Personel", berlaku:"01/01/2024", status:"Aktif", diperbarui:"16/02/2026", oleh:"Lojita — A. Nurcahyo" }
+];
+
+/* Usulan perubahan/penambahan kode referensi dari Kesatuan atau Kantor Cabang;
+   officer Bidang Lojita memverifikasi lalu menyetujui (kode masuk ke
+   DATA_REFERENSI) atau menolak dengan alasan.
+   status: "Menunggu Verifikasi" | "Disetujui" | "Ditolak" */
+const DATA_REFERENSI_USULAN = [
+  { tgl:"18/06/2026", pengusul:"KOREM 084/BHASKARA JAYA", jenis:"Satker/Kesatuan", kode:"0415",
+    uraian:"KODIM 0829/BANGKALAN", induk:"KOREM 084/BHASKARA JAYA",
+    keterangan:"Pemekaran Kodim sesuai Perkasad Nomor 12/IV/2026.", status:"Menunggu Verifikasi" },
+  { tgl:"17/06/2026", pengusul:"KANCAB BANDUNG", jenis:"Wilayah/Alamat", kode:"32.73.31",
+    uraian:"KEC. CIBIRU HILIR", induk:"KOTA BANDUNG",
+    keterangan:"Pemekaran kecamatan baru, dibutuhkan untuk alamat domisili peserta.", status:"Menunggu Verifikasi" },
+  { tgl:"15/06/2026", pengusul:"POLDA JAWA TIMUR", jenis:"Pangkat", kode:"42",
+    uraian:"KOMISARIS POLISI", induk:"Perwira — POLRI",
+    keterangan:"Penyesuaian kode pangkat pada nominatif kenaikan pangkat periode Juni.", status:"Menunggu Verifikasi" },
+  { tgl:"11/06/2026", pengusul:"LANUD ISWAHJUDI", jenis:"Kode Personil", kode:"04",
+    uraian:"MILITER WAJIB (KOMPONEN CADANGAN)", induk:"Status Personel",
+    keterangan:"Kebutuhan pencatatan personel komponen cadangan.", status:"Disetujui" },
+  { tgl:"09/06/2026", pengusul:"KANCAB SEMARANG", jenis:"KPPN", kode:"084",
+    uraian:"KPPN SURABAYA II", induk:"Kanwil DJPb Jawa Timur",
+    keterangan:"Usulan penambahan kode KPPN untuk penyaluran pensiun.",
+    status:"Ditolak", alasan:"Kode 084 sudah terdaftar pada referensi KPPN." },
+  { tgl:"05/06/2026", pengusul:"KODAM IV/DIPONEGORO", jenis:"Satker/Kesatuan", kode:"0740",
+    uraian:"KODIM 0740/SALATIGA", induk:"KOREM 073/MAKUTARAMA",
+    keterangan:"Perubahan nama satker sesuai validasi Spersad.", status:"Disetujui" }
+];
+
+/* Berkas contoh yang "terbaca" saat penambahan referensi secara bulk (import
+   Excel), dipakai untuk mensimulasikan validasi kode duplikat.
+   status: "valid" | "duplikat" | "ditolak" */
+const DATA_REFERENSI_BULK = {
+  templateNama: "Template Referensi Data Kepesertaan",
+  templateFile: "Template Referensi Data Kepesertaan.xlsx",
+  namaBerkas:   "referensi_satker_pemekaran_2026.xlsx",
+  kolom:        ["Jenis Referensi", "Kode", "Uraian", "Induk / Keterangan", "Berlaku Sejak"],
+  rows: [
+    { nilai:["Satker/Kesatuan", "0416", "KODIM 0830/SAMPANG",   "KOREM 084/BHASKARA JAYA", "01/07/2026"], status:"valid" },
+    { nilai:["Satker/Kesatuan", "0417", "KODIM 0831/PAMEKASAN", "KOREM 084/BHASKARA JAYA", "01/07/2026"], status:"valid" },
+    { nilai:["Wilayah/Alamat",  "35.78.11", "KEC. TANDES",      "KOTA SURABAYA",           "01/07/2026"], status:"valid" },
+    { nilai:["Satker/Kesatuan", "0412", "KODIM 0827/SUMENEP",   "KOREM 084/BHASKARA JAYA", "01/07/2026"],
+      status:"duplikat", alasan:["Kode 0412 sudah terdaftar pada jenis Satker/Kesatuan"] },
+    { nilai:["Pangkat", "", "PEMBINA UTAMA MUDA", "Golongan — ASN", "01/07/2026"],
+      status:"ditolak", alasan:["Kode wajib diisi"] },
+    { nilai:["Satker Baru", "0418", "KODIM 0832/SUMENEP KOTA", "KOREM 084/BHASKARA JAYA", "31/06/2026"],
+      status:"ditolak", alasan:["Jenis Referensi tidak dikenal", "Berlaku Sejak bukan tanggal yang sah"] }
+  ]
+};
+
+/* ---------------------------------------------------------------------------
+   23A. SUB MODUL UNOR — PEMELIHARAAN UNIT ORGANISASI
+   Daftar Unit Organisasi (UNOR) sebagai acuan penempatan peserta. Satu baris =
+   satu unit organisasi; `kode` unik dan memakai pola UNOR-<matra>-<urut>.
+   `tgl` disimpan dd/mm/yyyy lalu ditampilkan panjang ("Sabtu, 4 Juli 2026").
+   --------------------------------------------------------------------------- */
+const UNOR_JENIS_CARI = [
+  { key:"kode",      label:"Kode Unit Organisasi" },
+  { key:"nama",      label:"Nama Unit Organisasi" },
+  { key:"deskripsi", label:"Deskripsi Unit Organisasi" }
+];
+
+const DATA_UNOR = [
+  { tgl:"04/07/2026", kode:"UNOR-AD-001", nama:"Markas Besar TNI Angkatan Darat (MABESAD)",                          deskripsi:"Markas Komando Utama pembinaan kekuatan dan kemampuan TNI Angkatan Darat." },
+  { tgl:"04/07/2026", kode:"UNOR-KH-002", nama:"Biro Kepegawaian Sekretariat Jenderal Kemhan (ROPEG SETJEN KEMHAN)", deskripsi:"Biro pembinaan administrasi kepegawaian ASN di lingkungan Kementerian Pertahanan." },
+  { tgl:"04/07/2026", kode:"UNOR-AD-003", nama:"Direktorat Ajudan Jenderal Angkatan Darat (DITAJENAD)",              deskripsi:"Pembina administrasi personel dan pengurusan hak-hak prajurit TNI Angkatan Darat." },
+  { tgl:"04/07/2026", kode:"UNOR-AD-004", nama:"Staf Personel Angkatan Darat (SPERSAD)",                             deskripsi:"Staf pembina fungsi personel TNI AD termasuk data kepesertaan ASABRI." },
+  { tgl:"06/07/2026", kode:"UNOR-AD-005", nama:"Komando Daerah Militer Jayakarta (KODAM JAYA)",                      deskripsi:"Komando kewilayahan TNI AD untuk wilayah DKI Jakarta dan sekitarnya." },
+  { tgl:"06/07/2026", kode:"UNOR-AD-006", nama:"Komando Daerah Militer I/Bukit Barisan (KODAM I/BB)",                deskripsi:"Komando kewilayahan TNI AD wilayah Sumatera bagian utara." },
+  { tgl:"06/07/2026", kode:"UNOR-AD-007", nama:"Komando Daerah Militer II/Sriwijaya (KODAM II/SWJ)",                 deskripsi:"Komando kewilayahan TNI AD wilayah Sumatera bagian selatan." },
+  { tgl:"06/07/2026", kode:"UNOR-AD-008", nama:"Komando Daerah Militer III/Siliwangi (KODAM III/SLW)",               deskripsi:"Komando kewilayahan TNI AD wilayah Jawa Barat dan Banten." },
+  { tgl:"10/07/2026", kode:"UNOR-AD-009", nama:"Komando Daerah Militer IV/Diponegoro (KODAM IV/DIP)",                deskripsi:"Komando kewilayahan TNI AD wilayah Jawa Tengah dan DI Yogyakarta." },
+  { tgl:"10/07/2026", kode:"UNOR-AD-010", nama:"Komando Daerah Militer V/Brawijaya (KODAM V/BRW)",                   deskripsi:"Komando kewilayahan TNI AD wilayah Jawa Timur." },
+  { tgl:"10/07/2026", kode:"UNOR-AD-011", nama:"Komando Cadangan Strategis Angkatan Darat (KOSTRAD)",                deskripsi:"Komando utama pembinaan dan operasional cadangan strategis TNI Angkatan Darat." },
+  { tgl:"10/07/2026", kode:"UNOR-AD-012", nama:"Komando Pasukan Khusus (KOPASSUS)",                                  deskripsi:"Komando utama pembinaan satuan pasukan khusus TNI Angkatan Darat." },
+  { tgl:"10/07/2026", kode:"UNOR-AD-013", nama:"Akademi Militer (AKMIL)",                                            deskripsi:"Lembaga pendidikan pembentukan perwira TNI Angkatan Darat di Magelang." },
+
+  { tgl:"15/07/2026", kode:"UNOR-AL-014", nama:"Markas Besar TNI Angkatan Laut (MABESAL)",                           deskripsi:"Markas Komando Utama pembinaan kekuatan dan kemampuan TNI Angkatan Laut." },
+  { tgl:"15/07/2026", kode:"UNOR-AL-015", nama:"Dinas Administrasi Personel Angkatan Laut (DISMINPERSAL)",           deskripsi:"Pembina administrasi personel dan hak kesejahteraan prajurit TNI Angkatan Laut." },
+  { tgl:"15/07/2026", kode:"UNOR-AL-016", nama:"Komando Armada I (KOARMADA I)",                                      deskripsi:"Komando operasional TNI AL wilayah barat berkedudukan di Jakarta." },
+  { tgl:"15/07/2026", kode:"UNOR-AL-017", nama:"Komando Armada II (KOARMADA II)",                                    deskripsi:"Komando operasional TNI AL wilayah tengah berkedudukan di Surabaya." },
+  { tgl:"15/07/2026", kode:"UNOR-AL-018", nama:"Komando Armada III (KOARMADA III)",                                  deskripsi:"Komando operasional TNI AL wilayah timur berkedudukan di Sorong." },
+  { tgl:"21/07/2026", kode:"UNOR-AL-019", nama:"Korps Marinir (KORMAR)",                                             deskripsi:"Komando utama pembinaan satuan pendarat amfibi TNI Angkatan Laut." },
+  { tgl:"21/07/2026", kode:"UNOR-AL-020", nama:"Komando Pendidikan dan Latihan Angkatan Laut (KODIKLATAL)",          deskripsi:"Penyelenggara pendidikan dan latihan personel TNI Angkatan Laut." },
+  { tgl:"21/07/2026", kode:"UNOR-AL-021", nama:"Akademi Angkatan Laut (AAL)",                                        deskripsi:"Lembaga pendidikan pembentukan perwira TNI Angkatan Laut di Surabaya." },
+
+  { tgl:"21/07/2026", kode:"UNOR-AU-022", nama:"Markas Besar TNI Angkatan Udara (MABESAU)",                          deskripsi:"Markas Komando Utama pembinaan kekuatan dan kemampuan TNI Angkatan Udara." },
+  { tgl:"21/07/2026", kode:"UNOR-AU-023", nama:"Dinas Administrasi Personel Angkatan Udara (DISMINPERSAU)",          deskripsi:"Pembina administrasi personel dan hak kesejahteraan prajurit TNI Angkatan Udara." },
+  { tgl:"28/07/2026", kode:"UNOR-AU-024", nama:"Komando Operasi Udara I (KOOPSUD I)",                                deskripsi:"Komando operasional TNI AU wilayah barat berkedudukan di Jakarta." },
+  { tgl:"28/07/2026", kode:"UNOR-AU-025", nama:"Komando Operasi Udara II (KOOPSUD II)",                              deskripsi:"Komando operasional TNI AU wilayah tengah berkedudukan di Makassar." },
+  { tgl:"28/07/2026", kode:"UNOR-AU-026", nama:"Komando Operasi Udara III (KOOPSUD III)",                            deskripsi:"Komando operasional TNI AU wilayah timur berkedudukan di Biak." },
+  { tgl:"28/07/2026", kode:"UNOR-AU-027", nama:"Pangkalan TNI AU Halim Perdanakusuma (LANUD HLP)",                   deskripsi:"Pangkalan udara tipe A pendukung operasi penerbangan TNI Angkatan Udara." },
+  { tgl:"28/07/2026", kode:"UNOR-AU-028", nama:"Pangkalan TNI AU Iswahjudi (LANUD IWJ)",                             deskripsi:"Pangkalan udara tipe A home base skadron tempur TNI Angkatan Udara." },
+  { tgl:"03/08/2026", kode:"UNOR-AU-029", nama:"Akademi Angkatan Udara (AAU)",                                       deskripsi:"Lembaga pendidikan pembentukan perwira TNI Angkatan Udara di Yogyakarta." },
+
+  { tgl:"03/08/2026", kode:"UNOR-PL-030", nama:"Markas Besar Kepolisian Negara RI (MABES POLRI)",                    deskripsi:"Markas pembinaan dan pengendalian organisasi Kepolisian Negara Republik Indonesia." },
+  { tgl:"03/08/2026", kode:"UNOR-PL-031", nama:"Staf Sumber Daya Manusia Polri (SSDM POLRI)",                        deskripsi:"Pembina fungsi sumber daya manusia dan administrasi personel Polri." },
+  { tgl:"03/08/2026", kode:"UNOR-PL-032", nama:"Kepolisian Daerah Metro Jaya (POLDA METRO JAYA)",                    deskripsi:"Satuan kewilayahan Polri untuk wilayah DKI Jakarta dan sekitarnya." },
+  { tgl:"07/08/2026", kode:"UNOR-PL-033", nama:"Kepolisian Daerah Jawa Barat (POLDA JABAR)",                         deskripsi:"Satuan kewilayahan Polri untuk wilayah Provinsi Jawa Barat." },
+  { tgl:"07/08/2026", kode:"UNOR-PL-034", nama:"Kepolisian Daerah Jawa Timur (POLDA JATIM)",                         deskripsi:"Satuan kewilayahan Polri untuk wilayah Provinsi Jawa Timur." },
+  { tgl:"07/08/2026", kode:"UNOR-PL-035", nama:"Kepolisian Daerah Sumatera Utara (POLDA SUMUT)",                     deskripsi:"Satuan kewilayahan Polri untuk wilayah Provinsi Sumatera Utara." },
+  { tgl:"07/08/2026", kode:"UNOR-PL-036", nama:"Korps Brigade Mobil Polri (KORBRIMOB POLRI)",                        deskripsi:"Satuan pelaksana utama Polri untuk penanganan gangguan keamanan berkadar tinggi." },
+  { tgl:"12/08/2026", kode:"UNOR-PL-037", nama:"Akademi Kepolisian (AKPOL)",                                         deskripsi:"Lembaga pendidikan pembentukan perwira Kepolisian Negara Republik Indonesia." },
+  { tgl:"12/08/2026", kode:"UNOR-PL-038", nama:"Lembaga Pendidikan dan Pelatihan Polri (LEMDIKLAT POLRI)",           deskripsi:"Penyelenggara pendidikan dan pelatihan personel Kepolisian Negara Republik Indonesia." },
+
+  { tgl:"12/08/2026", kode:"UNOR-KH-039", nama:"Sekretariat Jenderal Kementerian Pertahanan (SETJEN KEMHAN)",        deskripsi:"Unsur pembantu pimpinan pengoordinasi pelaksanaan tugas Kementerian Pertahanan." },
+  { tgl:"12/08/2026", kode:"UNOR-KH-040", nama:"Inspektorat Jenderal Kementerian Pertahanan (ITJEN KEMHAN)",         deskripsi:"Unsur pengawasan internal atas pelaksanaan tugas Kementerian Pertahanan." },
+  { tgl:"12/08/2026", kode:"UNOR-KH-041", nama:"Direktorat Jenderal Kekuatan Pertahanan (DITJEN KUATHAN)",           deskripsi:"Perumus kebijakan pembinaan kekuatan pertahanan negara." },
+  { tgl:"18/08/2026", kode:"UNOR-KH-042", nama:"Direktorat Jenderal Potensi Pertahanan (DITJEN POTHAN)",             deskripsi:"Perumus kebijakan pembinaan potensi dan sumber daya pertahanan negara." },
+  { tgl:"18/08/2026", kode:"UNOR-KH-043", nama:"Badan Pendidikan dan Pelatihan Kemhan (BADIKLAT KEMHAN)",            deskripsi:"Penyelenggara pendidikan dan pelatihan pegawai Kementerian Pertahanan." },
+
+  { tgl:"18/08/2026", kode:"UNOR-TN-044", nama:"Markas Besar Tentara Nasional Indonesia (MABES TNI)",                deskripsi:"Markas Komando pembinaan dan penggunaan kekuatan TNI tiga matra." },
+  { tgl:"18/08/2026", kode:"UNOR-TN-045", nama:"Pusat Polisi Militer TNI (PUSPOM TNI)",                              deskripsi:"Badan pelaksana pusat fungsi kepolisian militer di lingkungan TNI." }
+];
+
+/* ---------------------------------------------------------------------------
+   23B. SUB MODUL REFERENSI KOLEKTIF — UNGGAH REFERENSI LEWAT BERKAS EXCEL
+   Penambahan data referensi secara kolektif: satu berkas Excel berisi banyak
+   baris referensi untuk satu Jenis Referensi. `REF_KOLEKTIF_JENIS` memegang
+   template + isi berkas contoh yang "terbaca" saat berkas diunggah, dipakai
+   untuk mensimulasikan langkah Validasi dan Submit (bentuknya sengaja sama
+   dengan DATA_ALIH_STATUS_KOLEKTIF supaya pola rendernya bisa diikuti).
+   Satuan Kerja sengaja dibuat lolos semua, Daerah menyisakan baris bermasalah,
+   supaya tombol Simpan bisa didemokan dalam dua keadaan.
+   status: "valid" | "ditolak" (yang ditolak wajib `alasan`)
+   --------------------------------------------------------------------------- */
+const REF_KOLEKTIF_JENIS = [
+  {
+    key:"satuan-kerja", label:"Satuan Kerja",
+    templateNama:"Template Referensi Satuan Kerja",
+    namaBerkas:  "referensi_satuan_kerja_pemekaran_2026.xlsx",
+    kolom:       ["Kode Satuan Kerja", "Nama Satuan Kerja", "Unit Organisasi", "Kode KPPN", "Berlaku Sejak"],
+    rows: [
+      { nilai:["0416", "KODIM 0830/SAMPANG",        "KOREM 084/BHASKARA JAYA", "084", "01/07/2026"], status:"valid" },
+      { nilai:["0417", "KODIM 0831/PAMEKASAN",      "KOREM 084/BHASKARA JAYA", "084", "01/07/2026"], status:"valid" },
+      { nilai:["0418", "KODIM 0832/SUMENEP KOTA",   "KOREM 084/BHASKARA JAYA", "084", "01/07/2026"], status:"valid" },
+      { nilai:["0921", "LANUD SULTAN HASANUDDIN",   "KOOPSUD II",              "019", "01/07/2026"], status:"valid" },
+      { nilai:["0656", "POLRES SIDOARJO KOTA",      "POLDA JAWA TIMUR",        "084", "01/07/2026"], status:"valid" },
+      { nilai:["0745", "KODIM 0745/SALATIGA KOTA",  "KOREM 073/MAKUTARAMA",    "137", "01/08/2026"], status:"valid" }
+    ]
+  },
+  {
+    key:"daerah", label:"Daerah",
+    templateNama:"Template Referensi Daerah",
+    namaBerkas:  "referensi_daerah_pemekaran_2026.xlsx",
+    kolom:       ["Kode Daerah", "Nama Daerah", "Tingkat", "Induk Daerah", "Berlaku Sejak"],
+    rows: [
+      { nilai:["35.78.11", "KEC. TANDES",       "Kecamatan", "KOTA SURABAYA", "01/07/2026"], status:"valid" },
+      { nilai:["35.78.12", "KEC. ASEMROWO",     "Kecamatan", "KOTA SURABAYA", "01/07/2026"], status:"valid" },
+      { nilai:["32.73.31", "KEC. CIBIRU HILIR", "Kecamatan", "KOTA BANDUNG",  "01/07/2026"], status:"valid" },
+      { nilai:["33.74.09", "KEC. GAYAMSARI",    "Kecamatan", "KOTA SEMARANG", "01/07/2026"], status:"valid" },
+      { nilai:["35.78.09", "KEC. SUKOMANUNGGAL", "Kecamatan", "KOTA SURABAYA", "01/07/2026"],
+        status:"ditolak", alasan:["Kode 35.78.09 sudah terdaftar pada referensi Daerah"] },
+      { nilai:["", "KEC. GEDEBAGE BARU", "Kelurahan", "KOTA BANDUNG", "31/06/2026"],
+        status:"ditolak", alasan:["Kode Daerah wajib diisi", "Berlaku Sejak bukan tanggal yang sah"] }
+    ]
+  }
+];
+
+/* Riwayat berkas referensi kolektif yang sudah pernah disubmit, dikelompokkan
+   per Jenis Referensi. Jumlah Berkas di tabel daftar = panjang `berkas`. */
+const DATA_REF_KOLEKTIF = [
+  { jenis:"Satuan Kerja", berkas:[
+    { nama:"referensi_satuan_kerja_kodam_v_2026.xlsx", tgl:"12/08/2026", baris:24, oleh:"Lojita — R. Prasetyo",  status:"Selesai" },
+    { nama:"referensi_satuan_kerja_polda_jatim.xlsx",  tgl:"28/07/2026", baris:11, oleh:"Lojita — S. Wijayanti", status:"Selesai" },
+    { nama:"referensi_satuan_kerja_lanud_2026.xlsx",   tgl:"03/07/2026", baris:8,  oleh:"Lojita — A. Nurcahyo",  status:"Selesai" }
+  ] },
+  { jenis:"Daerah", berkas:[
+    { nama:"referensi_daerah_jatim_pemekaran.xlsx", tgl:"18/08/2026", baris:37, oleh:"Lojita — R. Prasetyo",  status:"Selesai" },
+    { nama:"referensi_daerah_jabar_2026.xlsx",      tgl:"05/08/2026", baris:19, oleh:"Lojita — S. Wijayanti", status:"Selesai" }
+  ] }
+];
+
+/* ---------------------------------------------------------------------------
+   23C. SUB MODUL STATUS PESERTA & BATAS USIA PENSIUN
+   Dua daftar referensi sederhana di bawah Pengelolaan Referensi Data
+   Kepesertaan. Bentuk keduanya sama: satu baris = satu nilai referensi, dengan
+   `tgl` (dd/mm/yyyy, ditampilkan panjang seperti layar UNOR), `oleh` sebagai
+   jejak pembuatnya, dan `keterangan` yang hanya muncul di modal Detail.
+   --------------------------------------------------------------------------- */
+const DATA_STATUS_PESERTA = [
+  { tgl:"04/07/2026", status:"Aktif",                                    oleh:"Lojita — R. Prasetyo",
+    keterangan:"Peserta masih berdinas aktif dan iuran preminya dipotong dari gaji setiap bulan." },
+  { tgl:"04/07/2026", status:"Pensiun",                                  oleh:"Lojita — R. Prasetyo",
+    keterangan:"Peserta sudah menerima Skep pensiun dan masuk pembayaran dapem." },
+  { tgl:"04/07/2026", status:"Meninggal Aktif",                          oleh:"Lojita — R. Prasetyo",
+    keterangan:"Peserta meninggal dunia saat masih berdinas aktif; hak ahli waris diproses lewat klaim." },
+  { tgl:"12/07/2026", status:"Meninggal Pensiun",                        oleh:"Lojita — S. Wijayanti",
+    keterangan:"Peserta meninggal dunia setelah berstatus pensiun; pembayaran dapem dihentikan." },
+  { tgl:"12/07/2026", status:"Desersi",                                  oleh:"Lojita — S. Wijayanti",
+    keterangan:"Peserta dinyatakan desersi berdasarkan keputusan satuan; kepesertaan ditangguhkan." },
+  { tgl:"25/07/2026", status:"Pemberhentian Tidak Dengan Hormat (PTDH)", oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Peserta diberhentikan tidak dengan hormat; hak manfaat mengikuti ketentuan yang berlaku." },
+  { tgl:"08/08/2026", status:"Alih Status",                              oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Peserta pindah kepesertaan dari atau ke penyelenggara jaminan sosial lain." },
+  { tgl:"08/08/2026", status:"Cuti di Luar Tanggungan Negara",           oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Peserta cuti di luar tanggungan negara; iuran premi dihentikan sementara." }
+];
+
+/* Pilihan Angkatan & Golongan pada form Tambah Batas Usia Pensiun. Golongan
+   mengikuti Angkatan yang dipilih; Angkatan "ASN" tidak memakai Golongan. */
+const BUP_ANGKATAN = ["TNI-AD", "TNI-AL", "TNI-AU", "POLRI", "ASN"];
+const BUP_GOLONGAN = {
+  "TNI-AD": ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"],
+  "TNI-AL": ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"],
+  "TNI-AU": ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"],
+  "POLRI":  ["TAMTAMA", "BINTARA", "PAMA", "PAMEN", "PATI"]
+};
+
+const DATA_BUP = [
+  { tgl:"04/07/2026", bup:"BUP Tamtama & Bintara TNI — 53 Tahun",                 oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Dasar: UU No. 34 Tahun 2004 tentang Tentara Nasional Indonesia." },
+  { tgl:"04/07/2026", bup:"BUP Perwira TNI — 58 Tahun",                           oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Dasar: UU No. 34 Tahun 2004 tentang Tentara Nasional Indonesia." },
+  { tgl:"04/07/2026", bup:"BUP Anggota POLRI — 58 Tahun",                         oleh:"Lojita — A. Nurcahyo",
+    keterangan:"Dasar: UU No. 2 Tahun 2002 tentang Kepolisian Negara Republik Indonesia." },
+  { tgl:"18/07/2026", bup:"BUP Perwira POLRI Berkeahlian Khusus — 60 Tahun",      oleh:"Lojita — R. Prasetyo",
+    keterangan:"Dasar: UU No. 2 Tahun 2002; berlaku untuk fungsi teknis tertentu atas persetujuan Kapolri." },
+  { tgl:"18/07/2026", bup:"BUP ASN Jabatan Administrasi — 58 Tahun",              oleh:"Lojita — R. Prasetyo",
+    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara." },
+  { tgl:"03/08/2026", bup:"BUP ASN Jabatan Fungsional Madya — 60 Tahun",          oleh:"Lojita — S. Wijayanti",
+    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara." },
+  { tgl:"03/08/2026", bup:"BUP ASN Jabatan Pimpinan Tinggi — 60 Tahun",           oleh:"Lojita — S. Wijayanti",
+    keterangan:"Dasar: UU No. 20 Tahun 2023 tentang Aparatur Sipil Negara." }
+];
+
+/* ---------------------------------------------------------------------------
+   24. SPP DATA PESERTA
+   Permohonan penambahan data peserta yang Nomor Kartu Peserta ASABRI (KPA)-nya
+   sudah terbit namun data kepesertaannya belum tersedia di YANDU — sisa migrasi
+   dari aplikasi Yandu lama. `rekomendasi` adalah data peserta mirip yang
+   ditawarkan sistem sebagai bahan verifikasi sebelum data ditambahkan.
+   sumber rekomendasi: "Belum Termigrasi" | "Data Terhapus" | "Arsip Yandu Lama"
+   status:   "Menunggu Verifikasi" | "Menunggu Persetujuan" | "Disetujui" | "Ditolak"
+   tindakan: "" (belum diverifikasi) | "Restore Data" | "Input Data Baru"
+   --------------------------------------------------------------------------- */
+const DATA_SPP = [
+  { no:"SPP-2026-00117", tgl:"19/06/2026", kpa:"ASB-1993-006845", nama:"Sunarto Wibowo", nrp:"196705121988031003",
+    nik:"3578141205670004", tglLahir:"12/05/1967", pangkat:"SERSAN MAYOR", kesatuan:"KODIM 0827/SUMENEP",
+    cabang:"KC Surabaya", pengaju:"Officer KC — D. Ramadhan", noRequest:"REQ-2026-00891",
+    dokumen:["Surat Permohonan KC Surabaya.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf", "KTP & KK.pdf"],
+    status:"Menunggu Verifikasi", tindakan:"", catatan:"",
+    rekomendasi:[
+      { nama:"SUNARTO WIBOWO", nrp:"196705121988031003", kpa:"ASB-1993-006845", tglLahir:"12/05/1967",
+        satker:"KODIM 0827/SUMENEP",        sumber:"Belum Termigrasi",  skor:96 },
+      { nama:"SUNARTO WIBOWO", nrp:"196705121988031030", kpa:"ASB-1993-006901", tglLahir:"12/05/1967",
+        satker:"KOREM 084/BHASKARA JAYA",   sumber:"Arsip Yandu Lama",  skor:78 },
+      { nama:"SUNARTA WIBAWA", nrp:"196706121988031007", kpa:"ASB-1993-007122", tglLahir:"12/06/1967",
+        satker:"KODIM 0812/LAMONGAN",       sumber:"Arsip Yandu Lama",  skor:61 }
+    ] },
+
+  { no:"SPP-2026-00116", tgl:"18/06/2026", kpa:"ASB-1989-005219", nama:"Marsudi Hartanto", nrp:"146732",
+    nik:"3374110809630002", tglLahir:"08/09/1963", pangkat:"AJUN KOMISARIS POLISI", kesatuan:"POLRES SIDOARJO",
+    cabang:"KC Malang", pengaju:"Officer KC — L. Anggraeni", noRequest:"REQ-2026-00877",
+    dokumen:["Surat Permohonan KC Malang.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf"],
+    status:"Menunggu Verifikasi", tindakan:"", catatan:"",
+    rekomendasi:[
+      { nama:"MARSUDI HARTANTO", nrp:"146732", kpa:"ASB-1989-005219", tglLahir:"08/09/1963",
+        satker:"POLRES SIDOARJO",  sumber:"Data Terhapus",    skor:93 },
+      { nama:"MARSUDI HARTONO",  nrp:"146723", kpa:"ASB-1989-005281", tglLahir:"08/09/1963",
+        satker:"POLRESTA MALANG",  sumber:"Arsip Yandu Lama", skor:64 }
+    ] },
+
+  { no:"SPP-2026-00115", tgl:"17/06/2026", kpa:"ASB-2004-031180", nama:"Yuliana Kusumastuti", nrp:"197907142003122002",
+    nik:"3273125407790006", tglLahir:"14/07/1979", pangkat:"PENATA MUDA", kesatuan:"ASN MABES TNI",
+    cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00860",
+    dokumen:["Surat Permohonan KC Bandung.pdf", "Fotokopi KPA.pdf", "SK CPNS & PNS.pdf", "KTP & KK.pdf"],
+    status:"Menunggu Verifikasi", tindakan:"", catatan:"",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00114", tgl:"16/06/2026", kpa:"ASB-1997-013522", nama:"Teguh Priyanto", nrp:"197203201995031004",
+    nik:"3372012003720003", tglLahir:"20/03/1972", pangkat:"SERSAN KEPALA", kesatuan:"KODIM 0733/SURAKARTA",
+    cabang:"KC Solo", pengaju:"Officer KC — H. Prabowo", noRequest:"REQ-2026-00842",
+    dokumen:["Surat Permohonan KC Solo.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf"],
+    status:"Menunggu Persetujuan", tindakan:"Restore Data",
+    catatan:"Data ditemukan pada arsip belum termigrasi, diaktifkan kembali sesuai dokumen persyaratan.",
+    rekomendasi:[
+      { nama:"TEGUH PRIYANTO", nrp:"197203201995031004", kpa:"ASB-1997-013522", tglLahir:"20/03/1972",
+        satker:"KODIM 0733/SURAKARTA", sumber:"Belum Termigrasi", skor:98 }
+    ] },
+
+  { no:"SPP-2026-00113", tgl:"15/06/2026", kpa:"ASB-2011-064882", nama:"Rizal Maulana", nrp:"198806112011011003",
+    nik:"3175061106880004", tglLahir:"11/06/1988", pangkat:"LETNAN DUA", kesatuan:"LANUD ISWAHJUDI",
+    cabang:"KC Madiun", pengaju:"Officer KC — T. Wibisono", noRequest:"REQ-2026-00830",
+    dokumen:["Surat Permohonan KC Madiun.pdf", "Fotokopi KPA.pdf", "SKEP Pengangkatan.pdf"],
+    status:"Menunggu Persetujuan", tindakan:"Input Data Baru",
+    catatan:"Tidak ditemukan pada rekomendasi sistem, data diinput baru sesuai dokumen persyaratan.",
+    rekomendasi:[] },
+
+  { no:"SPP-2026-00112", tgl:"12/06/2026", kpa:"ASB-1986-004910", nama:"Sri Wahyuni", nrp:"196204251985032001",
+    nik:"3374116504620009", tglLahir:"25/04/1962", pangkat:"PENATA MUDA", kesatuan:"ASN KODAM IV/DIPONEGORO",
+    cabang:"KC Semarang", pengaju:"Officer KC — N. Safitri", noRequest:"REQ-2026-00815",
+    dokumen:["Surat Permohonan KC Semarang.pdf", "Fotokopi KPA.pdf", "SKEP Pensiun.pdf", "KTP & KK.pdf"],
+    status:"Disetujui", tindakan:"Restore Data",
+    catatan:"Disetujui — data peserta aktif kembali dan siap dipakai Kantor Cabang untuk proses klaim.",
+    rekomendasi:[
+      { nama:"SRI WAHYUNI", nrp:"196204251985032001", kpa:"ASB-1986-004910", tglLahir:"25/04/1962",
+        satker:"ASN KODAM IV/DIPONEGORO", sumber:"Data Terhapus", skor:97 }
+    ] },
+
+  { no:"SPP-2026-00111", tgl:"10/06/2026", kpa:"ASB-2013-077304", nama:"Andi Firmansyah", nrp:"199001152013021005",
+    nik:"3273121501900002", tglLahir:"15/01/1990", pangkat:"SERSAN MAYOR", kesatuan:"KODIM 0610/SUMEDANG",
+    cabang:"KC Bandung", pengaju:"Officer KC — F. Kurniawan", noRequest:"REQ-2026-00802",
+    dokumen:["Surat Permohonan KC Bandung.pdf", "Fotokopi KPA.pdf"],
+    status:"Ditolak", tindakan:"",
+    catatan:"Dokumen SKEP tidak dilampirkan dan Nomor KPA tidak sesuai data Spersad — dikembalikan ke Kantor Cabang.",
+    rekomendasi:[] }
+];
+
+
+/* ---------------------------------------------------------------------------
+   25. PELUNASAN KPR (BUM)
+   Satu baris = satu potongan pelunasan pinjaman BUM peserta.
+   jenisPotongan : keterangan sumber potongan, mis. "Tabungan Asuransi".
+   jenisHutang   : "Program Reguler" | "Program Khusus"
+   jumlah        : plafon pinjaman BUM yang pernah dicairkan.
+   sisaHutang    : pokok pinjaman yang belum terbayar.
+   bruto         : nilai bruto manfaat sebelum potongan.
+   nominal       : nominal yang dipotong untuk pelunasan.
+   imbalJasa     : imbal jasa yang hanya berlaku untuk jenis hutang Program
+                   Reguler — tidak ada pada Program Khusus.
+   tglSp / tglDps / tglPeriode : tanggal Surat Perintah, tanggal DPS, dan
+   tanggal periode pembayaran.
+   --------------------------------------------------------------------------- */
+const DATA_BUM_PELUNASAN = [
+  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",    tmt:"2021-03-01", nomorPinjaman:"BUM-2021-00114", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:120000000, sisaHutang:64500000,  bruto:72400000,  nominal:68000000,  imbalJasa:2400000, cabang:"KC Jakarta Utama", tglSp:"2026-06-18", tglDps:"2026-06-22", tglPeriode:"2026-07-01" },
+  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro", tmt:"2019-11-05", nomorPinjaman:"BUM-2019-00042", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:80000000,  sisaHutang:9500000,   bruto:11250000,  nominal:10000000,  cabang:"KC Medan",         tglSp:"2026-06-15", tglDps:"2026-06-19", tglPeriode:"2026-07-01" },
+  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",       tmt:"2019-05-17", nomorPinjaman:"BUM-2019-00019", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:70000000,  sisaHutang:6200000,   bruto:7400000,   nominal:6600000,   cabang:"KC Balikpapan",    tglSp:"2026-06-12", tglDps:"2026-06-16", tglPeriode:"2026-07-01" },
+  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",     tmt:"2020-02-28", nomorPinjaman:"BUM-2020-00033", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:90000000,  sisaHutang:14000000,  bruto:16200000,  nominal:14800000,  cabang:"KC Palembang",     tglSp:"2026-06-10", tglDps:"2026-06-14", tglPeriode:"2026-07-01" },
+  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",   tmt:"2021-09-12", nomorPinjaman:"BUM-2021-00176", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:110000000, sisaHutang:58000000,  bruto:64750000,  nominal:61200000,  imbalJasa:2200000, cabang:"KC Semarang",      tglSp:"2026-06-08", tglDps:"2026-06-12", tglPeriode:"2026-07-01" },
+  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",     tmt:"2020-07-15", nomorPinjaman:"BUM-2020-00087", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:95000000,  sisaHutang:21000000,  bruto:24100000,  nominal:22500000,  cabang:"KC Denpasar",      tglSp:"2026-06-05", tglDps:"2026-06-09", tglPeriode:"2026-07-01" },
+  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",     tmt:"2019-08-14", nomorPinjaman:"BUM-2019-00027", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:75000000,  sisaHutang:5000000,   bruto:5900000,   nominal:5300000,   cabang:"KC Surabaya",      tglSp:"2026-06-02", tglDps:"2026-06-06", tglPeriode:"2026-06-01" },
+  { kpa:"LA931234", nrp:"19860303012", nama:"Andi Saputra",     tmt:"2020-10-30", nomorPinjaman:"BUM-2020-00121", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:118000000, sisaHutang:71000000,  bruto:79500000,  nominal:75000000,  imbalJasa:2360000, cabang:"KC Jakarta Utama", tglSp:"2026-05-28", tglDps:"2026-06-01", tglPeriode:"2026-06-01" },
+  { kpa:"TB921123", nrp:"19940512011", nama:"Fitri Ramadhani",  tmt:"2021-06-23", nomorPinjaman:"BUM-2021-00152", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Khusus",  jumlah:85000000,  sisaHutang:19500000,  bruto:22300000,  nominal:20700000,  cabang:"KC Padang",        tglSp:"2026-05-25", tglDps:"2026-05-29", tglPeriode:"2026-06-01" },
+  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",      tmt:"2022-08-01", nomorPinjaman:"BUM-2022-00265", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:125000000, sisaHutang:98000000,  bruto:108900000, nominal:103500000, imbalJasa:2500000, cabang:"KC Denpasar",      tglSp:"2026-05-20", tglDps:"2026-05-24", tglPeriode:"2026-06-01" },
+  { kpa:"UA950567", nrp:"19921215005", nama:"Aprildo A. R.",    tmt:"2023-04-20", nomorPinjaman:"BUM-2023-00311", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:135000000, sisaHutang:121000000, bruto:132750000, nominal:128500000, imbalJasa:2700000, cabang:"KC Makassar",      tglSp:"2026-05-18", tglDps:"2026-05-22", tglPeriode:"2026-06-01" },
+  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",     tmt:"2022-12-04", nomorPinjaman:"BUM-2022-00340", jenisPotongan:"Tabungan Asuransi", jenisHutang:"Program Reguler", jumlah:145000000, sisaHutang:139000000, bruto:143200000, nominal:139500000, imbalJasa:2900000, cabang:"KC Bandung",       tglSp:"2026-05-14", tglDps:"2026-05-18", tglPeriode:"2026-06-01" }
+];
+
+
+/* ---------------------------------------------------------------------------
+   26. PEMBATALAN KPR (BUM)
+   Pembatalan Bantuan Uang Muka KPR yang suratnya diterbitkan YPPSDP. Cara
+   prosesnya ditentukan oleh `statusPeserta` saat surat pembatalan masuk:
+
+   "Aktif" — peserta belum mengajukan klaim THT.
+     YPPSDP mengirim hardcopy surat pembatalan langsung ke ASABRI, lalu Div.
+     Kepesertaan dan Pengembangan Manfaat merekam Status Keterangan
+     Pembatalan, No/Tanggal surat pembatalan, dan Nominal pembatalan.
+     Data yang bisa ditarik: Nama, NRP, Nomor KTPA, Nominal, No & Tgl surat.
+
+   "Pensiun" — peserta sudah proses klaim THT / sudah pensiun.
+     Peserta minta surat pembatalan ke YPPSDP, membawanya ke Kantor Cabang
+     bersama Surat Permohonan, Kantor Cabang mengajukan Request Umum, lalu
+     Div. Kepesertaan merekam data yang sama. Divisi Keuangan menutup alur
+     dengan menerbitkan SP pembayaran pemotongan, sehingga data tarikannya
+     bertambah: Nomor SP pembatalan, Tanggal DPS, dan Nomor DPS.
+
+   status: "Tercatat"    → peserta aktif, data pembatalan siap ditarik
+           "Menunggu SP" → peserta pensiun, SP pembayaran belum diterbitkan Div. Keuangan
+           "Selesai"     → peserta pensiun, SP pembayaran sudah terbit
+   --------------------------------------------------------------------------- */
+
+/* Status kepesertaan per Nomor KTPA — penentu cara proses pada form
+   pembatalan. "Aktif" langsung dari YPPSDP; "Pensiun" lewat Request Umum
+   Kantor Cabang dan ditutup SP pembayaran Divisi Keuangan. */
+const BUM_STATUS_PESERTA = {
+  "TA910123":"Aktif",   "TB920234":"Pensiun", "LA930345":"Aktif",
+  "LB940456":"Pensiun", "UA950567":"Aktif",   "UB960678":"Aktif",
+  "PA970789":"Pensiun", "PB980890":"Aktif",   "PC990901":"Pensiun",
+  "TA911012":"Aktif",   "TB921123":"Pensiun", "LA931234":"Aktif",
+  "LB941345":"Aktif",   "UA951456":"Pensiun"
+};
+
+/* Pilihan dropdown "Status Keterangan Pembatalan" */
+const BUM_PEMBATALAN_KETERANGAN = [
+  "Pembatalan Seluruhnya",
+  "Pembatalan Sebagian",
+  "Batal Akad Kredit",
+  "Rumah Batal Serah Terima",
+  "Pengunduran Diri Peserta"
+];
+
+/* Dokumen kelengkapan yang dibawa peserta ke Kantor Cabang (khusus jalur B) */
+const BUM_PEMBATALAN_DOKUMEN = [
+  "Surat Permohonan Pembatalan BUM KPR",
+  "Surat Pembatalan BUM KPR dari YPPSDP"
+];
+
+const DATA_BUM_PEMBATALAN = [
+  { kpa:"TA910123", nrp:"19870512001", nama:"Intan M. Sari",     cabang:"KC Jakarta Utama", nomorPinjaman:"BUM-2021-00114", jenisPinjaman:"Program Reguler",
+    statusPeserta:"Aktif",     keterangan:"Batal Akad Kredit",        noSurat:"B/412/YPPSDP/VI/2026", tglSurat:"2026-06-04", nominal:38000000,  status:"Tercatat" },
+  { kpa:"LA930345", nrp:"19951130003", nama:"Kenedi",            cabang:"KC Surabaya",      nomorPinjaman:"BUM-2022-00203", jenisPinjaman:"Program Reguler",
+    statusPeserta:"Aktif",     keterangan:"Pembatalan Sebagian",      noSurat:"B/418/YPPSDP/VI/2026", tglSurat:"2026-06-09", nominal:22500000,  status:"Tercatat" },
+  { kpa:"UB960678", nrp:"19870910006", nama:"Wati Handayani",    cabang:"KC Semarang",      nomorPinjaman:"BUM-2021-00176", jenisPinjaman:"Program Reguler",
+    statusPeserta:"Aktif",     keterangan:"Rumah Batal Serah Terima", noSurat:"B/423/YPPSDP/VI/2026", tglSurat:"2026-06-15", nominal:41000000,  status:"Tercatat" },
+  { kpa:"PB980890", nrp:"19850617008", nama:"Sri Wahyuni",       cabang:"KC Denpasar",      nomorPinjaman:"BUM-2022-00265", jenisPinjaman:"Program Reguler",
+    statusPeserta:"Aktif",     keterangan:"Pembatalan Seluruhnya",    noSurat:"B/431/YPPSDP/VII/2026", tglSurat:"2026-07-02", nominal:55000000, status:"Tercatat" },
+  { kpa:"LB941345", nrp:"19920815013", nama:"Lina Marlina",      cabang:"KC Bandung",       nomorPinjaman:"BUM-2022-00340", jenisPinjaman:"Program Reguler",
+    statusPeserta:"Aktif",     keterangan:"Pengunduran Diri Peserta", noSurat:"B/436/YPPSDP/VII/2026", tglSurat:"2026-07-10", nominal:30000000, status:"Tercatat" },
+
+  { kpa:"TB920234", nrp:"19900820002", nama:"Made Wardani",      cabang:"KC Denpasar",      nomorPinjaman:"BUM-2020-00087", jenisPinjaman:"Program Khusus",
+    statusPeserta:"Pensiun",   keterangan:"Pembatalan Seluruhnya",    noSurat:"B/405/YPPSDP/V/2026",  tglSurat:"2026-05-21", nominal:19500000,  status:"Selesai",
+    noRequest:"RU-2026-00218", noSp:"SP/1180/KEU/VI/2026", tglDps:"2026-06-11", noDps:"DPS-2026-06-0042", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
+  { kpa:"LB940456", nrp:"19880305004", nama:"Firman Dewantoro",  cabang:"KC Medan",         nomorPinjaman:"BUM-2019-00042", jenisPinjaman:"Program Khusus",
+    statusPeserta:"Pensiun",   keterangan:"Pembatalan Sebagian",      noSurat:"B/409/YPPSDP/V/2026",  tglSurat:"2026-05-28", nominal:8750000,   status:"Selesai",
+    noRequest:"RU-2026-00224", noSp:"SP/1194/KEU/VI/2026", tglDps:"2026-06-18", noDps:"DPS-2026-06-0057", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
+  { kpa:"PA970789", nrp:"19930422007", nama:"Yuni Kartika",      cabang:"KC Palembang",     nomorPinjaman:"BUM-2020-00033", jenisPinjaman:"Program Khusus",
+    statusPeserta:"Pensiun",   keterangan:"Batal Akad Kredit",        noSurat:"B/427/YPPSDP/VI/2026", tglSurat:"2026-06-22", nominal:12400000,  status:"Menunggu SP",
+    noRequest:"RU-2026-00237", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
+  { kpa:"PC990901", nrp:"19910304009", nama:"Ratna Dewi",        cabang:"KC Balikpapan",    nomorPinjaman:"BUM-2019-00019", jenisPinjaman:"Program Khusus",
+    statusPeserta:"Pensiun",   keterangan:"Pembatalan Seluruhnya",    noSurat:"B/433/YPPSDP/VII/2026", tglSurat:"2026-07-06", nominal:6200000,  status:"Menunggu SP",
+    noRequest:"RU-2026-00245", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] },
+  { kpa:"UA951456", nrp:"19830706014", nama:"Joko Purnomo",      cabang:"KC Surabaya",      nomorPinjaman:"BUM-2019-00027", jenisPinjaman:"Program Khusus",
+    statusPeserta:"Pensiun",   keterangan:"Rumah Batal Serah Terima", noSurat:"B/439/YPPSDP/VII/2026", tglSurat:"2026-07-14", nominal:5000000,  status:"Menunggu SP",
+    noRequest:"RU-2026-00251", noSp:"", tglDps:"", noDps:"", dokumen:["Surat Permohonan Pembatalan BUM KPR","Surat Pembatalan BUM KPR dari YPPSDP"] }
 ];

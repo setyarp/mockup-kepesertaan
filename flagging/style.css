@@ -35,6 +35,10 @@
   --amber:#b45309; --amber-soft:#fffbeb; --amber-ink:#92400e; --amber-line:#fde68a;
   --blue-soft:#eff6ff; --blue-ink:#1d4ed8; --blue-line:#bfdbfe;
 
+  /* Deret grafik. --navy dipakai sebagai deret biru; token di bawah melengkapi
+     dengan deret kuning (jangan pakai --gold, itu khusus aksen "NEXTGEN"). */
+  --chart-gold:#f0b429;
+
   --ring:#dbeafe;          /* blue-100 — cincin fokus */
   --focus-line:#60a5fa;    /* blue-400 */
 
@@ -462,6 +466,13 @@ tbody tr:nth-child(even) .stick-l,tbody tr:nth-child(even) .stick-r{background:#
 tbody tr:hover .stick-l,tbody tr:hover .stick-r{background:#f8fafc}
 .tbl-note{font-size:11px; color:var(--muted); font-weight:600; margin-top:9px; text-align:right}
 .truncate-cell{max-width:190px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+/* Kolom angka: rata kanan + angka selebar sama supaya digit ikut sejajar */
+th.num,td.num{text-align:right; font-variant-numeric:tabular-nums}
+/* Kepala tabel dua tingkat: sel induk yang menaungi beberapa kolom anak */
+th.th-group{text-align:center; border-left:1px solid var(--line); border-right:1px solid var(--line)}
+/* Kotak centang "pilih semua" yang menyatu dengan judul kolomnya */
+.chk-head{display:flex; align-items:center; gap:7px; cursor:pointer; white-space:nowrap}
+.chk-head input{margin:0; cursor:pointer}
 tfoot td{
   padding:13px 16px; background:var(--bg); border-top:2px solid var(--line);
   font-weight:800; color:var(--ink);
@@ -581,6 +592,27 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 .ok-txt{color:var(--green)} .bad-txt{color:var(--red)} .warn-txt{color:var(--amber)}
 .live-strip{display:flex; align-items:center; gap:7px; font-size:11px; font-weight:600; color:var(--muted)}
 
+/* ---------- Kartu grafik garis ---------- */
+.chart-card{display:flex; flex-direction:column}
+.chart-head{
+  display:flex; align-items:baseline; gap:8px; padding-bottom:12px; margin-bottom:14px;
+  border-bottom:1px solid var(--line);
+}
+.chart-head-ico{font-size:14px; line-height:1; color:var(--navy)}
+.chart-head-title{
+  font-size:15px; font-weight:800; letter-spacing:.02em; text-transform:uppercase; color:var(--navy);
+}
+.chart-head-sub{font-size:13px; font-weight:600; letter-spacing:.02em; text-transform:uppercase; color:var(--muted)}
+.chart-legend{
+  display:flex; align-items:center; justify-content:center; gap:8px;
+  margin-top:12px; font-size:11.5px; font-weight:700; color:var(--body);
+}
+.chart-legend-mark{width:26px; height:2px; border-radius:1px; position:relative}
+.chart-legend-mark::after{
+  content:""; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:7px; height:7px; border-radius:50%; background:inherit;
+}
+
 /* Simbol status pada tabel dashboard */
 .g{font-weight:800; font-size:13px}
 .g-ok{color:var(--green)} .g-wait{color:var(--amber)} .g-bad{color:var(--red)}
@@ -607,6 +639,15 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
   width:34px; height:34px; border-radius:10px; flex-shrink:0;
   background:var(--navy); color:#fff; font-size:15px;
   display:flex; align-items:center; justify-content:center;
+}
+/* Nada peringatan/penolakan: lingkaran bertinta lembut, bukan kotak navy */
+.modal-ico.warn{border-radius:50%; background:var(--amber-soft); color:var(--amber); border:1px solid var(--amber-line)}
+.modal-ico.bad {border-radius:50%; background:var(--red-soft);   color:var(--red);   border:1px solid var(--red-line)}
+/* Nomor KPA yang disebut di dalam kalimat pop-up validasi */
+.kpa-chip{
+  display:inline-block; padding:2px 9px; border-radius:7px; margin:0 2px;
+  background:var(--line-soft); border:1px solid var(--line);
+  font-family:"Courier New",Consolas,monospace; font-size:12px; font-weight:700; color:var(--ink);
 }
 
 /* ---------- Detail Request Umum (overlay khusus, header gelap) ---------- */
@@ -665,6 +706,32 @@ textarea.inp{height:auto; padding:9px 12px; line-height:1.5}
 .menu-item:hover{background:var(--blue-soft); color:var(--navy)}
 .menu-item span{color:var(--muted); font-size:13px}
 .menu-item:hover span{color:var(--navy)}
+
+/* ---------- Pilihan ganda bergaya select (kotak centang di dalam panel) ----
+   Dipakai untuk field filter yang boleh memilih lebih dari satu nilai. */
+.multisel{position:relative}
+.multisel-trigger{
+  display:flex; align-items:center; justify-content:space-between; gap:8px;
+  cursor:pointer; text-align:left;
+}
+.multisel-trigger[aria-expanded="true"]{
+  border-color:var(--focus-line); box-shadow:0 0 0 3px var(--ring); background:#fff;
+}
+.multisel-val{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.multisel-val.kosong{color:var(--faint); font-weight:500}
+.multisel-caret{flex-shrink:0; color:var(--muted); font-size:13px; line-height:1}
+.multisel-pop{
+  display:none; position:absolute; top:calc(100% + 6px); left:0; right:0; z-index:20;
+  background:var(--surface); border:1px solid var(--line); border-radius:10px;
+  box-shadow:var(--shadow-pop); padding:6px;
+}
+.multisel-pop.open{display:block}
+.multisel-opt{
+  display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px;
+  font-size:12.5px; font-weight:600; color:var(--body); cursor:pointer;
+}
+.multisel-opt:hover{background:var(--blue-soft); color:var(--navy)}
+.multisel-opt input{margin:0; cursor:pointer; flex-shrink:0}
 
 /* ---------- Kartu KPA (pratinjau cetak) ---------- */
 .kpa-grid{display:grid; grid-template-columns:repeat(2,1fr); gap:18px}

@@ -36,6 +36,24 @@ strukturnya. Hampir semua pola sudah pernah dipakai di suatu tempat.
 | `logo-asabri-white.png` | Logo di navbar |
 | `Template Pendaftaran Peserta Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh template" di Upload Kolektif |
 | `Pemutakhiran Data *.xlsx` (3 berkas) | Template per Jenis Pemutakhiran Data; dirujuk lewat `templateFile` di `DATA_PEREMAJAAN` |
+| `Template Alih Status Kolektif.xlsx` | Berkas yang diunduh tombol "⤓ Unduh Template" di Alih Status mekanisme Kolektif; dirujuk lewat `templateFile` di `DATA_ALIH_STATUS_KOLEKTIF` |
+| `flagging/` | **Aplikasi terpisah "Flagging Mitra Bayar"** — lihat di bawah |
+
+## Aplikasi terpisah: `flagging/`
+
+Modul Pengelolaan Flagging Pinjaman Mitra sudah dikeluarkan dari prototipe ini
+menjadi aplikasi sendiri di folder `flagging/`, dengan nama **Flagging Mitra
+Bayar**. Isinya lengkap dan berdiri sendiri: `index.html`, `data.js`, `app.js`,
+`style.css`, `logo-asabri-white.png`, dan
+serta dua berkas template yang diunduh tombol "⤓ Download Template Excel":
+`Template Check Booking Kolektif.xlsx` (layar Check & Booking Flagging
+Kolektif) dan `Template Pengajuan Flagging.xlsx` (layar Unggah Pengajuan
+Flagging) — tidak ada berkas yang di-`../`.
+
+Aturan yang sama berlaku di sana: gaya, komponen, dan token warna mengikuti
+`flagging/style.css` (salinan design system yang sama). Kalau menambah komponen
+baru yang berguna untuk kedua aplikasi, tambahkan di **kedua** `style.css` —
+jangan saling merujuk antar folder.
 
 ---
 

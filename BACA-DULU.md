@@ -140,12 +140,20 @@ Kedua layar pembentukan punya **bar PERAGAAN** bergaris putus-putus untuk
 melompat ke tahap/langkah mana pun tanpa mengklik seluruh alur — itu alat bantu
 demo, bukan bagian dari aplikasi yang akan dibangun.
 
-### Pengelolaan Flagging Pinjaman Mitra
+### Flagging Mitra Bayar — aplikasi terpisah
+
+Modul Pengelolaan Flagging Pinjaman Mitra **sudah dipisah** menjadi aplikasi
+sendiri di folder [`flagging/`](flagging/). Buka `flagging/index.html` untuk
+menjalankannya — isinya lengkap dan berdiri sendiri (punya `index.html`,
+`data.js`, `app.js`, dan `style.css` sendiri), jadi tidak ada berkas yang
+dipinjam dari folder induk.
+
 | Layar | Yang bisa dicoba |
 |---|---|
-| Check dan Booking — Individu | Pengecekan status flagging & booking satu peserta |
-| Check dan Booking — Kolektif | Pengecekan untuk batch peserta |
-| ○ Pensiunan | — |
+| Dashboard | Lima grafik garis: Site Visits, Booking, Pengajuan, Persetujuan, Pelunasan |
+| Pensiunan | Rekap per mitra bayar + filter periode/cabang/jenis bayar |
+| Check dan Booking — Individu | Cari KPA → informasi peserta (aktif / pensiun sendiri / pensiun waris) + pop-up validasi |
+| Check dan Booking — Kolektif | Unggah batch lewat tombol Check & Booking, dua tab: Mitra dan Peserta |
 | ○ Pinjaman (Pengajuan, Persetujuan, Flagging, Take Over, Top Up, Penagihan) | — |
 | ○ Laporan (Tagihan, Booking, Per Periode, Take Over) | — |
 | ○ Parameter Penetapan Tarif | — |
